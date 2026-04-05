@@ -1,4 +1,4 @@
-# ACH-Vim
+# ACH-NEOVIM
 
 A supercharged Neovim configuration for macOS.
 

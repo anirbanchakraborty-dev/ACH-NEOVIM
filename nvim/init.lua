@@ -1,4 +1,4 @@
--- ACH-Vim
+-- ACH-NEOVIM
 -- https://github.com/anirbanchakraborty-dev/ACH-NEOVIM
 
 require("config.options")

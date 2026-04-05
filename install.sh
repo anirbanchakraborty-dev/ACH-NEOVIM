@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# ACH-Vim Installer
+# ACH-NEOVIM Installer
 # Installs Homebrew (if needed) and Neovim on macOS
 #
 
@@ -23,11 +23,11 @@ error()   { echo -e "${RED}[ERROR]${NC} $*"; }
 
 # ── macOS Gate ──────────────────────────────────────────────────────────────
 if [[ "$(uname -s)" != "Darwin" ]]; then
-  error "ACH-Vim currently supports macOS only."
+  error "ACH-NEOVIM currently supports macOS only."
   exit 1
 fi
 
-echo -e "\n${BOLD}${CYAN}ACH-Vim Installer${NC}\n"
+echo -e "\n${BOLD}${CYAN}ACH-NEOVIM Installer${NC}\n"
 
 # ── Homebrew ────────────────────────────────────────────────────────────────
 if command -v brew &>/dev/null; then
@@ -102,10 +102,10 @@ NVIM_CONFIG="$HOME/.config/nvim"
 if [[ -L "$NVIM_CONFIG" ]]; then
   CURRENT_TARGET="$(readlink "$NVIM_CONFIG")"
   if [[ "$CURRENT_TARGET" == "$SCRIPT_DIR/nvim" ]]; then
-    success "Config symlink already points to ACH-Vim"
+    success "Config symlink already points to ACH-NEOVIM"
   else
     warn "~/.config/nvim is a symlink to: $CURRENT_TARGET"
-    warn "Skipping — remove it manually if you want ACH-Vim to take over."
+    warn "Skipping — remove it manually if you want ACH-NEOVIM to take over."
   fi
 elif [[ -d "$NVIM_CONFIG" ]]; then
   BACKUP="$NVIM_CONFIG.bak.$(date +%Y%m%d%H%M%S)"
@@ -121,7 +121,7 @@ fi
 
 # ── Done ────────────────────────────────────────────────────────────────────
 echo ""
-success "ACH-Vim setup complete!"
+success "ACH-NEOVIM setup complete!"
 echo -e "  Neovim: ${BOLD}$(nvim --version | head -1)${NC}"
 echo -e "  Config: ${BOLD}$NVIM_CONFIG -> $SCRIPT_DIR/nvim${NC}"
 echo ""

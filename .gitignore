@@ -2,3 +2,5 @@
 *.swp
 *.swo
 *~
+install.log
+nvim/lazy-lock.json
