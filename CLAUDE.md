@@ -59,7 +59,7 @@ These are non-negotiable. Violating them is a regression.
 
 ## Repository layout
 
-```
+```text
 ACH-NEOVIM/
 ├── install.sh              one-shot installer (Homebrew, Neovim, claude CLI)
 ├── uninstall.sh            removes ~/.config/nvim and Neovim state dirs
@@ -147,7 +147,7 @@ fires toast notifications.
 `colorscheme.lua` runs tokyonight in `night` style with the following
 overrides via `on_colors`:
 
-```
+```text
 bg            #011628   deep navy editor background
 bg_dark       #011423   floats / sidebars / popups / statusline
 bg_highlight  #143652   cursorline, pmenu selection, visual highlight
@@ -249,6 +249,41 @@ plugin that does `require("nvim-web-devicons")` transparently gets
 mini.icons' compat layer. lualine, fzf-lua, bufferline, etc. all keep
 working with no nvim-web-devicons install. Don't add nvim-web-devicons
 back as a dependency.
+
+### `M.kinds` mirrors LazyVim verbatim — prefer MDI over codicons
+
+Every entry in `M.kinds` (the LSP completion-kind icon table) lives in
+`config/icons.lua` and mirrors LazyVim's `icons.kinds` table verbatim:
+Material Design Icons (`nf-md-*`, U+F0xxx range) for Snippet, Variable,
+Boolean, Constant, Number, Struct, Function, Method, Namespace, Codeium,
+TabNine; codicons (`nf-cod-*`, U+EAxx–U+EBFF range) for the rest.
+
+This isn't aesthetic — it's a workaround for a real macOS font issue:
+codicons in the U+EB60+ range (especially `nf-cod-symbol_snippet` U+EB66)
+can render as `.notdef` tofu in iTerm2 even when `fontTools` confirms the
+codepoint exists in the active `.ttf`. macOS's font daemon serves stale
+cmap data. The fix at the data layer is `sudo atsutil databases -remove
+&& killall -HUP fontd` plus a Cmd-Q iTerm2 restart, but the defensive fix
+at the code layer is to use MDI codepoints for the kinds that are most
+visible. **If you add a new entry to `M.kinds`, prefer MDI.**
+
+Every value in `M.kinds` ends with a trailing space (e.g. `"󱄽 "`). This
+is intentional: blink.cmp's `nerd_font_variant = "mono"` mode does not
+add an icon-label gap, so the spacing has to live in the icon string
+itself. Consumers that want a tight glyph (e.g., `editor.lua`'s parameter
+which-key entries) can `vim.trim()` the value.
+
+### blink.cmp v1.10.2 + Neovim 0.12.1 incompat
+
+`coding.lua` disables `treesitter_highlighting` on both
+`completion.documentation` and `signature.window`, and comments out
+`menu.draw.treesitter = { "lsp" }`. All three changes are workarounds for
+a v1.10.2 bug where `vim.treesitter.get_range` is called from
+`blink.cmp/lib/window/docs.lua:108` and errors with "attempt to call
+method 'range' (a nil value)" on Neovim 0.12.1. The fix is on `main` but
+not in any tagged release as of 2026-04-07. When v1.10.3 ships, revert
+all three (they're all comment-marked with `v1.10.2`). Tracked in detail
+in the `project_pending_blink_cmp_1_10_3` memory.
 
 ---
 

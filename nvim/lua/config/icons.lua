@@ -155,52 +155,59 @@ M.dap = {
 }
 
 -- ── LSP Completion Kinds
+-- Mirrors LazyVim's icons.kinds verbatim. Their picks (MDI for Snippet,
+-- Variable, Boolean, Constant, Number, Struct, Function, Method, Namespace,
+-- Codeium, TabNine; codicons for the rest) avoid a class of font-cache
+-- bugs where certain codicons in the U+EB60+ range render as empty boxes
+-- in iTerm2 + macOS even when fontTools confirms the codepoint exists in
+-- the file. Trailing space on every value is intentional: blink.cmp's
+-- mono spacing doesn't add its own icon/label gap, so the space lives in
+-- the glyph string itself.
 M.kinds = {
-  Array         = "",  -- nf-cod-symbol_array
-  Boolean       = "",  -- nf-cod-symbol_boolean
-  Class         = "",  -- nf-cod-symbol_class
-  Color         = "",  -- nf-cod-symbol_color
-  Constant      = "",  -- nf-cod-symbol_constant
-  Constructor   = "",  -- nf-cod-symbol_method
-  Enum          = "",  -- nf-cod-symbol_enum
-  EnumMember    = "",  -- nf-cod-symbol_enum_member
-  Event         = "",  -- nf-cod-symbol_event
-  Field         = "",  -- nf-cod-symbol_field
-  File          = "",  -- nf-cod-symbol_file
-  Folder        = "",  -- nf-cod-folder
-  Function      = "󰊕",  -- nf-md-function
-  Interface     = "",  -- nf-cod-symbol_interface
-  Key           = "",  -- nf-cod-symbol_key
-  Keyword       = "",  -- nf-cod-symbol_keyword
-  Method        = "󰊕",  -- nf-md-function
-  Module        = "",  -- nf-cod-symbol_namespace
-  Namespace     = "󰦮",  -- nf-md-alpha_n_box
-  Null          = "󰟢",  -- nf-md-null
-  Number        = "",  -- nf-cod-symbol_numeric
-  Object        = "",  -- nf-cod-symbol_class
-  Operator      = "",  -- nf-cod-symbol_operator
-  Package       = "",  -- nf-cod-package
-  Property      = "",  -- nf-cod-symbol_property
-  Reference     = "",  -- nf-cod-references
-  Snippet       = "",  -- nf-cod-symbol_snippet
-  String        = "",  -- nf-cod-symbol_string
-  Struct        = "",  -- nf-cod-symbol_structure
-  Text          = "",  -- nf-cod-symbol_text
-  TypeParameter = "",  -- nf-cod-symbol_parameter
-  Unit          = "",  -- nf-cod-symbol_ruler
-  Value         = "",  -- nf-cod-symbol_value
-  Variable      = "",  -- nf-cod-symbol_variable
+  Array         = " ",
+  Boolean       = "󰨹 ",
+  Class         = " ",
+  Codeium       = "󰘦 ",
+  Color         = " ",
+  Control       = " ",
+  Collapsed     = " ",
+  Constant      = "󰏿 ",
+  Constructor   = " ",
+  Copilot       = " ",
+  Enum          = " ",
+  EnumMember    = " ",
+  Event         = " ",
+  Field         = " ",
+  File          = " ",
+  Folder        = " ",
+  Function      = "󰊕 ",
+  Interface     = " ",
+  Key           = " ",
+  Keyword       = " ",
+  Method        = "󰊕 ",
+  Module        = " ",
+  Namespace     = "󰦮 ",
+  Null          = "󰟢 ",
+  Number        = "󰎠 ",
+  Object        = " ",
+  Operator      = " ",
+  Package       = " ",
+  Property      = " ",
+  Reference     = " ",
+  Snippet       = "󱄽 ",
+  String        = " ",
+  Struct        = "󰆭 ",
+  Supermaven    = " ",
+  TabNine       = "󰏚 ",
+  Text          = " ",
+  TypeParameter = " ",
+  Unit          = " ",
+  Value         = " ",
+  Variable      = "󰀫 ",
 
-  -- AI completion sources
-  Copilot       = "",  -- nf-cod-copilot
-  Codeium       = "󰘦",  -- nf-md-brain
-  Supermaven    = "",  -- nf-cod-sparkle
-  TabNine       = "󰏚",  -- nf-md-numeric_9_plus_box
-
-  -- Tree / UI helpers
-  Control       = "",  -- nf-cod-settings_gear
-  Collapsed     = "",  -- nf-cod-chevron_right
-  Expanded      = "",  -- nf-cod-chevron_down
+  -- Tree / UI helper (not an LSP kind, used by file explorers and inline
+  -- expanders that read from this same table).
+  Expanded      = " ",
 }
 
 -- ── LSP Specific Signs

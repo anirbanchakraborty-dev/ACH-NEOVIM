@@ -60,6 +60,77 @@ return {
         hl.PmenuSbar = { bg = bg_dark }
         hl.PmenuThumb = { bg = border }
 
+        -- ----------------------------------------------------------------
+        -- blink.cmp
+        -- The completion menu, documentation popup, and signature help
+        -- popup are themed against the deep-ocean palette: bg_dark for
+        -- backgrounds, border for borders, bg_hl for the active selection,
+        -- and accent colors (orange/blue/cyan) for fuzzy matches and
+        -- source labels. Per-kind icon colors mirror the lualine ocean
+        -- theme so completion items echo the editor's mode colors.
+        -- ----------------------------------------------------------------
+        -- Main completion menu
+        hl.BlinkCmpMenu                       = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpMenuBorder                 = { bg = bg_dark, fg = border }
+        hl.BlinkCmpMenuSelection              = { bg = bg_hl, bold = true }
+        hl.BlinkCmpScrollBarThumb             = { bg = border }
+        hl.BlinkCmpScrollBarGutter            = { bg = bg_dark }
+        hl.BlinkCmpCursorLine                 = { bg = bg_hl }
+
+        -- Item rendering
+        hl.BlinkCmpLabel                      = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpLabelDeprecated            = { bg = bg_dark, fg = "#627E97", strikethrough = true }
+        hl.BlinkCmpLabelMatch                 = { bg = bg_dark, fg = c.orange, bold = true }
+        hl.BlinkCmpLabelDescription           = { bg = bg_dark, fg = "#627E97" }
+        hl.BlinkCmpLabelDetail                = { bg = bg_dark, fg = "#627E97" }
+        hl.BlinkCmpKind                       = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpSource                     = { bg = bg_dark, fg = "#627E97", italic = true }
+        hl.BlinkCmpGhostText                  = { fg = "#627E97", italic = true }
+
+        -- Documentation popup
+        hl.BlinkCmpDoc                        = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpDocBorder                  = { bg = bg_dark, fg = border }
+        hl.BlinkCmpDocSeparator               = { bg = bg_dark, fg = border }
+        hl.BlinkCmpDocCursorLine              = { bg = bg_hl }
+
+        -- Signature help popup
+        hl.BlinkCmpSignatureHelp              = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpSignatureHelpBorder        = { bg = bg_dark, fg = border }
+        hl.BlinkCmpSignatureHelpActiveParameter = { bg = bg_search, fg = fg, bold = true }
+
+        -- Per-kind icon colors. blink.cmp emits BlinkCmpKind<KindName>
+        -- groups for each completion kind so we can color the leading
+        -- glyph distinctly. Mirrors lualine's ocean theme: blue for
+        -- functions/methods, green for fields/values, purple for classes
+        -- /interfaces, orange for keywords, cyan for variables.
+        hl.BlinkCmpKindFunction      = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindMethod        = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindConstructor   = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindClass         = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindInterface     = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindStruct        = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindEnum          = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindEnumMember    = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindField         = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindProperty      = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindValue         = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindConstant      = { bg = bg_dark, fg = c.orange }
+        hl.BlinkCmpKindKeyword       = { bg = bg_dark, fg = c.orange }
+        hl.BlinkCmpKindOperator      = { bg = bg_dark, fg = c.orange }
+        hl.BlinkCmpKindVariable      = { bg = bg_dark, fg = c.cyan }
+        hl.BlinkCmpKindModule        = { bg = bg_dark, fg = c.cyan }
+        hl.BlinkCmpKindNamespace     = { bg = bg_dark, fg = c.cyan }
+        hl.BlinkCmpKindReference     = { bg = bg_dark, fg = c.cyan }
+        hl.BlinkCmpKindSnippet       = { bg = bg_dark, fg = c.yellow }
+        hl.BlinkCmpKindText          = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpKindFile          = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindFolder        = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindUnit          = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindEvent         = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindColor         = { bg = bg_dark, fg = c.red }
+        hl.BlinkCmpKindTypeParameter = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindLazyDev       = { bg = bg_dark, fg = c.cyan }
+
         -- Cursor line and line numbers
         hl.CursorLine = { bg = bg_hl }
         hl.CursorLineNr = { fg = fg, bold = true }

@@ -20,6 +20,12 @@ return {
       "rafamadriz/friendly-snippets",
     },
     event = "InsertEnter",
+    -- Let other plugin specs append to the source lists without overwriting
+    -- them (mirrors the which-key `opts_extend = { "spec" }` pattern). A
+    -- future plugin file can add an entry to sources.default or register a
+    -- custom provider in sources.providers and lazy.nvim will deep-merge it
+    -- onto the table below instead of clobbering.
+    opts_extend = { "sources.default", "sources.providers" },
     opts = {
       -- "enter" preset: <CR> accepts the current selection (falls back to
       -- inserting a newline when no menu is open). Tab/Shift-Tab navigate
@@ -28,15 +34,32 @@ return {
         preset = "enter",
         ["<Tab>"]   = { "snippet_forward",  "fallback" },
         ["<S-Tab>"] = { "snippet_backward", "fallback" },
+        -- Vim-traditional accept binding alongside <CR>. Lets you confirm a
+        -- completion without leaving the home row when <CR> would otherwise
+        -- insert a literal newline (e.g. multi-line popup contexts).
+        ["<C-y>"]   = { "select_and_accept" },
       },
 
       appearance = {
         use_nvim_cmp_as_default = true,
         nerd_font_variant = "mono",
+        -- Replace blink's built-in completion-kind glyphs with the central
+        -- M.kinds table from icons.lua so the popup matches the rest of the
+        -- UI (lualine, fzf-lua, which-key, etc).
+        kind_icons = icons.kinds,
       },
 
       sources = {
-        default = { "lsp", "path", "snippets", "buffer", "lazydev" },
+        default = { "lsp", "path", "snippets", "buffer" },
+        -- lazydev only fires on Lua buffers via per_filetype instead of
+        -- living in the global default list. `inherit_defaults = true` keeps
+        -- lsp/path/snippets/buffer active alongside lazydev on Lua files,
+        -- so the only behavior change is that lazydev is silent on every
+        -- non-Lua filetype (where its integration would otherwise no-op
+        -- needlessly on every keystroke).
+        per_filetype = {
+          lua = { inherit_defaults = true, "lazydev" },
+        },
         providers = {
           -- lazydev.nvim feeds Neovim runtime / plugin globals into completion
           -- when editing Lua config files. score_offset boosts these above
@@ -52,7 +75,11 @@ return {
       -- Inline signature help as you type function arguments.
       signature = {
         enabled = true,
-        window = { border = "rounded" },
+        window = {
+          border = "rounded",
+          -- See documentation.treesitter_highlighting below for the rationale.
+          treesitter_highlighting = false,
+        },
       },
 
       completion = {
@@ -66,6 +93,15 @@ return {
           auto_show = true,
           auto_show_delay_ms = 200,
           window = { border = "rounded" },
+          -- blink.cmp <= v1.10.2 invokes vim.treesitter.get_range from
+          -- lib/window/docs.lua during markdown rendering, which calls a
+          -- node API that was changed in Neovim 0.12.1 and throws
+          -- "attempt to call a nil value" on every popup render. Disabling
+          -- treesitter_highlighting on docs + signature keeps the popups
+          -- working without the syntax-highlighted code blocks. Re-enable
+          -- (along with menu.draw.treesitter below) once v1.10.3 ships
+          -- with the fix (tracked in memory: project_pending_blink_cmp_1_10_3).
+          treesitter_highlighting = false,
         },
 
         -- VSCode-style inline preview of the current selection.
@@ -78,9 +114,8 @@ return {
         menu = {
           border = "rounded",
           winblend = 0,
-          draw = {
-            treesitter = { "lsp" },
-          },
+          -- Same v1.10.2 + Neovim 0.12.1 incompat as documentation above.
+          -- draw = { treesitter = { "lsp" } },
         },
       },
     },
