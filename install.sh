@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # ACH-NEOVIM Installer
-# Installs Homebrew (if needed) and Neovim on macOS
+# Installs Homebrew (if needed), Neovim, and Claude Code CLI on macOS
 #
 
 clear
@@ -95,6 +95,75 @@ else
   fi
 fi
 
+# ── Claude Code CLI ─────────────────────────────────────────────────────────
+# Powers nvim/lua/plugins/ai.lua (coder/claudecode.nvim). Uses the official
+# native installer per https://code.claude.com/docs/en/overview — auto-updates
+# in the background, unlike `brew install --cask claude-code`.
+ensure_local_bin_on_path() {
+  # Make ~/.local/bin reachable from this script session AND from every future
+  # shell. The native installer does NOT touch shell rc files itself — it just
+  # prints a "Setup notes" warning telling the user to do it. This function
+  # automates that step so the install is truly hands-off.
+  local local_bin="$HOME/.local/bin"
+
+  # 1. Current script session: prepend if missing so the success line below
+  #    can call `claude --version` directly.
+  if [[ ":$PATH:" != *":$local_bin:"* ]]; then
+    export PATH="$local_bin:$PATH"
+  fi
+
+  # 2. Future shells: append the export to ~/.zshrc (the macOS default since
+  #    Catalina, and what CLAUDE.md documents as the shell). `>>` creates the
+  #    file if it doesn't exist. The grep guard makes the append idempotent
+  #    so re-running the installer doesn't pile up duplicate lines, and it
+  #    also no-ops cleanly if the user has already added ~/.local/bin to PATH
+  #    via some other entry (e.g. `path+=(~/.local/bin)`).
+  local zshrc="$HOME/.zshrc"
+  if [[ -f "$zshrc" ]] && grep -qE '\.local/bin' "$zshrc"; then
+    return 0
+  fi
+  {
+    echo ""
+    echo "# Added by ACH-NEOVIM installer (Claude Code CLI lives in ~/.local/bin)"
+    echo 'export PATH="$HOME/.local/bin:$PATH"'
+  } >> "$zshrc"
+  info "Added ~/.local/bin to PATH in ~/.zshrc"
+}
+
+if command -v claude &>/dev/null; then
+  # Installed and reachable — nothing to do.
+  success "Claude Code already installed ($(claude --version 2>/dev/null | head -1 || echo 'version unknown'))"
+elif [[ -x "$HOME/.local/bin/claude" ]]; then
+  # Binary exists from a previous run but the user's PATH still doesn't
+  # reach it. Skip the network round-trip and just wire up PATH.
+  info "Claude Code present at ~/.local/bin/claude — wiring up PATH..."
+  ensure_local_bin_on_path
+  success "Claude Code ready ($(claude --version 2>/dev/null | head -1 || echo 'on PATH'))"
+else
+  info "Installing Claude Code CLI (native installer, auto-updates)..."
+  if curl -fsSL https://claude.ai/install.sh | bash; then
+    # The native installer drops the binary in ~/.local/bin but does NOT add
+    # that directory to PATH on its own — it only prints a warning telling
+    # the user to do it. ensure_local_bin_on_path() automates that step for
+    # both the current script session and future shells via ~/.zshrc.
+    if [[ -x "$HOME/.local/bin/claude" ]]; then
+      ensure_local_bin_on_path
+    fi
+
+    if command -v claude &>/dev/null; then
+      success "Claude Code installed ($(claude --version 2>/dev/null | head -1 || echo 'on PATH'))"
+    else
+      warn "Claude Code installer ran but 'claude' was not detected on PATH."
+      warn "Open a new shell and run 'claude --version' to verify."
+    fi
+  else
+    warn "Claude Code installer failed. Install manually with one of:"
+    warn "  curl -fsSL https://claude.ai/install.sh | bash   (recommended, auto-updates)"
+    warn "  brew install --cask claude-code                  (no auto-update)"
+    warn "Continuing — the AI plugin will be inert until 'claude' is on PATH."
+  fi
+fi
+
 # ── Config Symlink ──────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NVIM_CONFIG="$HOME/.config/nvim"
@@ -123,6 +192,9 @@ fi
 echo ""
 success "ACH-NEOVIM setup complete!"
 echo -e "  Neovim: ${BOLD}$(nvim --version | head -1)${NC}"
+if command -v claude &>/dev/null; then
+  echo -e "  Claude: ${BOLD}$(claude --version 2>/dev/null | head -1 || echo 'installed')${NC}"
+fi
 echo -e "  Config: ${BOLD}$NVIM_CONFIG -> $SCRIPT_DIR/nvim${NC}"
 echo ""
 info "Launch Neovim with: ${BOLD}nvim${NC}"

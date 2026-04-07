@@ -100,7 +100,8 @@ return {
         hl.MasonHighlightBlock = { bg = bg_search, fg = fg }
         hl.MasonHighlightBlockBold = { bg = bg_search, fg = fg, bold = true }
 
-        -- WhichKey
+        -- WhichKey (v3)
+        hl.WhichKeyNormal = { bg = bg_dark, fg = fg }
         hl.WhichKey = { fg = c.blue }
         hl.WhichKeyGroup = { fg = c.cyan }
         hl.WhichKeyDesc = { fg = fg }
@@ -108,6 +109,17 @@ return {
         hl.WhichKeyBorder = { bg = bg_dark, fg = border }
         hl.WhichKeySeparator = { fg = "#627E97" }
         hl.WhichKeyValue = { fg = "#627E97" }
+        hl.WhichKeyTitle = { bg = bg_dark, fg = c.blue, bold = true }
+        -- WhichKey icon color classes (mapped via `color = "..."` in spec)
+        hl.WhichKeyIconAzure = { fg = "#89DDFF" }
+        hl.WhichKeyIconBlue = { fg = "#82AAFF" }
+        hl.WhichKeyIconCyan = { fg = "#89DDFF" }
+        hl.WhichKeyIconGreen = { fg = "#C3E88D" }
+        hl.WhichKeyIconGrey = { fg = "#627E97" }
+        hl.WhichKeyIconOrange = { fg = "#F78C6C" }
+        hl.WhichKeyIconPurple = { fg = "#C792EA" }
+        hl.WhichKeyIconRed = { fg = "#FF5370" }
+        hl.WhichKeyIconYellow = { fg = "#FFCB6B" }
 
         -- Diagnostics
         hl.DiagnosticVirtualTextError = { bg = "#1a0a1a", fg = c.error }
@@ -136,8 +148,40 @@ return {
         hl.SnacksDashboardDesc = { fg = fg }
         hl.SnacksDashboardFooter = { fg = "#627E97" }
 
+        -- Snacks indent (dim, unhighlighted guides)
+        hl.SnacksIndent = { fg = "#0d1f33" }
+
         -- Notify
         hl.NotifyBackground = { bg = bg_dark }
+
+        -- Snacks notifier (themed toast notifications)
+        hl.SnacksNotifierInfo        = { bg = bg_dark, fg = c.blue }
+        hl.SnacksNotifierWarn        = { bg = bg_dark, fg = c.yellow }
+        hl.SnacksNotifierError       = { bg = bg_dark, fg = c.red }
+        hl.SnacksNotifierDebug       = { bg = bg_dark, fg = c.purple }
+        hl.SnacksNotifierTrace       = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierIconInfo    = { bg = bg_dark, fg = c.blue }
+        hl.SnacksNotifierIconWarn    = { bg = bg_dark, fg = c.yellow }
+        hl.SnacksNotifierIconError   = { bg = bg_dark, fg = c.red }
+        hl.SnacksNotifierIconDebug   = { bg = bg_dark, fg = c.purple }
+        hl.SnacksNotifierIconTrace   = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierTitleInfo   = { bg = bg_dark, fg = c.blue, bold = true }
+        hl.SnacksNotifierTitleWarn   = { bg = bg_dark, fg = c.yellow, bold = true }
+        hl.SnacksNotifierTitleError  = { bg = bg_dark, fg = c.red, bold = true }
+        hl.SnacksNotifierTitleDebug  = { bg = bg_dark, fg = c.purple, bold = true }
+        hl.SnacksNotifierTitleTrace  = { bg = bg_dark, fg = "#627E97", bold = true }
+        hl.SnacksNotifierBorderInfo  = { bg = bg_dark, fg = c.blue }
+        hl.SnacksNotifierBorderWarn  = { bg = bg_dark, fg = c.yellow }
+        hl.SnacksNotifierBorderError = { bg = bg_dark, fg = c.red }
+        hl.SnacksNotifierBorderDebug = { bg = bg_dark, fg = c.purple }
+        hl.SnacksNotifierBorderTrace = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierFooterInfo  = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierFooterWarn  = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierFooterError = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierFooterDebug = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierFooterTrace = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierHistory     = { bg = bg_dark, fg = fg }
+        hl.SnacksNotifierHistoryTitle = { bg = bg_dark, fg = c.blue, bold = true }
 
         -- Noice
         hl.NoiceCmdlinePopup = { bg = bg_dark, fg = fg }
@@ -145,6 +189,63 @@ return {
 
         -- Trouble
         hl.TroubleNormal = { bg = bg_dark, fg = fg }
+
+        -- ----------------------------------------------------------------
+        -- Diffview.nvim
+        -- ----------------------------------------------------------------
+        hl.DiffviewNormal              = { bg = bg_dark, fg = fg }
+        hl.DiffviewStatusLine          = { bg = bg_dark, fg = fg }
+        hl.DiffviewStatusLineNC        = { bg = bg_dark, fg = "#627E97" }
+        hl.DiffviewWinSeparator        = { bg = bg_dark, fg = border }
+        hl.DiffviewCursorLine          = { bg = bg_hl }
+        hl.DiffviewNonText             = { bg = bg_dark, fg = "#627E97" }
+        hl.DiffviewDim1                = { fg = "#627E97" }
+
+        -- File panel (left sidebar listing changed files)
+        hl.DiffviewFilePanelTitle      = { bg = bg_dark, fg = c.blue,   bold = true }
+        hl.DiffviewFilePanelCounter    = { bg = bg_dark, fg = c.orange, bold = true }
+        hl.DiffviewFilePanelFileName   = { bg = bg_dark, fg = fg }
+        hl.DiffviewFilePanelRootPath   = { bg = bg_dark, fg = "#627E97" }
+        hl.DiffviewFilePanelPath       = { bg = bg_dark, fg = "#627E97" }
+        hl.DiffviewFilePanelSelected   = { bg = bg_hl,   fg = fg, bold = true }
+        hl.DiffviewFilePanelInsertions = { bg = bg_dark, fg = c.green }
+        hl.DiffviewFilePanelDeletions  = { bg = bg_dark, fg = c.red }
+
+        -- File status indicators (next to file names in the panel)
+        hl.DiffviewStatusAdded         = { fg = c.green }
+        hl.DiffviewStatusModified      = { fg = c.blue }
+        hl.DiffviewStatusDeleted       = { fg = c.red }
+        hl.DiffviewStatusRenamed       = { fg = c.cyan }
+        hl.DiffviewStatusUntracked     = { fg = c.orange }
+        hl.DiffviewStatusIgnored       = { fg = "#627E97" }
+        hl.DiffviewStatusUnmerged      = { fg = c.yellow }
+        hl.DiffviewStatusUnknown       = { fg = "#627E97" }
+        hl.DiffviewStatusBroken        = { fg = c.red }
+        hl.DiffviewStatusTypeChange    = { fg = c.purple }
+        hl.DiffviewStatusCopied        = { fg = c.cyan }
+
+        -- Folder tree in the file panel
+        hl.DiffviewFolderName          = { bg = bg_dark, fg = c.blue }
+        hl.DiffviewFolderSign          = { bg = bg_dark, fg = border }
+
+        -- File history view (commit list)
+        hl.DiffviewHash                = { fg = c.orange }
+        hl.DiffviewReference           = { fg = c.purple }
+        hl.DiffviewSecondary           = { fg = c.cyan }
+
+        -- ----------------------------------------------------------------
+        -- git-conflict.nvim
+        -- Tinted backgrounds for the three conflict regions, matching the
+        -- DiagnosticVirtualText* convention used above (RGB-darkened tints).
+        -- Labels (the <<<<<<<, =======, >>>>>>> markers) get a stronger tint
+        -- and bold colored text so they're scannable at a glance.
+        -- ----------------------------------------------------------------
+        hl.GitConflictCurrent          = { bg = "#0a1a0a" }                          -- ours: green tint
+        hl.GitConflictCurrentLabel     = { bg = "#0a2a0a", fg = c.green,  bold = true }
+        hl.GitConflictIncoming         = { bg = "#0a0a1a" }                          -- theirs: blue tint
+        hl.GitConflictIncomingLabel    = { bg = "#0a0a2a", fg = c.blue,   bold = true }
+        hl.GitConflictAncestor         = { bg = "#1a0a1a" }                          -- common ancestor: purple tint
+        hl.GitConflictAncestorLabel    = { bg = "#2a0a2a", fg = c.purple, bold = true }
       end,
     },
     config = function(_, opts)
