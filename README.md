@@ -1,8 +1,46 @@
 # ACH-NEOVIM
 
-A supercharged Neovim configuration for macOS.
+A personal Neovim configuration for macOS. Built around lazy.nvim with a
+custom deep-ocean tokyonight palette, on-demand tooling, and zero manual
+setup. Run one script and the editor is ready.
 
-One-command install. Auto-bootstraps lazy.nvim, plugins, and sensible defaults on first launch.
+---
+
+## Highlights
+
+- **One-command install.** `./install.sh` provisions Homebrew, the latest
+  stable Neovim, and the Claude Code CLI. Re-run any time — every step is
+  idempotent and only touches what is missing.
+- **On-demand everything.** No `ensure_installed` lists. The first time you
+  open a Python file, pyright + ruff are installed and attached. The first
+  time you open a Go file, gopls + gofumpt arrive. Treesitter parsers,
+  formatters, and linters all follow the same pattern.
+- **Native LSP client.** Uses Neovim 0.11+'s `vim.lsp.config` /
+  `vim.lsp.enable` flow with `nvim-lspconfig` providing the default per-server
+  configs. blink.cmp's capabilities are merged into every server
+  automatically.
+- **Format + lint pipeline.** `conform.nvim` handles format-on-save with a
+  prettierd → prettier fallback chain for web files. `nvim-lint` runs
+  external linters (eslint_d, shellcheck, markdownlint, hadolint, yamllint)
+  via a debounced dispatcher and feeds results into `vim.diagnostic`.
+- **Claude Code integration.** `coder/claudecode.nvim` ships claude inside
+  Neovim as a snacks-themed split with native diff review and selection
+  tracking. The CLI is installed automatically by `install.sh`.
+- **Deep ocean palette.** A custom tokyonight override (`#011628` background,
+  `#011423` floats, `#0A64AC` search) themed across every plugin's UI:
+  fzf-lua, lazy, mason, which-key, snacks, noice, trouble, diffview, and
+  git-conflict.
+- **Central icon table.** Every Nerd Font glyph used in the config lives in
+  `nvim/lua/config/icons.lua`. Plugin files reference them by name —
+  there's exactly one place to swap a glyph.
+- **Curated keymaps.** Every binding has a description, every which-key entry
+  has an icon. Discoverable by holding `<Space>` on any prefix.
+- **Polished UI.** snacks.dashboard on startup, snacks.notifier for toasts,
+  snacks.indent rainbow guides, bufferline tabs with diagnostics, lualine
+  with a custom ocean theme, noice floating cmdline, rainbow-delimiters,
+  inline color preview, and a flash-style 2-character jump motion.
+
+---
 
 ## Installation
 
@@ -12,33 +50,172 @@ cd ACH-NEOVIM
 ./install.sh
 ```
 
-The install script will:
+`install.sh` will:
 
-- Install Homebrew if not present
-- Install or upgrade Neovim to the latest stable release
-- Symlink the config to `~/.config/nvim` (backs up any existing config)
+1. Install **Homebrew** if it isn't already on the system.
+2. Install or upgrade **Neovim** to the latest stable release (validated
+   against the GitHub releases API).
+3. Install the **Claude Code CLI** via the official native installer
+   (`~/.local/bin/claude`, auto-updates in the background) and append the
+   PATH export to `~/.zshrc` if it isn't already there.
+4. Symlink `nvim/` to `~/.config/nvim` (any existing config is moved to a
+   timestamped backup).
 
-After running the script, launch `nvim`. Lazy.nvim will auto-install all plugins on first start.
+The script is idempotent — re-running it skips anything already in place.
 
-## Structure
+After install, launch `nvim`. lazy.nvim bootstraps itself, downloads every
+plugin, and shows the dashboard. Open a file in any supported language and
+the matching LSP server / formatter / linter installs in the background.
 
-```
-nvim/
-  init.lua                 -- Entry point
-  lua/
-    config/
-      options.lua          -- Sensible defaults
-      lazy.lua             -- Lazy.nvim bootstrap
-    plugins/
-      ui.lua               -- Dashboard
-```
+---
 
 ## Requirements
 
-- macOS
-- Git
-- Internet connection (for Homebrew, Neovim, and plugin installation)
+- **macOS** (Apple Silicon or Intel)
+- **Git**
+- **iTerm2** (or any terminal) with a **Nerd Font** — MesloLGS NF, JetBrains
+  Mono Nerd, FiraCode Nerd, etc. are all supported.
+- **Internet connection** for initial Homebrew, Neovim, plugin, and tool
+  downloads.
+
+---
+
+## Languages
+
+LSP, formatting, and linting are wired up out of the box for:
+
+| Language        | LSP                   | Formatter                 | Linter        |
+|-----------------|-----------------------|---------------------------|---------------|
+| Lua             | lua_ls                | stylua                    | —             |
+| Python          | pyright + ruff        | ruff (organize+fmt)       | ruff (LSP)    |
+| TypeScript / JS | ts_ls                 | prettierd / prettier      | eslint_d      |
+| HTML / CSS      | html + emmet, cssls   | prettierd / prettier      | —             |
+| JSON / YAML     | jsonls / yamlls       | prettierd / prettier      | yamllint      |
+| Markdown        | marksman              | prettierd / prettier      | markdownlint  |
+| Bash / Zsh      | bashls                | shfmt                     | shellcheck    |
+| C / C++         | clangd                | clang-format              | —             |
+| Go              | gopls                 | goimports + gofumpt       | —             |
+| LaTeX / BibTeX  | texlab                | latexindent / bibtex-tidy | —             |
+| Ruby            | ruby-lsp              | rubocop                   | —             |
+| Perl            | perlnavigator         | perltidy (system)         | —             |
+| Swift           | sourcekit-lsp (Xcode) | swift-format (Xcode)      | —             |
+| R               | languageserver (R)    | —                         | —             |
+| Dockerfile      | —                     | —                         | hadolint      |
+
+Treesitter parsers install on demand for any filetype that has one.
+
+---
+
+## Repository layout
+
+```text
+ACH-NEOVIM/
+├── install.sh
+├── uninstall.sh
+├── README.md
+├── CLAUDE.md                         notes for AI assistants working on this repo
+├── LICENSE
+└── nvim/
+    ├── init.lua                      entry point
+    └── lua/
+        ├── config/
+        │   ├── icons.lua             central Nerd Font glyph table
+        │   ├── lazy.lua              lazy.nvim bootstrap
+        │   ├── options.lua           vim.opt defaults
+        │   ├── keymaps.lua           non-plugin keymaps
+        │   └── autocmds.lua          augroups (yank flash, big-file, prose mode, ...)
+        └── plugins/
+            ├── ai.lua                Claude Code (coder/claudecode.nvim)
+            ├── coding.lua            blink.cmp, mini.pairs/surround/ai, lazydev, ts-comments
+            ├── colorscheme.lua       tokyonight + deep ocean palette
+            ├── editor.lua            which-key, fzf-lua, flash, todo-comments, trouble, grug-far
+            ├── formatting.lua        conform.nvim
+            ├── git.lua               gitsigns, diffview, git-conflict, lazygit
+            ├── linting.lua           nvim-lint
+            ├── lsp.lua               mason + native vim.lsp client
+            ├── lualine.lua           statusline (custom ocean theme)
+            ├── terminal.lua          toggleterm + language REPLs
+            ├── treesitter.lua        nvim-treesitter (master, auto_install)
+            ├── ui.lua                snacks, noice, bufferline, mini.icons, rainbow, colorizer
+            └── util.lua              persistence sessions, vim-sleuth, scratch
+```
+
+---
+
+## Keymap quick reference
+
+Leader is `<Space>`. Holding leader pops up which-key with every binding
+labelled and iconned. The headline groups:
+
+| Prefix       | Group                 |
+|--------------|-----------------------|
+| `<leader>a`  | AI / Claude           |
+| `<leader>b`  | Buffer                |
+| `<leader>c`  | Code (LSP)            |
+| `<leader>f`  | File / Find           |
+| `<leader>g`  | Git                   |
+| `<leader>gh` | Git Hunks             |
+| `<leader>gx` | Git Conflicts         |
+| `<leader>l`  | Lazy                  |
+| `<leader>m`  | Mason                 |
+| `<leader>q`  | Session               |
+| `<leader>s`  | Search                |
+| `<leader>sn` | Noice messages        |
+| `<leader>t`  | Terminal / REPLs      |
+| `<leader>u`  | UI toggles            |
+| `<leader>w`  | Window                |
+| `<leader>x`  | Diagnostics / Trouble |
+
+A few standalone bindings worth knowing:
+
+- `<C-/>` — toggle floating terminal
+- `<C-h/j/k/l>` — window navigation
+- `<S-h>` / `<S-l>` — previous / next buffer (bufferline order)
+- `<A-j>` / `<A-k>` — move line(s) down / up
+- `s` / `S` — flash jump / treesitter jump
+- `]d` / `[d` — next / previous diagnostic (any severity)
+- `]e` / `[e` — next / previous error (severity-filtered)
+- `]h` / `[h` — next / previous git hunk
+- `gco` / `gcO` — add comment line below / above
+- `K` — LSP hover docs
+
+---
+
+## Customization
+
+- **Add a plugin.** Create a new file in `nvim/lua/plugins/` returning a
+  table of lazy.nvim specs. lazy auto-imports it. If the plugin has keymaps,
+  follow the pattern in `terminal.lua`: define `keys = {}` on the plugin
+  spec, then add a parallel `which-key.nvim` spec block in the same file
+  with icons sourced from `config/icons.lua`.
+- **Change the palette.** Edit `colorscheme.lua`. The `on_colors` callback
+  defines the deep-ocean colors; `on_highlights` overrides every plugin's
+  themed groups.
+- **Add an LSP / formatter / linter.** Add an entry to the `servers` table
+  in `lsp.lua` (or `formatter_to_mason` / `linter_to_mason` in
+  `formatting.lua` / `linting.lua`). The on-demand installer will pick it
+  up the next time you open a matching filetype. Do **not** add an
+  `ensure_installed` list.
+- **Tweak icons.** Every glyph lives in `nvim/lua/config/icons.lua`. Change
+  it once and it propagates everywhere.
+
+See [CLAUDE.md](CLAUDE.md) for the deeper architecture notes and the
+project's hard rules.
+
+---
+
+## Uninstall
+
+```bash
+./uninstall.sh
+```
+
+Removes the symlink at `~/.config/nvim` and Neovim's data / state / cache
+directories. Your repo clone stays intact. Re-run `install.sh` to set
+everything back up.
+
+---
 
 ## License
 
-MIT
+[MIT](LICENSE) © Anirban Chakraborty
