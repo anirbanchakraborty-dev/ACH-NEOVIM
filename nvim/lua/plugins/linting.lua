@@ -12,11 +12,23 @@ local icons = require("config.icons")
 -- nvim-lint linter name -> mason package name. nil entries are
 -- system-provided / not in mason.
 local linter_to_mason = {
-  eslint_d     = "eslint_d",
-  shellcheck   = "shellcheck",
-  markdownlint = "markdownlint",
-  hadolint     = "hadolint",
-  yamllint     = "yamllint",
+  eslint_d         = "eslint_d",
+  shellcheck       = "shellcheck",
+  markdownlint     = "markdownlint",
+  hadolint         = "hadolint",
+  yamllint         = "yamllint",
+
+  -- New linters added alongside the lang/* additions in lsp.lua. The
+  -- LSP servers themselves serve diagnostics for most languages, so
+  -- this list is intentionally short -- only meta-linters that catch
+  -- things the LSP doesn't (golangci-lint, ansible-lint, tflint,
+  -- sqlfluff, solhint).
+  golangcilint     = "golangci-lint",
+  ["ansible-lint"] = "ansible-lint",
+  cmakelint        = "cmakelint",
+  tflint           = "tflint",
+  sqlfluff         = "sqlfluff",
+  solhint          = "solhint",
 }
 
 local linters_by_ft = {
@@ -31,6 +43,16 @@ local linters_by_ft = {
   ["markdown.mdx"] = { "markdownlint" },
   dockerfile      = { "hadolint" },
   yaml            = { "yamllint" },
+
+  -- ── Additional linters (LSP-only languages omitted on purpose) ──
+  go              = { "golangcilint" },
+  ["yaml.ansible"] = { "ansible-lint" },
+  cmake           = { "cmakelint" },
+  terraform       = { "tflint" },
+  ["terraform-vars"] = { "tflint" },
+  sql             = { "sqlfluff" },
+  mysql           = { "sqlfluff" },
+  solidity        = { "solhint" },
 }
 
 return {

@@ -18,11 +18,24 @@ setup. Run one script and the editor is ready.
 - **Native LSP client.** Uses Neovim 0.11+'s `vim.lsp.config` /
   `vim.lsp.enable` flow with `nvim-lspconfig` providing the default per-server
   configs. blink.cmp's capabilities are merged into every server
-  automatically.
+  automatically. **45+ languages supported** out of the box across web,
+  systems, JVM, .NET, infra/data, and niche languages — all installed
+  on demand the first time you open a file in that language.
+- **Schema-aware JSON / YAML.** `b0o/SchemaStore.nvim` is wired into both
+  `jsonls` and `yamlls` via `before_init` hooks, giving completion +
+  validation for `package.json`, `tsconfig.json`, GitHub Actions, GitLab
+  CI, Kubernetes manifests, docker-compose, and 1200+ other schemas
+  with no manual setup. Lazy-loaded so it costs zero startup time.
 - **Format + lint pipeline.** `conform.nvim` handles format-on-save with a
-  prettierd → prettier fallback chain for web files. `nvim-lint` runs
-  external linters (eslint_d, shellcheck, markdownlint, hadolint, yamllint)
-  via a debounced dispatcher and feeds results into `vim.diagnostic`.
+  prettierd → prettier fallback chain for web files, gated by a
+  `prettier --file-info` parser check so prettier silently falls back to
+  the LSP formatter on filetypes it can't parse. `nvim-lint` runs
+  external linters (eslint_d, shellcheck, markdownlint, hadolint, yamllint,
+  golangci-lint, ansible-lint, tflint, sqlfluff, solhint, cmakelint) via a
+  debounced dispatcher and feeds results into `vim.diagnostic`. Markdown
+  picks up two **conditional** formatters: `markdown-toc` only fires on
+  buffers with a `<!-- toc -->` marker, `markdownlint-cli2` only fires
+  when there are existing markdownlint diagnostics.
 - **Claude Code integration.** `coder/claudecode.nvim` ships claude inside
   Neovim as a snacks-themed split with native diff review and selection
   tracking. The CLI is installed automatically by `install.sh`.
@@ -48,6 +61,13 @@ setup. Run one script and the editor is ready.
   (`overseer.nvim`), persistent symbol outline sidebar (`outline.nvim`),
   and supercharged `<C-a>` / `<C-x>` for booleans, dates, hex colors,
   weekdays, and language-specific keywords (`dial.nvim`).
+- **Language extras.** Inline markdown rendering with live conceal
+  (`render-markdown.nvim`, `<leader>um`), browser markdown preview
+  (`markdown-preview.nvim`, `<leader>cp`), full LaTeX environment with
+  forward/inverse search (`vimtex`), Python virtualenv picker
+  (`venv-selector.nvim`, `<leader>cv`), and clangd extras (AST viewer,
+  inlay hints, source/header switch via `<leader>ch`) from
+  `clangd_extensions.nvim`.
 
 ---
 
@@ -91,27 +111,96 @@ the matching LSP server / formatter / linter installs in the background.
 
 ## Languages
 
-LSP, formatting, and linting are wired up out of the box for:
+LSP, formatting, and linting are wired up out of the box for the languages
+below. Everything installs on demand the first time you open a file in
+that language — there is no manual setup pass and no `ensure_installed`
+list.
 
-| Language        | LSP                   | Formatter                 | Linter        |
-|-----------------|-----------------------|---------------------------|---------------|
-| Lua             | lua_ls                | stylua                    | —             |
-| Python          | pyright + ruff        | ruff (organize+fmt)       | ruff (LSP)    |
-| TypeScript / JS | ts_ls                 | prettierd / prettier      | eslint_d      |
-| HTML / CSS      | html + emmet, cssls   | prettierd / prettier      | —             |
-| JSON / YAML     | jsonls / yamlls       | prettierd / prettier      | yamllint      |
-| Markdown        | marksman              | prettierd / prettier      | markdownlint  |
-| Bash / Zsh      | bashls                | shfmt                     | shellcheck    |
-| C / C++         | clangd                | clang-format              | —             |
-| Go              | gopls                 | goimports + gofumpt       | —             |
-| LaTeX / BibTeX  | texlab                | latexindent / bibtex-tidy | —             |
-| Ruby            | ruby-lsp              | rubocop                   | —             |
-| Perl            | perlnavigator         | perltidy (system)         | —             |
-| Swift           | sourcekit-lsp (Xcode) | swift-format (Xcode)      | —             |
-| R               | languageserver (R)    | —                         | —             |
-| Dockerfile      | —                     | —                         | hadolint      |
+### Core stack (used daily)
+
+| Language        | LSP                              | Formatter                          | Linter         |
+|-----------------|----------------------------------|------------------------------------|----------------|
+| Lua             | lua_ls                           | stylua                             | —              |
+| Python          | pyright + ruff (hover disabled)  | ruff (organize+fmt)                | ruff (LSP)     |
+| TypeScript / JS | ts_ls                            | prettierd / prettier               | eslint_d       |
+| HTML / CSS      | html + emmet, cssls              | prettierd / prettier               | —              |
+| JSON / YAML     | jsonls / yamlls + SchemaStore    | prettierd / prettier               | yamllint       |
+| Markdown        | marksman                         | prettier + markdown-toc + mdlint   | markdownlint   |
+| Bash / Zsh      | bashls                           | shfmt                              | shellcheck     |
+| C / C++         | clangd + clangd_extensions       | clang-format                       | —              |
+| Go              | gopls (full inlay hints)         | goimports + gofumpt                | golangci-lint  |
+| LaTeX / BibTeX  | texlab + vimtex                  | latexindent / bibtex-tidy          | —              |
+| Ruby            | ruby-lsp                         | rubocop                            | —              |
+| Perl            | perlnavigator                    | perltidy (system)                  | —              |
+| Swift           | sourcekit-lsp (Xcode)            | swift-format (Xcode)               | —              |
+| R               | languageserver (R)               | —                                  | —              |
+| Dockerfile      | —                                | —                                  | hadolint       |
+
+### Web
+
+| Language     | LSP                         | Formatter | Notes                                           |
+|--------------|-----------------------------|-----------|-------------------------------------------------|
+| Angular      | angularls                   | prettier  |                                                 |
+| Astro        | astro-language-server       | prettier  |                                                 |
+| Svelte       | svelte-language-server      | prettier  |                                                 |
+| Vue          | vue_ls (Volar)              | prettier  | standalone Volar                                |
+| Tailwind CSS | tailwindcss-language-server | —         | attaches across html/css/js/ts/vue/svelte/astro |
+| Ember        | ember-language-server       | prettier  |                                                 |
+| Prisma       | prismals                    | prettier  |                                                 |
+| Twig         | twiggy_language_server      | —         |                                                 |
+
+### Systems / Compiled
+
+| Language | LSP                            | Formatter             | Notes                       |
+|----------|--------------------------------|-----------------------|-----------------------------|
+| Rust     | rust_analyzer (clippy on save) | rustfmt (system)      |                             |
+| Zig      | zls                            | zig fmt (system)      |                             |
+| Nix      | nil_ls                         | alejandra             |                             |
+| Haskell  | haskell-language-server (HLS)  | ormolu                | heavy install (~2 GB)       |
+| OCaml    | ocaml-lsp                      | ocamlformat (opam)    |                             |
+| Clojure  | clojure-lsp                    | zprint                |                             |
+| Erlang   | erlang-ls                      | erlfmt                |                             |
+| Elixir   | elixir-ls                      | mix format (system)   |                             |
+| Gleam    | gleam (system)                 | gleam format (system) | bundled with `gleam` binary |
+| Dart     | dart language-server (system)  | dart format (system)  | bundled with Dart SDK       |
+| C# / VB  | omnisharp                      | csharpier             |                             |
+| Kotlin   | kotlin-language-server         | ktlint                |                             |
+| Scala    | metals                         | scalafmt              |                             |
+| Java     | jdtls                          | google-java-format    | basic install — see notes   |
+| PHP      | intelephense                   | php-cs-fixer / pint   |                             |
+
+### Infra / Data
+
+| Language     | LSP                                          | Formatter           | Linter        |
+|--------------|----------------------------------------------|---------------------|---------------|
+| Ansible      | ansible-language-server                      | —                   | ansible-lint  |
+| CMake        | cmake-language-server                        | cmake-format        | cmakelint     |
+| Helm         | helm-ls                                      | —                   | —             |
+| Terraform    | terraform-ls                                 | terraform fmt       | tflint        |
+| TOML         | taplo                                        | taplo               | —             |
+| SQL          | sqls                                         | sqlfluff            | sqlfluff      |
+| Solidity     | solidity_ls_nomicfoundation                  | forge fmt (system)  | solhint       |
+| Rego (OPA)   | regal                                        | —                   | —             |
+| Thrift       | — (treesitter only)                          | —                   | —             |
+
+### Niche
+
+| Language | LSP                                 | Formatter  | Notes             |
+|----------|-------------------------------------|------------|-------------------|
+| Lean     | leanls (system, via elan)           | —          |                   |
+| Julia    | julials (system, LanguageServer.jl) | —          | first-run is slow |
+| Nushell  | — (treesitter only)                 | —          |                   |
+| Elm      | elm-language-server                 | elm-format |                   |
+| Typst    | tinymist                            | typstyle   |                   |
 
 Treesitter parsers install on demand for any filetype that has one.
+
+Heavy LSPs (HLS at ~2 GB, jdtls, metals) and language toolchains (vimtex's
+preview viewer, Foundry's `forge` for Solidity, Dart SDK, Gleam, R, etc.)
+are installed only when you actually open a file in that language. The
+on-demand installer toasts every install start and finish, so you'll see
+it coming. Anything marked **system** above is provided by the language's
+own toolchain rather than mason.
 
 ---
 
@@ -138,10 +227,11 @@ ACH-NEOVIM/
             ├── coding.lua            blink.cmp, mini.pairs/surround/ai, lazydev, ts-comments
             ├── colorscheme.lua       tokyonight + deep ocean palette
             ├── editor.lua            which-key, fzf-lua, flash, todo-comments, trouble, grug-far
-            ├── formatting.lua        conform.nvim
+            ├── formatting.lua        conform.nvim + on-demand mason installer
             ├── git.lua               gitsigns, diffview, git-conflict, lazygit
-            ├── linting.lua           nvim-lint
-            ├── lsp.lua               mason + native vim.lsp client
+            ├── lang.lua              render-markdown, markdown-preview, vimtex, venv-selector
+            ├── linting.lua           nvim-lint + on-demand mason installer
+            ├── lsp.lua               mason + native vim.lsp client + SchemaStore + clangd_extensions
             ├── lualine.lua           statusline (custom ocean theme)
             ├── terminal.lua          toggleterm + language REPLs
             ├── treesitter.lua        nvim-treesitter (master, auto_install)
@@ -198,6 +288,10 @@ A few standalone bindings worth knowing:
 - `<leader>cn` — generate annotations (neogen)
 - `<leader>cr` — rename symbol with live preview (inc-rename)
 - `<leader>cs` — toggle symbol outline sidebar
+- `<leader>ch` — switch C/C++ source/header (clangd)
+- `<leader>cp` — markdown preview in browser (markdown-preview.nvim)
+- `<leader>cv` — pick a Python virtualenv (venv-selector)
+- `<leader>um` — toggle inline markdown rendering (render-markdown)
 - `K` — LSP hover docs
 
 ---

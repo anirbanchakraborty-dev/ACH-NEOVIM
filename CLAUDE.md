@@ -82,8 +82,9 @@ ACH-NEOVIM/
             ├── editor.lua      which-key, fzf-lua, flash, todo-comments, trouble, grug-far
             ├── formatting.lua  conform.nvim + on-demand mason installer
             ├── git.lua         gitsigns, diffview, git-conflict, snacks lazygit/gitbrowse
+            ├── lang.lua        render-markdown, markdown-preview, vimtex, venv-selector
             ├── linting.lua     nvim-lint + on-demand mason installer + debounced dispatcher
-            ├── lsp.lua         mason + nvim-lspconfig + on-demand vim.lsp.enable
+            ├── lsp.lua         mason + nvim-lspconfig + on-demand vim.lsp.enable + SchemaStore + clangd_extensions
             ├── lualine.lua     lualine with custom ocean theme
             ├── terminal.lua    toggleterm + named language REPLs
             ├── treesitter.lua  nvim-treesitter (master branch) + textobjects
@@ -323,6 +324,115 @@ extract function, `rv` extract variable, `ri` inline, etc.). Build /
 run / test now live under **`<leader>o`** via `overseer.nvim` in
 `util.lua` (`oo` Run, `ow` Task List, `ot` Action, `oq` Quick Action,
 `oi` Info). Don't conflate the two prefixes when adding new keymaps.
+
+### `vim.filetype.add` block in `lsp.lua`
+
+`lsp.lua`'s config function opens with a `vim.filetype.add({...})` block
+that registers extensions Neovim doesn't ship built-in mappings for, or
+where the LSP / treesitter parser expects a specific filetype name. This
+includes `.astro`, `.gleam`, `.nu`, `.prisma`, `.rego`, `.sol`, `.svelte`,
+`.thrift`, `.typ`, `.twig`, `.tf`/`.tfvars`/`.hcl`, `.tpl`, plus pattern-
+based helm template detection (`templates/*.tpl`, `helmfile*.yaml`) and
+Bazel filename mappings.
+
+This must run **before** any of the on-demand server entries register
+their FileType autocmds — that's why it lives at the top of the config
+function rather than being a late `init` block. Adding a redundant
+mapping here is harmless: `ft.add` only sets the value if no existing
+rule matches first.
+
+### SchemaStore.nvim is loaded lazily via `before_init`
+
+`b0o/SchemaStore.nvim` is declared as a `lazy = true` dependency of
+`nvim-lspconfig` in `lsp.lua`. The actual `require("schemastore")` call
+happens inside the **`before_init`** hook of `jsonls` and `yamlls` —
+not at top level. This keeps SchemaStore out of the startup path
+entirely; it loads only when the first json/yaml file actually opens.
+Both hooks are wrapped in `pcall` so a missing schemastore module
+silently degrades to vanilla jsonls/yamlls instead of crashing.
+
+`yamlls` additionally injects `foldingRange.lineFoldingOnly = true` into
+its `capabilities` because yamlls itself doesn't advertise that
+capability and you'd otherwise get no folding at all in YAML buffers.
+
+### gopls semanticTokensProvider workaround (`golang/go#54531`)
+
+`gopls`'s server entry has an `on_attach` callback that re-injects
+`semanticTokensProvider` from the client capabilities if the server
+forgets to advertise it. This is a known gopls regression: even with
+`semanticTokens = true` in settings, the server sometimes drops the
+capability on initial registration, breaking treesitter+semantic-token
+highlighting in the same buffer. The workaround copies the token types
+and modifiers from `client.config.capabilities.textDocument.semanticTokens`
+into a synthetic `semanticTokensProvider` table on the client. Borrowed
+from LazyVim's `extras/lang/go.lua`.
+
+### Ruff hover disabled in `LspAttach`
+
+The `LspAttach` callback in `lsp.lua` checks `client.name == "ruff"` and
+sets `client.server_capabilities.hoverProvider = false`. This is because
+ruff and pyright both attach to Python buffers; both serve
+`textDocument/hover`; ruff's hover payload is one-line and inferior to
+pyright's. Without this disable, ruff sometimes wins the hover race and
+the user sees the wrong (worse) docs. Pyright still owns hover/definition/
+references; ruff still owns diagnostics and the formatter (via conform).
+
+### Conditional markdown formatters in `formatting.lua`
+
+`markdown-toc` and `markdownlint-cli2` are listed in `formatters_by_ft.markdown`
+but each has a `condition` callback in the `formatters` block that gates
+when they actually run:
+
+- **`markdown-toc`** only fires if the buffer contains a `<!-- toc -->`
+  marker (scanned via `nvim_buf_get_lines`). Without this gate, conform
+  would generate a TOC in every markdown file on save, including blog
+  posts and READMEs that don't want one.
+- **`markdownlint-cli2`** only fires if there are existing markdownlint
+  diagnostics on the buffer (`vim.diagnostic.get(ctx.buf)` filtered by
+  `source == "markdownlint"`). So nvim-lint surfaces the lint, the user
+  opts into auto-fixing by saving, and clean files pay zero cost.
+
+Same `condition` pattern as the prettier `prettier_has_parser` gate
+above. Both are borrowed from LazyVim's `extras/lang/markdown.lua`.
+
+### `clangd_extensions.nvim` is ft-loaded, not LSP-attached
+
+`p00f/clangd_extensions.nvim` lives as its own plugin spec in `lsp.lua`
+with `ft = { "c", "cpp", "objc", "objcpp" }`. It does NOT load via
+`LspAttach` and does NOT depend on clangd being installed first.
+That's intentional: the extensions plugin provides AST viewer + AST
+inlay hints + memory usage display via its own user commands, all of
+which work regardless of whether clangd has attached yet.
+
+The `<leader>ch` (Switch Source/Header) keymap is owned by this plugin's
+`keys = {}`, but the **icon** for it lives in the global which-key spec
+block in `lsp.lua` (alongside `<leader>cf`/`<leader>cr`/etc.) so the
+which-key tree shows the icon even before clangd_extensions has loaded.
+
+### `lang.lua` is for language plugins that aren't LSP/formatter/linter
+
+Four plugins live here, each lazy-loaded by filetype so they cost
+nothing at startup:
+
+- **`render-markdown.nvim`** — inline markdown rendering. Snacks toggle
+  on `<leader>um`. The toggle hook reaches into `render-markdown.state`
+  and calls `enable()`/`disable()` rather than using the built-in
+  `Snacks.toggle` getter pattern, because render-markdown's setter
+  doesn't expose the simple "give me a get/set callback" shape.
+- **`markdown-preview.nvim`** — browser preview. Heavy: ships a node/yarn
+  build step the first time it loads. Bound to `<leader>cp` (markdown
+  ft only, so it doesn't pollute the global which-key tree).
+- **`vimtex`** — full LaTeX editing environment. **Cannot be lazy-loaded**
+  (`lazy = false`) because inverse search needs vimtex's servername
+  registered at startup. The `init` function disables vimtex's `K`
+  mapping so it doesn't collide with our LSP hover binding (texlab
+  handles hover). Localleader `\l` is the vimtex group prefix.
+- **`venv-selector.nvim`** (regexp branch) — Python virtualenv picker.
+  `<leader>cv`, ft = python only. Pulls in `nvim-dap` and `nvim-dap-python`
+  as dependencies — those are listed only as deps, not configured
+  separately, so DAP itself stays unconfigured (consistent with the
+  `project_deferred_dap` plan). When DAP eventually gets adopted, the
+  binaries are already cloned.
 
 ### outline.nvim trims trailing spaces from `M.kinds`
 
