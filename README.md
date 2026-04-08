@@ -79,6 +79,18 @@ setup. Run one script and the editor is ready.
   (`venv-selector.nvim`, `<leader>cv`), and clangd extras (AST viewer,
   inlay hints, source/header switch via `<leader>ch`) from
   `clangd_extensions.nvim`.
+- **Sticky scope header.** `nvim-treesitter-context` pins the current
+  function/class/method signature to the top of the buffer when you
+  scroll past its definition. Cursor-mode tracking with a 3-line cap
+  so deeply-nested scopes never take over the screen. Toggle with
+  `<leader>ut`.
+- **Sidebar layout manager.** `folke/edgy.nvim` corrals Trouble,
+  Outline, Grug Far, terminals (toggleterm + snacks), quickfix, help,
+  and noice into edge groups (bottom + right). Resize panes with
+  `<C-arrow>` inside an edgy window. A companion bufferline patch
+  reserves a "Sidebar" offset so the bufferline tabs stay visible
+  when an explorer or outline pane is open. Toggle with `<leader>ue`,
+  pick a window with `<leader>uE`.
 
 ---
 
@@ -303,6 +315,8 @@ A few standalone bindings worth knowing:
 - `<leader>cp` — markdown preview in browser (markdown-preview.nvim)
 - `<leader>cv` — pick a Python virtualenv (venv-selector)
 - `<leader>um` — toggle inline markdown rendering (render-markdown)
+- `<leader>ut` — toggle sticky scope header (treesitter-context)
+- `<leader>ue` / `<leader>uE` — edgy toggle / select window
 - `K` — LSP hover docs
 
 ---

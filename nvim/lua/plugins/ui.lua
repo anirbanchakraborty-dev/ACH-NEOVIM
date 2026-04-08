@@ -496,6 +496,178 @@ Powered by ]]
 		end,
 	},
 
+	-- bufferline edgy offset patch: monkey-patches bufferline.offset.get
+	-- to render a "Sidebar" placeholder + width when an edgy left/right
+	-- pane is open but bufferline's own offsets[] table doesn't have a
+	-- matching filetype. Without this, opening an edgy explorer or
+	-- outline pane would let the bufferline tabs spill over the sidebar
+	-- area instead of being offset cleanly. Borrowed from LazyVim's
+	-- extras/ui/edgy.lua. The `Offset.edgy` flag is a re-entry guard so
+	-- the patch only applies once per nvim session.
+	{
+		"akinsho/bufferline.nvim",
+		optional = true,
+		opts = function()
+			local Offset = require("bufferline.offset")
+			if not Offset.edgy then
+				local get = Offset.get
+				Offset.get = function()
+					if package.loaded.edgy then
+						local old_offset = get()
+						local layout = require("edgy.config").layout
+						local ret = { left = "", left_size = 0, right = "", right_size = 0 }
+						for _, pos in ipairs({ "left", "right" }) do
+							local sb = layout[pos]
+							if sb and #sb.wins > 0 then
+								local title = " Sidebar" .. string.rep(" ", sb.bounds.width - 8)
+								-- Restructured from LazyVim's nested and/or chain so
+								-- lua_ls can infer the result type cleanly. Behavior
+								-- is identical: prefer the existing offset if any
+								-- bufferline plugin already claimed it, otherwise
+								-- render a Sidebar placeholder + separator.
+								if old_offset[pos .. "_size"] > 0 then
+									ret[pos] = old_offset[pos]
+									ret[pos .. "_size"] = old_offset[pos .. "_size"]
+								elseif pos == "left" then
+									ret[pos] = "%#Bold#" .. title .. "%*" .. "%#BufferLineOffsetSeparator#│%*"
+									ret[pos .. "_size"] = sb.bounds.width
+								elseif pos == "right" then
+									ret[pos] = "%#BufferLineOffsetSeparator#│%*" .. "%#Bold#" .. title .. "%*"
+									ret[pos .. "_size"] = sb.bounds.width
+								end
+							end
+						end
+						ret.total_size = ret.left_size + ret.right_size
+						if ret.total_size > 0 then
+							return ret
+						end
+					end
+					return get()
+				end
+				Offset.edgy = true
+			end
+		end,
+	},
+
+	-- edgy.nvim: layout manager that corrals sidebar windows (Trouble,
+	-- Outline, Grug Far, terminal splits, quickfix, help, noice cmdline,
+	-- snacks terminal) into edge groups (left/right/top/bottom). Each
+	-- entry below describes a window the manager should accept and where
+	-- to put it. Borrowed from LazyVim's extras/ui/edgy.lua, trimmed of
+	-- the neo-tree, telescope, and neotest blocks (the user uses snacks
+	-- explorer, fzf-lua, and has deferred neotest respectively).
+	--
+	-- Key insight: the trouble + snacks_terminal loops at the bottom add
+	-- the same filetype to all four positions with a `vim.w[win]....position`
+	-- filter, so a single plugin can land in any edge depending on how it
+	-- was opened. Outline always lives on the right; grug-far on the right;
+	-- toggleterm/noice/qf/help/Trouble at the bottom by default.
+	--
+	-- The `keys` table in opts sets buffer-local resize bindings inside
+	-- edgy panes (`<C-arrows>` resize the layout group, not just the
+	-- single window). The user's global `<C-arrow>` resize bindings in
+	-- keymaps.lua still apply in non-edgy windows.
+	{
+		"folke/edgy.nvim",
+		event = "VeryLazy",
+		keys = {
+			{ "<leader>ue", function() require("edgy").toggle() end, desc = "Edgy Toggle" },
+			{ "<leader>uE", function() require("edgy").select() end, desc = "Edgy Select Window" },
+		},
+		opts = function()
+			local opts = {
+				bottom = {
+					{
+						ft = "toggleterm",
+						size = { height = 0.4 },
+						filter = function(_, win)
+							return vim.api.nvim_win_get_config(win).relative == ""
+						end,
+					},
+					{
+						ft = "noice",
+						size = { height = 0.4 },
+						filter = function(_, win)
+							return vim.api.nvim_win_get_config(win).relative == ""
+						end,
+					},
+					"Trouble",
+					{ ft = "qf", title = "QuickFix" },
+					{
+						ft = "help",
+						size = { height = 20 },
+						-- Don't capture help files we're actively editing
+						filter = function(buf)
+							return vim.bo[buf].buftype == "help"
+						end,
+					},
+				},
+				right = {
+					{ title = "Outline", ft = "Outline", size = { width = 0.25 } },
+					{ title = "Grug Far", ft = "grug-far", size = { width = 0.4 } },
+				},
+				keys = {
+					-- Increase / decrease pane width inside an edgy group
+					["<c-Right>"] = function(win) win:resize("width", 2) end,
+					["<c-Left>"]  = function(win) win:resize("width", -2) end,
+					["<c-Up>"]    = function(win) win:resize("height", 2) end,
+					["<c-Down>"]  = function(win) win:resize("height", -2) end,
+				},
+			}
+
+			-- Trouble in any of the four positions: trouble can be opened
+			-- with `position = "left"|"right"|"top"|"bottom"`. The filter
+			-- checks vim.w[win].trouble.position so each open trouble window
+			-- lands in the matching edge.
+			for _, pos in ipairs({ "top", "bottom", "left", "right" }) do
+				opts[pos] = opts[pos] or {}
+				table.insert(opts[pos], {
+					ft = "trouble",
+					filter = function(_, win)
+						return vim.w[win].trouble
+							and vim.w[win].trouble.position == pos
+							and vim.w[win].trouble.type == "split"
+							and vim.w[win].trouble.relative == "editor"
+							and not vim.w[win].trouble_preview
+					end,
+				})
+			end
+
+			-- Snacks terminal (the non-toggleterm one snacks ships) in any
+			-- of the four positions, with the terminal title formatted to
+			-- show the snacks term ID + the underlying shell title.
+			for _, pos in ipairs({ "top", "bottom", "left", "right" }) do
+				opts[pos] = opts[pos] or {}
+				table.insert(opts[pos], {
+					ft = "snacks_terminal",
+					size = { height = 0.4 },
+					title = "%{b:snacks_terminal.id}: %{b:term_title}",
+					filter = function(_, win)
+						return vim.w[win].snacks_win
+							and vim.w[win].snacks_win.position == pos
+							and vim.w[win].snacks_win.relative == "editor"
+							and not vim.w[win].trouble_preview
+					end,
+				})
+			end
+
+			return opts
+		end,
+	},
+
+	-- which-key: icons for the edgy toggles.
+	{
+		"folke/which-key.nvim",
+		optional = true,
+		opts_extend = { "spec" },
+		opts = {
+			spec = {
+				{ "<leader>ue", desc = "Edgy Toggle", icon = { icon = icons.ui.split_v, color = "blue" } },
+				{ "<leader>uE", desc = "Edgy Select Window", icon = { icon = icons.ui.menu, color = "blue" } },
+			},
+		},
+	},
+
 	-- mini.icons: modern replacement for nvim-web-devicons. The init hook
 	-- registers a package.preload entry so any plugin that does
 	-- `require("nvim-web-devicons")` transparently gets mini.icons' compat

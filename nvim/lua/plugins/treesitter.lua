@@ -3,6 +3,8 @@
 -- an async install of its parser via `auto_install = true`. Nothing is ensured
 -- up front -- every parser arrives the moment it is first needed.
 
+local icons = require("config.icons")
+
 return {
   {
     "nvim-treesitter/nvim-treesitter",
@@ -271,7 +273,6 @@ return {
       -- available and fires a "Parser installed: X" toast (or a timeout warning).
       local parsers        = require("nvim-treesitter.parsers")
       local parser_configs = parsers.get_parser_configs()
-      local icons          = require("config.icons")
       local in_progress    = {}
 
       vim.api.nvim_create_autocmd("FileType", {
@@ -314,5 +315,44 @@ return {
         end,
       })
     end,
+  },
+
+  -- nvim-treesitter-context: sticky function/class header that pins the
+  -- current scope's signature to the top of the buffer when you scroll
+  -- past its definition. `mode = "cursor"` means the context follows the
+  -- cursor (not the topmost visible line), which is the more useful mode
+  -- when navigating with `}`/`{` or `[c`/`]c`. `max_lines = 3` caps the
+  -- pinned area so a deeply-nested context doesn't take over the screen.
+  -- Toggleable via `<leader>ut` through the snacks toggle pattern.
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {
+      mode = "cursor",
+      max_lines = 3,
+    },
+    config = function(_, opts)
+      local tsc = require("treesitter-context")
+      tsc.setup(opts)
+      Snacks.toggle({
+        name = "Treesitter Context",
+        get = function() return tsc.enabled() end,
+        set = function(state)
+          if state then tsc.enable() else tsc.disable() end
+        end,
+      }):map("<leader>ut")
+    end,
+  },
+
+  -- which-key: icon for the treesitter-context toggle.
+  {
+    "folke/which-key.nvim",
+    optional = true,
+    opts_extend = { "spec" },
+    opts = {
+      spec = {
+        { "<leader>ut", desc = "Toggle Treesitter Context", icon = { icon = icons.find.treesitter, color = "green" } },
+      },
+    },
   },
 }

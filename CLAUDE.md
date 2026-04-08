@@ -325,6 +325,63 @@ run / test now live under **`<leader>o`** via `overseer.nvim` in
 `util.lua` (`oo` Run, `ow` Task List, `ot` Action, `oq` Quick Action,
 `oi` Info). Don't conflate the two prefixes when adding new keymaps.
 
+### edgy.nvim window manager + bufferline offset patch
+
+`folke/edgy.nvim` (declared in `ui.lua` right after the bufferline spec)
+auto-organizes sidebar windows into edge groups: bottom for terminals,
+trouble, qf, help, noice; right for outline and grug-far. The trouble
+and snacks_terminal entries are added to all four edges via a loop with
+a `vim.w[win].trouble.position` / `snacks_win.position` filter so each
+window lands wherever it was opened. The neo-tree, telescope, and
+neotest blocks from LazyVim's `extras/ui/edgy.lua` are deliberately
+omitted -- the user uses snacks explorer, fzf-lua, and has deferred
+neotest.
+
+The `keys = {}` table inside edgy's opts sets buffer-local
+`<C-arrow>` resize bindings that operate on edgy's layout groups
+(`win:resize("width", N)`) instead of the single window. The user's
+global `<C-arrow>` resize bindings in `keymaps.lua` still apply
+in non-edgy windows -- the edgy versions only fire when the cursor is
+inside an edgy pane.
+
+The companion **bufferline offset patch** (a separate spec entry for
+`akinsho/bufferline.nvim` with `optional = true` so it doesn't pull in
+bufferline if removed) monkey-patches `bufferline.offset.Offset.get`
+to render a "Sidebar" placeholder + width when an edgy left/right pane
+is open but bufferline's own `offsets[]` table doesn't have a matching
+filetype. Without this patch, opening an edgy explorer or outline pane
+would let the bufferline tabs spill over the sidebar area instead of
+being offset cleanly.
+
+The patch is wrapped in an `Offset.edgy` re-entry guard so it only
+applies once per nvim session. The `opts = function() ... end`
+intentionally returns nothing -- it's a side-effect-only patch, and
+lazy.nvim's plugin module preserves the existing accumulated opts when
+an opts function returns nil. **Do not change this to `function(_, opts)
+return opts end`** -- it would be a no-op but adds confusion.
+
+The LazyVim original uses a nested `and/or` chain to compute the
+sidebar text and width. Our copy restructures it as an explicit
+if/elseif chain so lua_ls can infer the result type cleanly (`string`
+instead of `string | false`). Behavior is identical.
+
+### nvim-treesitter-context lives in `treesitter.lua`, not `ui.lua`
+
+`nvim-treesitter/nvim-treesitter-context` (sticky function/class header
+when scrolling past a definition) is declared as a sibling spec in
+`treesitter.lua` rather than `ui.lua`. It's a treesitter sub-plugin
+and conceptually belongs next to its parent. `mode = "cursor"` makes
+the pinned context follow the cursor (not the topmost visible line),
+which works better with cursor-based navigation (`}`/`{`, `[c`/`]c`).
+`max_lines = 3` caps the pinned area so deeply-nested scopes don't
+take over the screen.
+
+Toggleable via `<leader>ut` through the snacks toggle pattern. The
+toggle hook reaches into `tsc.enabled()` / `tsc.enable()` /
+`tsc.disable()` directly because treesitter-context doesn't expose a
+`Snacks.toggle.option`-compatible getter/setter shape -- same approach
+used for render-markdown.nvim's snacks toggle in `lang.lua`.
+
 ### nvim-treesitter directives/predicates vs Neovim 0.12 `match[]` contract
 
 `treesitter.lua`'s config function re-registers **six** broken
