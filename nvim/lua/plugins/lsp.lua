@@ -635,6 +635,14 @@ return {
 			-- hooks and never via require() at top level, so it stays out of
 			-- the startup path entirely.
 			{ "b0o/SchemaStore.nvim", lazy = true, version = false },
+			-- neoconf.nvim auto-merges per-project LSP overrides from
+			-- `.neoconf.json` and `.vscode/settings.json` into the LSP
+			-- config when a server attaches. Critical: neoconf.setup()
+			-- MUST run before any vim.lsp.config() calls so its before_init
+			-- hooks are installed first. We do that at the top of the
+			-- config function below. lazy = true keeps it off the startup
+			-- path; lspconfig pulls it in as a dep when an LSP attaches.
+			{ "folke/neoconf.nvim", lazy = true, cmd = "Neoconf", opts = {} },
 		},
 		event = { "BufReadPre", "BufNewFile" },
 		config = function()
@@ -674,6 +682,19 @@ return {
 					["helmfile.*%.ya?ml"] = "helm",
 				},
 			})
+
+			-- neoconf.nvim: per-project LSP overrides via `.neoconf.json`
+			-- and `.vscode/settings.json` in the project root. Must be
+			-- set up BEFORE any vim.lsp.config() calls below so neoconf's
+			-- before_init / on_new_config hooks are installed first;
+			-- otherwise per-server overrides registered via vim.lsp.config()
+			-- run before neoconf gets a chance to merge in the file-based
+			-- settings, and the project overrides silently lose the race.
+			-- pcall'd so a missing neoconf module degrades to vanilla LSP
+			-- instead of crashing.
+			pcall(function()
+				require("neoconf").setup({})
+			end)
 
 			-- Global defaults: root markers + client capabilities. blink.cmp is a
 			-- dependency so it's loaded before we run; merging its capabilities

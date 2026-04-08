@@ -386,6 +386,32 @@ deleted. Search for `3826d0c4` or `first_node` in `treesitter.lua` to
 find it. Tracked in detail in the
 `project_pending_treesitter_info_string` memory.
 
+### neoconf.nvim must run before `vim.lsp.config()` calls
+
+`folke/neoconf.nvim` is declared as a `lazy = true` dependency of
+nvim-lspconfig in `lsp.lua`. It auto-merges per-project LSP overrides
+from `.neoconf.json` and `.vscode/settings.json` (it translates VS Code
+keys like `eslint.workingDirectories`, `typescript.tsdk`,
+`json.schemas`, `yaml.schemas`, etc. into the equivalent LSP server
+settings) into the LSP config when each server attaches. This is
+useful for monorepos and for cloning JS/TS projects that ship a
+`.vscode/settings.json` with their own LSP customizations.
+
+**Critical ordering:** `require("neoconf").setup({})` MUST run BEFORE
+any `vim.lsp.config()` calls. neoconf installs its hooks on the LSP
+attach chain at `setup()` time; if a `vim.lsp.config()` call lands
+first, that server's overrides are registered before neoconf can wire
+itself in, and the per-project overrides silently lose the race.
+That's why the `pcall(function() require("neoconf").setup({}) end)` in
+`lsp.lua` lives at the top of the config function, right after the
+`vim.filetype.add` block and BEFORE the `vim.lsp.config("*", ...)`
+default block. The `pcall` is for graceful degradation if neoconf
+isn't installed yet.
+
+The plugin still ships a `cmd = "Neoconf"` user command for inspecting
+the merged config — `:Neoconf` opens a picker showing every settings
+file neoconf found and the resulting merged values.
+
 ### ESLint is an LSP, not a linter
 
 ESLint runs as the **`eslint` LSP** (`vscode-eslint-language-server` /

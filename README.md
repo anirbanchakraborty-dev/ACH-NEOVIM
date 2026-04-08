@@ -26,6 +26,12 @@ setup. Run one script and the editor is ready.
   validation for `package.json`, `tsconfig.json`, GitHub Actions, GitLab
   CI, Kubernetes manifests, docker-compose, and 1200+ other schemas
   with no manual setup. Lazy-loaded so it costs zero startup time.
+- **Per-project LSP overrides.** `folke/neoconf.nvim` auto-merges
+  `.neoconf.json` and `.vscode/settings.json` from the project root
+  into the LSP config when each server attaches. Translates VS Code
+  settings keys (`eslint.workingDirectories`, `typescript.tsdk`,
+  `json.schemas`, etc.) into the equivalent LSP server settings, so
+  cloning a JS/TS project that ships shared editor settings just works.
 - **Format + lint pipeline.** `conform.nvim` handles format-on-save with a
   prettierd → prettier fallback chain for web files, gated by a
   `prettier --file-info` parser check so prettier silently falls back to
@@ -236,7 +242,7 @@ ACH-NEOVIM/
             ├── git.lua               gitsigns, diffview, git-conflict, lazygit
             ├── lang.lua              render-markdown, markdown-preview, vimtex, venv-selector
             ├── linting.lua           nvim-lint + on-demand mason installer
-            ├── lsp.lua               mason + native vim.lsp client + SchemaStore + clangd_extensions
+            ├── lsp.lua               mason + native vim.lsp client + SchemaStore + neoconf + clangd_extensions
             ├── lualine.lua           statusline (custom ocean theme)
             ├── terminal.lua          toggleterm + language REPLs
             ├── treesitter.lua        nvim-treesitter (master, auto_install)
