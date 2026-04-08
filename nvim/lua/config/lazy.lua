@@ -26,8 +26,8 @@ require("lazy").setup({
   },
   defaults = { lazy = false },
   install = { colorscheme = { "habamax" } },
-  checker = { enabled = true, notify = false },
-  change_detection = { notify = false },
+  checker = { enabled = true, notify = true },
+  change_detection = { notify = true },
   performance = {
     rtp = {
       disabled_plugins = {
