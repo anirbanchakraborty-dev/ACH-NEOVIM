@@ -79,6 +79,19 @@ setup. Run one script and the editor is ready.
   (`venv-selector.nvim`, `<leader>cv`), and clangd extras (AST viewer,
   inlay hints, source/header switch via `<leader>ch`) from
   `clangd_extensions.nvim`.
+- **Treesitter on `main` branch.** Runs nvim-treesitter's main branch
+  (the complete rewrite that delegates highlighting / folds /
+  incremental selection to Neovim 0.12+'s built-in treesitter API).
+  Parsers install on demand via the new async install API the first
+  time you open a file in that language. Highlighting + folds wire up
+  through `autocmds.lua`'s `TreesitterFolds` group; experimental
+  treesitter indent (`vim.bo.indentexpr`) is enabled per buffer in
+  `treesitter.lua`'s install autocmd. Incremental selection
+  (`<C-Space>` to grow, `<BS>` to shrink) is preserved by a small
+  in-config node-stack helper since main dropped the master branch's
+  `incremental_selection` module. Textobjects also runs from
+  `nvim-treesitter-textobjects` main branch with the new keymap-driven
+  `select.select_textobject` / `move.goto_*` API.
 - **Sticky scope header.** `nvim-treesitter-context` pins the current
   function/class/method signature to the top of the buffer when you
   scroll past its definition. Cursor-mode tracking with a 3-line cap
@@ -270,7 +283,7 @@ ACH-NEOVIM/
             ├── lsp.lua               mason + native vim.lsp client + SchemaStore + neoconf + clangd_extensions
             ├── lualine.lua           statusline (custom ocean theme)
             ├── terminal.lua          toggleterm + language REPLs
-            ├── treesitter.lua        nvim-treesitter (master, auto_install)
+            ├── treesitter.lua        nvim-treesitter (main branch, on-demand install) + textobjects + context
             ├── ui.lua                snacks, noice, bufferline, mini.icons, rainbow, colorizer
             └── util.lua              persistence sessions, vim-sleuth, scratch
 ```
@@ -315,6 +328,12 @@ A few standalone bindings worth knowing:
 - `<S-h>` / `<S-l>` — previous / next buffer (bufferline order)
 - `<A-j>` / `<A-k>` — move line(s) down / up
 - `s` / `S` — flash jump / treesitter jump
+- `<C-Space>` — init / grow node selection (treesitter incremental select)
+- `<BS>` — shrink node selection (in visual mode, after `<C-Space>`)
+- `]f` / `[f` — next / previous function (treesitter textobjects)
+- `]c` / `[c` — next / previous class
+- `]a` / `[a` — next / previous parameter
+- `af` / `if`, `ac` / `ic`, `aa` / `ia` — function / class / parameter textobjects
 - `]d` / `[d` — next / previous diagnostic (any severity)
 - `]e` / `[e` — next / previous error (severity-filtered)
 - `]h` / `[h` — next / previous git hunk
@@ -327,6 +346,8 @@ A few standalone bindings worth knowing:
 - `<leader>cs` — toggle symbol outline sidebar
 - `<leader>cc` — run LSP codelens at cursor (auto-refresh handled by Neovim)
 - `<leader>co` — organize imports (LSP `source.organizeImports`)
+- `<leader>cM` — add missing TS imports (`source.addMissingImports.ts`, ts_ls only)
+- `<leader>cD` — fix all TS diagnostics (`source.fixAll.ts`, ts_ls only)
 - `<leader>ch` — switch C/C++ source/header (clangd)
 - `<leader>cp` — markdown preview in browser (markdown-preview.nvim)
 - `<leader>cv` — pick a Python virtualenv (venv-selector)

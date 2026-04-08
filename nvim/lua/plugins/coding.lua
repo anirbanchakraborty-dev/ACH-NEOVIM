@@ -178,11 +178,50 @@ return {
   -- whole function, cic changes inside a class, vao selects an if/loop block,
   -- etc. Tag/digit/usage are regex-based fallbacks that work even without
   -- treesitter parsers loaded.
+  --
+  -- e / g / U are borrowed from LazyVim's coding.lua mini.ai block:
+  --   * e: CamelCase / snake_case word part. `viw` selects the whole
+  --     identifier; `vie` only selects the chunk under the cursor (so
+  --     `fooBarBaz` becomes 3 navigable units, `snake_case_thing` becomes
+  --     3 navigable units). Useful for renaming a single component of a
+  --     compound identifier without touching the rest.
+  --   * g: entire buffer. `vag` selects every line including trailing
+  --     blanks; `vig` strips leading/trailing blank lines. Inlined from
+  --     LazyVim's `ai_buffer` helper which is itself a copy of
+  --     `MiniExtra.gen_ai_spec.buffer` -- we don't pull in mini.extra just
+  --     for one helper, so the implementation lives next to its consumer.
+  --   * U: function call WITHOUT dotted access. The default `u` (set
+  --     above) accepts any callable including `foo.bar.baz()`; `U` is
+  --     restricted to bare identifiers like `foo()`. Useful for refactors
+  --     where you want to rewrite a top-level call without grabbing the
+  --     surrounding method chain.
   {
     "nvim-mini/mini.ai",
     event = "BufReadPost",
     opts = function()
       local ai = require("mini.ai")
+
+      -- Inlined from LazyVim's lazyvim.util.mini.ai_buffer (which is
+      -- itself copied from MiniExtra.gen_ai_spec.buffer). We keep the
+      -- inline copy because pulling mini.extra in just for this single
+      -- spec would add a startup-path module for one ~15-line helper.
+      local function ai_buffer(ai_type)
+        local start_line, end_line = 1, vim.fn.line("$")
+        if ai_type == "i" then
+          local first_nonblank = vim.fn.nextnonblank(start_line)
+          local last_nonblank = vim.fn.prevnonblank(end_line)
+          if first_nonblank == 0 or last_nonblank == 0 then
+            return { from = { line = start_line, col = 1 } }
+          end
+          start_line, end_line = first_nonblank, last_nonblank
+        end
+        local to_col = math.max(vim.fn.getline(end_line):len(), 1)
+        return {
+          from = { line = start_line, col = 1 },
+          to = { line = end_line, col = to_col },
+        }
+      end
+
       return {
         n_lines = 500,
         custom_textobjects = {
@@ -199,8 +238,17 @@ return {
           t = { "<([%p%w]-)%f[^<%w][^<>]->.-</%1>", "^<.->().*()</[^/]->$" },
           -- d: Digits run
           d = { "%f[%d]%d+" },
-          -- u: function call ("Usage")
+          -- e: CamelCase / snake_case word chunk
+          e = {
+            { "%u[%l%d]+%f[^%l%d]", "%f[%S][%l%d]+%f[^%l%d]", "%f[%P][%l%d]+%f[^%l%d]", "^[%l%d]+%f[^%l%d]" },
+            "^().*()$",
+          },
+          -- g: Entire buffer
+          g = ai_buffer,
+          -- u: function call ("Usage"), accepts dotted callees (foo.bar.baz())
           u = ai.gen_spec.function_call(),
+          -- U: function call without dot in the name (foo() only)
+          U = ai.gen_spec.function_call({ name_pattern = "[%w_]" }),
         },
       }
     end,
@@ -489,6 +537,15 @@ return {
   -- full completion + type-checking and the "Undefined global vim" warnings
   -- go away. Loads only on Lua filetypes so it has zero startup cost
   -- elsewhere. Pairs with the blink.cmp `lazydev` source above.
+  --
+  -- The nvim-lspconfig library entry is the LazyVim trick for getting
+  -- typed completion on `lspconfig.settings` references when authoring
+  -- this very file. With it, typing
+  -- `settings = { Lua = { ... } }` in lsp.lua surfaces the full schema
+  -- (every legal `settings.<server>.*` key with hover docs) sourced from
+  -- nvim-lspconfig's bundled metadata. Triggers only on buffers that
+  -- mention the `lspconfig.settings` word so it stays cheap on every
+  -- other Lua file in the config.
   {
     "folke/lazydev.nvim",
     ft  = "lua",
@@ -498,6 +555,7 @@ return {
         { path = "${3rd}/luv/library", words = { "vim%.uv" } },
         { path = "snacks.nvim",        words = { "Snacks" } },
         { path = "lazy.nvim",          words = { "Lazy" } },
+        { path = "nvim-lspconfig",     words = { "lspconfig.settings" } },
       },
     },
   },

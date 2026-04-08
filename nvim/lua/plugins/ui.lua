@@ -680,6 +680,23 @@ Powered by ]]
 			file = {
 				[".keep"] = { glyph = "󰊢", hl = "MiniIconsGrey" },
 				["devcontainer.json"] = { glyph = "", hl = "MiniIconsAzure" },
+				-- JavaScript / TypeScript project files. Borrowed verbatim
+				-- from LazyVim's extras/lang/typescript/init.lua. Without
+				-- these entries the file picker / lualine / bufferline
+				-- show the generic JSON icon for tsconfig.json /
+				-- package.json / etc., which is technically correct but
+				-- visually identical to every other JSON file in the tree.
+				-- These entries give them recognizable per-tool glyphs so
+				-- they stand out in a crowded explorer.
+				[".eslintrc.js"] = { glyph = "󰱺", hl = "MiniIconsYellow" },
+				[".node-version"] = { glyph = "", hl = "MiniIconsGreen" },
+				[".prettierrc"] = { glyph = "", hl = "MiniIconsPurple" },
+				[".yarnrc.yml"] = { glyph = "", hl = "MiniIconsBlue" },
+				["eslint.config.js"] = { glyph = "󰱺", hl = "MiniIconsYellow" },
+				["package.json"] = { glyph = "", hl = "MiniIconsGreen" },
+				["tsconfig.json"] = { glyph = "", hl = "MiniIconsAzure" },
+				["tsconfig.build.json"] = { glyph = "", hl = "MiniIconsAzure" },
+				["yarn.lock"] = { glyph = "", hl = "MiniIconsBlue" },
 			},
 			filetype = {
 				dotenv = { glyph = "", hl = "MiniIconsYellow" },

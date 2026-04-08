@@ -67,6 +67,32 @@ local servers = {
 	},
 
 	-- JS / TS
+	--
+	-- ts_ls (typescript-language-server) settings borrowed from LazyVim's
+	-- extras/lang/typescript/vtsls.lua. The same `settings.typescript.*`
+	-- keys work for both vtsls and ts_ls because both servers wrap the
+	-- same upstream tsserver and forward these keys verbatim.
+	--
+	-- The four blocks below give:
+	--   - inlayHints: parameter names (literals only -- the full set is
+	--     too noisy on call sites that already pass named props), parameter
+	--     types, return types, enum member values, and property declaration
+	--     types. variableTypes is intentionally off because it duplicates
+	--     what hover already shows on the LHS identifier.
+	--   - updateImportsOnFileMove = "always": when a TS file is renamed via
+	--     `<leader>cR` (Snacks.rename.rename_file) the LSP rewrites every
+	--     import path that pointed to the old name. Without this the LSP
+	--     prompts on every rename which is a papercut.
+	--   - suggest.completeFunctionCalls: when accepting a function from
+	--     completion, ts_ls inserts the full signature with parameter
+	--     placeholders (mirrors blink.cmp's auto_brackets but with real
+	--     parameter names from the type signature).
+	--   - The same settings table is reused for `javascript` so JS files
+	--     get the same hints + behavior; ts_ls reads both keys.
+	--
+	-- The two `<leader>cM` / `<leader>cD` keymaps are bound buffer-locally
+	-- inside LspAttach (gated on `client.name == "ts_ls"`) since they fire
+	-- TS-specific code action commands that no other LSP exposes.
 	ts_ls = {
 		mason = "typescript-language-server",
 		filetypes = {
@@ -76,6 +102,38 @@ local servers = {
 			"typescript",
 			"typescriptreact",
 			"typescript.tsx",
+		},
+		config = {
+			settings = {
+				typescript = {
+					updateImportsOnFileMove = { enabled = "always" },
+					suggest = {
+						completeFunctionCalls = true,
+					},
+					inlayHints = {
+						enumMemberValues = { enabled = true },
+						functionLikeReturnTypes = { enabled = true },
+						parameterNames = { enabled = "literals" },
+						parameterTypes = { enabled = true },
+						propertyDeclarationTypes = { enabled = true },
+						variableTypes = { enabled = false },
+					},
+				},
+				javascript = {
+					updateImportsOnFileMove = { enabled = "always" },
+					suggest = {
+						completeFunctionCalls = true,
+					},
+					inlayHints = {
+						enumMemberValues = { enabled = true },
+						functionLikeReturnTypes = { enabled = true },
+						parameterNames = { enabled = "literals" },
+						parameterTypes = { enabled = true },
+						propertyDeclarationTypes = { enabled = true },
+						variableTypes = { enabled = false },
+					},
+				},
+			},
 		},
 	},
 
@@ -847,6 +905,33 @@ return {
 					if client.name == "ruff" then
 						client.server_capabilities.hoverProvider = false
 					end
+
+					-- ts_ls TS-specific code action shortcuts. Borrowed from
+					-- LazyVim's extras/lang/typescript/vtsls.lua -- the same
+					-- `source.addMissingImports.ts` / `source.fixAll.ts`
+					-- commands work for both vtsls and ts_ls because both
+					-- wrap the same upstream tsserver. Each binding fires
+					-- the matching code action with `apply = true` so the
+					-- fix runs without the user picking from a menu, and
+					-- the call is `pcall`-wrapped so a buffer where the
+					-- action isn't available silently no-ops.
+					--
+					-- Bound buffer-locally only when ts_ls is the attaching
+					-- client so they don't pollute non-TS buffers.
+					if client.name == "ts_ls" then
+						map("n", "<leader>cM", function()
+							pcall(vim.lsp.buf.code_action, {
+								context = { only = { "source.addMissingImports.ts" }, diagnostics = {} },
+								apply = true,
+							})
+						end, "Add Missing Imports (TS)")
+						map("n", "<leader>cD", function()
+							pcall(vim.lsp.buf.code_action, {
+								context = { only = { "source.fixAll.ts" }, diagnostics = {} },
+								apply = true,
+							})
+						end, "Fix All Diagnostics (TS)")
+					end
 				end,
 			})
 
@@ -1115,6 +1200,20 @@ return {
 					"<leader>co",
 					desc = "Organize Imports",
 					icon = { icon = icons.ui.sort, color = "blue" },
+				},
+				-- ts_ls-only: declared inside LspAttach above (gated on
+				-- client.name == "ts_ls"). Lives in this which-key block so
+				-- the icons register globally; which-key handles filtering
+				-- by checking whether the buffer-local keymap is bound.
+				{
+					"<leader>cM",
+					desc = "Add Missing Imports (TS)",
+					icon = { icon = icons.ui.download, color = "green" },
+				},
+				{
+					"<leader>cD",
+					desc = "Fix All Diagnostics (TS)",
+					icon = { icon = icons.ui.wand, color = "purple" },
 				},
 				{
 					"<leader>cd",

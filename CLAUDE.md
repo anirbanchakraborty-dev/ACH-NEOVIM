@@ -39,7 +39,10 @@ These are non-negotiable. Violating them is a regression.
    formatters, linters), and any other "install up front" mechanism is
    forbidden. Everything must install on demand the first time the relevant
    filetype is opened. The reference implementations are in `lsp.lua`,
-   `formatting.lua`, `linting.lua`, and `treesitter.lua` (`auto_install = true`).
+   `formatting.lua`, `linting.lua`, and `treesitter.lua` (a custom FileType
+   autocmd that calls `require("nvim-treesitter").install({lang})` and
+   re-fires FileType for waiting buffers — see the "nvim-treesitter `main`
+   branch" section below).
 
 4. **Every keymap needs a `desc`**, and every keymap that should appear in
    which-key needs an icon spec entry sourced from `icons.lua`. The pattern
@@ -88,7 +91,7 @@ ACH-NEOVIM/
             ├── lsp.lua         mason + nvim-lspconfig + on-demand vim.lsp.enable + SchemaStore + clangd_extensions
             ├── lualine.lua     lualine with custom ocean theme
             ├── terminal.lua    toggleterm + named language REPLs
-            ├── treesitter.lua  nvim-treesitter (master branch) + textobjects
+            ├── treesitter.lua  nvim-treesitter (main branch) + textobjects (main) + treesitter-context
             ├── ui.lua          snacks (dashboard/notifier/lazygit/indent/...), noice, bufferline, mini.icons, rainbow-delimiters, colorizer
             └── util.lua        persistence (sessions), vim-sleuth, snacks scratch/notifier keys
 ```
@@ -252,6 +255,18 @@ mini.icons' compat layer. lualine, fzf-lua, bufferline, etc. all keep
 working with no nvim-web-devicons install. Don't add nvim-web-devicons
 back as a dependency.
 
+The `file = { ... }` opts table also carries a small block of
+JavaScript / TypeScript project file glyphs (`tsconfig.json`,
+`package.json`, `.eslintrc.js`, `.prettierrc`, `yarn.lock`,
+`.node-version`, `.yarnrc.yml`) borrowed verbatim from LazyVim's
+`extras/lang/typescript/init.lua`. Without these, the file picker /
+lualine / bufferline render the generic JSON icon for every config
+file in a TS project, which is technically correct but visually
+identical to every other JSON file in the tree. The overrides give
+each one a recognizable per-tool glyph so they stand out in a crowded
+explorer. Add the TypeScript ones near the bottom of the same `file`
+table whenever a new tool emerges.
+
 ### `M.kinds` mirrors LazyVim verbatim — prefer MDI over codicons
 
 Every entry in `M.kinds` (the LSP completion-kind icon table) lives in
@@ -382,6 +397,49 @@ servers table) are notoriously noisy -- they show parameter names on
 every prop binding and slow down rendering on large templates. LazyVim
 has the same exclude in its main lsp/init.lua (`exclude = { "vue" }`
 on the `inlay_hints` opts table). One-line fix.
+
+### ts_ls TypeScript settings + `<leader>cM` / `<leader>cD` keymaps
+
+The `ts_ls` server entry in `lsp.lua` carries a duplicated
+`settings.typescript` and `settings.javascript` block borrowed from
+LazyVim's `extras/lang/typescript/vtsls.lua`. The same `typescript.*` keys work
+for both `vtsls` and `ts_ls` because both servers wrap the same
+upstream tsserver and forward these keys verbatim. The four enabled
+features:
+
+- **`inlayHints`**: parameter names (`literals` only — full mode is
+  too noisy on call sites that already pass named props), parameter
+  types, return types, enum member values, property declaration
+  types. `variableTypes` is OFF because it duplicates what hover
+  already shows on the LHS identifier.
+- **`updateImportsOnFileMove = "always"`**: when a TS file is renamed
+  via `<leader>cR` (Snacks.rename.rename_file) the LSP rewrites every
+  import path that pointed to the old name. Without this the LSP
+  prompts on every rename which is a papercut.
+- **`suggest.completeFunctionCalls`**: when accepting a function from
+  completion, ts_ls inserts the full signature with parameter
+  placeholders (mirrors blink.cmp's auto_brackets but with real
+  parameter names from the type signature).
+- The same settings table is duplicated for `javascript` so JS files
+  get the same hints + behavior; ts_ls reads both keys.
+
+Two **buffer-local keymaps** are bound inside `LspAttach` gated on
+`client.name == "ts_ls"`:
+
+- **`<leader>cM` (Add Missing Imports TS)**: fires the
+  `source.addMissingImports.ts` code action with `apply = true`. Same
+  pattern as `<leader>co` (Organize Imports) but with the TS-specific
+  command name. Wrapped in `pcall` so a buffer where the action isn't
+  available silently no-ops.
+- **`<leader>cD` (Fix All Diagnostics TS)**: fires the
+  `source.fixAll.ts` code action. The TS equivalent of `tsc --noEmit`
+  with auto-fix. Faster than going through the `<leader>ca` menu when
+  the same operation runs dozens of times per session.
+
+The which-key icons for both live in the global which-key block in
+`lsp.lua` (alongside `<leader>cR`/`<leader>cc`/etc.) so the icons
+register globally — which-key handles the filetype filtering at
+render time by checking whether the buffer-local keymap is bound.
 
 ### Octo (GitHub) lives in `git.lua`, picker is hardcoded to fzf-lua
 
@@ -535,66 +593,93 @@ toggle hook reaches into `tsc.enabled()` / `tsc.enable()` /
 `Snacks.toggle.option`-compatible getter/setter shape -- same approach
 used for render-markdown.nvim's snacks toggle in `lang.lua`.
 
-### nvim-treesitter directives/predicates vs Neovim 0.12 `match[]` contract
+### nvim-treesitter `main` branch (and what's gone with it)
 
-`treesitter.lua`'s config function re-registers **six** broken
-nvim-treesitter handlers right after
-`require("nvim-treesitter.configs").setup(opts)`. This is a workaround
-for a structural incompatibility between nvim-treesitter master and
-Neovim 0.12.x.
+`treesitter.lua` runs nvim-treesitter on the **`main` branch**, NOT
+master. Main is a complete, intentionally incompatible rewrite of the
+plugin that delegates every runtime feature to Neovim 0.12+'s built-in
+treesitter API. The plugin's job is now limited to:
 
-The overridden handlers are every predicate and directive still present
-in upstream `query_predicates.lua` that uses the legacy single-node
-access pattern:
+1. Maintaining the parser table (name → URL + revision) shipped in
+   `lua/nvim-treesitter/parsers.lua`.
+2. Installing / updating / uninstalling parsers via an async API
+   (`require("nvim-treesitter").install({...})`).
+3. Providing the indent expression
+   (`require("nvim-treesitter").indentexpr()`).
+4. Shipping bundled queries (highlights/injections/folds/locals) under
+   `queries/<lang>/` on the runtimepath.
 
-- **3 predicates:** `nth?`, `is?`, `kind-eq?`
-- **3 directives:** `set-lang-from-info-string!`, `set-lang-from-mimetype!`, `downcase!`
+Highlighting, folds, incremental selection, and textobjects are NOT
+enabled by the plugin. They're wired in three different places:
 
-**The breaking change.** In Neovim 0.12, the `all = false` option to
-`vim.treesitter.query.add_directive` and `add_predicate` was removed.
-Look at `vim/treesitter/query.lua`'s `M.add_directive` /
-`M.add_predicate`: they only process `force`, and `opts.all` is not
-referenced anywhere in `query.lua`. The handler signatures document
-`match` as a "table mapping capture IDs to a list of captured nodes"
--- always a `TSNode[]` array.
+- **Highlighting + folds**: `autocmds.lua`'s `TreesitterFolds` group
+  (already there, was added long before the migration). It calls
+  `vim.treesitter.start(args.buf)` on every FileType event and sets
+  `foldmethod = "expr"` + `foldexpr = vim.treesitter.foldexpr()` if
+  the parser is available. Parser-aware: silently no-ops if no parser.
 
-**Why nvim-treesitter is broken.** Master commit `3826d0c4`
-("fix(query): explicitly opt-in to legacy behavior") tried to opt back
-into the single-node form by passing `{ force = true, all = false }`,
-but on 0.12 that opt is silently ignored. So every handler in
-`query_predicates.lua` that does `local node = match[capture_id]` and
-then calls a TSNode method (`:range()`, `:type()`, `:parent()`, or
-feeds it through `vim.treesitter.get_node_text` /
-`nvim-treesitter.locals.find_definition`) crashes -- because `node` is
-actually the array, not a TSNode. The visible symptom is the noice
-toast `Decoration provider "conceal_line"
-(ns=nvim.treesitter.highlighter): ... attempt to call a method 'range'
-(a nil value)`. The "conceal_line" name is the decoration provider
-that was running when the crash happened, NOT the actual fault site.
+- **Indentation**: per-buffer in `treesitter.lua`'s install autocmd by
+  setting `vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"`.
+  Marked **experimental** in upstream README — if a parser ships
+  buggy indent rules, the per-filetype escape is to clear `indentexpr`
+  in an `ftplugin/<lang>.lua` or via a FileType autocmd.
 
-**How the fix works.** A `first_node(match, capture_id)` helper extracts
-the first TSNode from the array form (with a type-check fallback to
-legacy single-node form for older Neovim, since TSNodes are userdata
-and never tables). All six broken handlers are re-registered with
-array-aware bodies. The directives also `pcall`-wrap
-`vim.treesitter.get_node_text` for belt-and-suspenders safety. `force
-= true` replaces the upstream registrations; `all` is omitted from
-opts since it's a no-op on 0.12 anyway. There's an inline copy of
-nvim-treesitter's `valid_args` argument-count helper since it's
-module-local in the upstream file.
+- **Incremental selection**: a small node-stack helper at the bottom
+  of `treesitter.lua`'s config function, bound to `<C-Space>` (init in
+  normal mode, grow in visual mode) and `<BS>` (shrink in visual mode).
+  Mirrors the master branch's `init_selection` / `node_decremental` UX
+  exactly. State is per-buffer, cleared on visual→normal mode change
+  via a `ModeChanged` autocmd so the next press starts fresh.
 
-**What's NOT in the override.** `has-ancestor?`, `has-parent?`, and
-`trim!` were already removed from upstream nvim-treesitter in commit
-`9210b9a4` (Oct 2024) because they're upstreamed to Neovim's built-in
-handlers. Neovim's built-ins already use the array contract correctly,
-so they need no override. The `make-range!` directive in upstream is a
-no-op (`function() end`) and also needs nothing.
+The on-demand install autocmd pattern looks like the LSP installer in
+`lsp.lua`: a FileType autocmd consults a cached installed-parsers set,
+fires `require("nvim-treesitter").install({lang})` for any missing
+parser, and on completion enables treesitter for every loaded buffer
+that matches. Cache is refreshed after each successful install. The
+install function returns an `async.Task` whose `:await(callback)`
+method takes a plain callback and **does not** require an async
+coroutine context — that's the entry point we use; **do not** wrap it
+in `task:wait()` because that blocks the editor.
 
-When upstream nvim-treesitter master catches up to the 0.12 match[]
-contract, this whole `do...end` block in `treesitter.lua` can be
-deleted. Search for `3826d0c4` or `first_node` in `treesitter.lua` to
-find it. Tracked in detail in the
-`project_pending_treesitter_info_string` memory.
+The textobjects plugin is also on its own `main` branch with a brand-
+new API: instead of declaring `textobjects.select.keymaps` in opts you
+call `require("nvim-treesitter-textobjects.select").select_textobject(
+"@function.outer", "textobjects")` from a keymap callback. The
+"textobjects" second argument is the query group name (file:
+`queries/<lang>/textobjects.scm`). Same shape for `move.goto_*` and
+`swap.swap_*`. The init hook sets `vim.g.no_plugin_maps = true` per
+upstream README to disable Neovim's built-in ftplugin keymaps that
+would otherwise collide with custom textobjects.
+
+**IMPORTANT**: nvim-treesitter main does NOT support lazy-loading per
+its README. Both spec entries are `lazy = false`. Startup cost is
+small because the rewrite is much leaner than master. Do NOT add
+`event = ...` or `cmd = ...` triggers to either spec.
+
+**Default install_dir**: `vim.fn.stdpath('data') .. '/site'`
+(`~/.local/share/nvim/site/`), which is already on Neovim's runtime
+path by default. Parsers go to `site/parser/<lang>.so`, queries to
+`site/queries/<lang>/`. Because the install path is different from
+master's `lazy/nvim-treesitter/parser/`, the migration intentionally
+re-installs every parser the user touches. Cold-start cost is ~3-5s
+per missing parser, exactly once per filetype, identical to master's
+`auto_install` UX.
+
+**The ~150-line directive override block that lived here on master is
+GONE**. It was a workaround for nvim-treesitter master shipping query
+files written for the pre-0.12 single-node `match[capture]` contract;
+main's queries are written for the 0.12+ array contract directly, so
+there's nothing to patch. If you ever see a `attempt to call a method
+'range' (a nil value)` toast again, it means a query file regressed
+upstream — file an issue, do NOT re-add the override.
+
+If you need to roll back to master for any reason, change `branch =
+"main"` to `branch = "master"` on both spec entries, set `lazy = true`
+plus the old `event = { "BufReadPost", "BufNewFile" }` triggers, and
+re-add the directive override block (the old commit history shows the
+exact code). But there is no good reason to do this in 2026 — main
+is the active development line and master only receives security
+fixes.
 
 ### neoconf.nvim must run before `vim.lsp.config()` calls
 
