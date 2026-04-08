@@ -331,13 +331,23 @@ run / test now live under **`<leader>o`** via `overseer.nvim` in
 Four small patterns borrowed from LazyVim's main `lua/lazyvim/plugins/lsp/init.lua`
 that fill specific gaps in the LspAttach block:
 
-**`<leader>cc` / `<leader>cC` (Run / Refresh Codelens)** — gated on the
-client supporting `textDocument/codeLens`. Includes a `BufEnter` /
-`CursorHold` / `InsertLeave` autocmd in the `ACHCodelensRefresh`
-augroup that auto-refreshes lenses so they don't go stale, plus a
-`vim.schedule` initial refresh so lenses appear without waiting for
-the first event. The augroup uses `clear = false` so registering a
-new buffer's autocmd doesn't wipe other buffers' codelens autocmds.
+**`<leader>cc` (Run Codelens)** — gated on the client supporting
+`textDocument/codeLens`. Bound in normal + visual mode. The buffer
+also gets `vim.lsp.codelens.enable(true, { bufnr = bufnr })` called
+once on attach -- this is the **0.12+ stateful API** that registers
+the buffer with Neovim's codelens decoration provider, which then
+manages refresh/re-fetch internally. There is **no** manual refresh
+autocmd or `<leader>cC` binding -- they're not needed because the
+decoration provider handles it.
+
+The old API (`vim.lsp.codelens.refresh({ bufnr = N })` called from
+`BufEnter` / `CursorHold` / `InsertLeave` autocmds) is **deprecated**
+in 0.12 and emits a warning if called -- see
+`vim/lsp/codelens.lua`'s `M.refresh` body, which now just yells about
+the deprecation and forwards to `M.enable`. If a future change to
+this file accidentally re-introduces the manual refresh pattern, the
+deprecation toast will be the canary.
+
 This is what makes gopls's full codelens set (`gc_details`,
 `generate`, `regenerate_cgo`, `run_govulncheck`, `test`, `tidy`,
 `upgrade_dependency`, `vendor`) actually invokable -- before this,

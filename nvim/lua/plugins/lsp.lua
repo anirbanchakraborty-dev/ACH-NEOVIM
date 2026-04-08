@@ -818,32 +818,24 @@ return {
 						vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
 					end
 
-					-- Code lenses: bind run + refresh, set up auto-refresh on
-					-- BufEnter / CursorHold / InsertLeave so the lenses don't go
-					-- stale, and fire an initial refresh. Gated on the server
-					-- supporting textDocument/codeLens. The user's gopls config
-					-- enables the full codelens set (gc_details, generate,
-					-- regenerate_cgo, run_govulncheck, test, tidy,
-					-- upgrade_dependency, vendor) so this binding is what makes
-					-- those lenses actually invokable. Borrowed from LazyVim's
-					-- main lsp/init.lua codelens block. The augroup uses
-					-- clear = false so other buffers' autocmds aren't wiped when
-					-- we register this one.
+					-- Code lenses: bind run + activate codelens for this buffer.
+					-- Gated on the server supporting textDocument/codeLens. The
+					-- user's gopls config enables the full codelens set
+					-- (gc_details, generate, regenerate_cgo, run_govulncheck,
+					-- test, tidy, upgrade_dependency, vendor) so this binding
+					-- is what makes those lenses actually invokable.
+					--
+					-- `vim.lsp.codelens.enable(true, { bufnr })` is the 0.12+
+					-- API: it's stateful (enables codelens handling for the
+					-- buffer once) and Neovim manages the refresh lifecycle
+					-- internally via the codelens decoration provider. The old
+					-- pattern (manual `refresh()` calls from BufEnter /
+					-- CursorHold / InsertLeave autocmds) is now deprecated and
+					-- not needed -- the decoration provider handles re-fetching
+					-- automatically when the buffer changes or the cursor moves.
 					if client:supports_method("textDocument/codeLens") then
 						map({ "n", "v" }, "<leader>cc", vim.lsp.codelens.run, "Run Codelens")
-						map("n", "<leader>cC", vim.lsp.codelens.refresh, "Refresh Codelens")
-						vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
-							buffer = bufnr,
-							group = vim.api.nvim_create_augroup("ACHCodelensRefresh", { clear = false }),
-							callback = function()
-								pcall(vim.lsp.codelens.refresh, { bufnr = bufnr })
-							end,
-						})
-						-- Initial refresh so lenses appear without waiting for
-						-- the first BufEnter / CursorHold trigger.
-						vim.schedule(function()
-							pcall(vim.lsp.codelens.refresh, { bufnr = bufnr })
-						end)
+						vim.lsp.codelens.enable(true, { bufnr = bufnr })
 					end
 
 					-- Ruff serves textDocument/hover on Python files but its hover
@@ -1118,11 +1110,6 @@ return {
 					"<leader>cc",
 					desc = "Run Codelens",
 					icon = { icon = icons.lsp.code_lens, color = "green" },
-				},
-				{
-					"<leader>cC",
-					desc = "Refresh Codelens",
-					icon = { icon = icons.lsp.code_lens, color = "yellow" },
 				},
 				{
 					"<leader>co",
