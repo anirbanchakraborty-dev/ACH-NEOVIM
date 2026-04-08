@@ -84,6 +84,19 @@ setup. Run one script and the editor is ready.
   scroll past its definition. Cursor-mode tracking with a 3-line cap
   so deeply-nested scopes never take over the screen. Toggle with
   `<leader>ut`.
+- **GitHub inside nvim.** `pwntester/octo.nvim` lists/searches issues
+  and PRs (`<leader>gi`/`<leader>gI`/`<leader>gp`/`<leader>gP`), browses
+  repos (`<leader>gr`), and runs full-text search (`<leader>gS`). PR
+  review (line comments, threads, reactions, merge) all happens in
+  buffers using fzf-lua as the picker. Authenticates via the `gh` CLI —
+  run `gh auth login` once before first use.
+- **Tailwind class highlighting.** `mini.hipatterns` renders Tailwind
+  utility class names like `bg-blue-500` or `text-emerald-300` with the
+  actual color inline (background tint + contrasting fg). Works in
+  html / css / js / ts / vue / svelte / astro / handlebars / twig /
+  postcss. The Tailwind palette lives in `config/tailwind_colors.lua`
+  as a pure data module. Coexists with `nvim-colorizer` (which still
+  handles hex / rgb / hsl / CSS named colors) — zero overlap.
 - **Sidebar layout manager.** `folke/edgy.nvim` corrals Trouble,
   Outline, Grug Far, terminals (toggleterm + snacks), quickfix, help,
   and noice into edge groups (bottom + right). Resize panes with
@@ -317,6 +330,11 @@ A few standalone bindings worth knowing:
 - `<leader>um` — toggle inline markdown rendering (render-markdown)
 - `<leader>ut` — toggle sticky scope header (treesitter-context)
 - `<leader>ue` / `<leader>uE` — edgy toggle / select window
+- `<leader>gi` / `<leader>gI` — list / search GitHub issues (octo)
+- `<leader>gp` / `<leader>gP` — list / search GitHub PRs (octo)
+- `<leader>gr` — list GitHub repos (octo)
+- `<leader>gS` — full-text GitHub search (octo)
+- `:StartupTime` — profile Neovim startup (vim-startuptime, runs 10 trials)
 - `K` — LSP hover docs
 
 ---

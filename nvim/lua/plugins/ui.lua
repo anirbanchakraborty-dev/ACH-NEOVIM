@@ -722,4 +722,99 @@ Powered by ]]
 			},
 		},
 	},
+
+	-- mini.hipatterns: Tailwind CSS class highlighter. Renders class
+	-- names like `bg-blue-500`, `text-emerald-600`, etc. with the actual
+	-- Tailwind color inline. The Tailwind palette lives in the data
+	-- module `nvim/lua/config/tailwind_colors.lua` (270 lines of static
+	-- color tables, one entry per Tailwind palette × shade combo).
+	--
+	-- Borrowed from LazyVim's extras/util/mini-hipatterns.lua, trimmed
+	-- of the `hex_color` and `shorthand` highlighters since
+	-- nvim-colorizer (declared right above) already handles hex / rgb /
+	-- hsl. mini.hipatterns is here PURELY for Tailwind class
+	-- highlighting -- the two plugins coexist with zero overlap.
+	--
+	-- The `tailwind_hl` cache table is reset on `ColorScheme` events so
+	-- that switching colorschemes doesn't leave stale highlight groups
+	-- around (each highlight group encodes the Tailwind shade's bg + fg
+	-- pair, which depends on the active colorscheme's contrast
+	-- conventions).
+	{
+		"nvim-mini/mini.hipatterns",
+		event = { "BufReadPost", "BufNewFile" },
+		opts = function()
+			local colors = require("config.tailwind_colors")
+			-- Filetypes the Tailwind highlighter should activate in.
+			-- Mirrors LazyVim's list plus a few extras (handlebars,
+			-- twig, postcss) that match the user's web language stack.
+			local tailwind_ft = {
+				"astro",
+				"css",
+				"handlebars",
+				"heex",
+				"html",
+				"html-eex",
+				"htmlangular",
+				"javascript",
+				"javascriptreact",
+				"less",
+				"postcss",
+				"sass",
+				"scss",
+				"svelte",
+				"twig",
+				"typescript",
+				"typescriptreact",
+				"vue",
+			}
+			local tailwind_hl = {}
+
+			vim.api.nvim_create_autocmd("ColorScheme", {
+				group = vim.api.nvim_create_augroup("ACHHipatternsTailwindReset", { clear = true }),
+				callback = function() tailwind_hl = {} end,
+			})
+
+			return {
+				highlighters = {
+					tailwind = {
+						pattern = function()
+							if not vim.tbl_contains(tailwind_ft, vim.bo.filetype) then
+								return
+							end
+							-- "full" style: highlight the whole utility class.
+							-- Use "compact" if you only want the color portion
+							-- (e.g. `blue-500`) highlighted.
+							return "%f[%w:-]()[%w:-]+%-[a-z%-]+%-%d+()%f[^%w:-]"
+						end,
+						group = function(_, _, m)
+							---@type string
+							local match = m.full_match
+							---@type string, number|nil
+							local color, shade = match:match("[%w-]+%-([a-z%-]+)%-(%d+)")
+							shade = tonumber(shade)
+							local bg = vim.tbl_get(colors, color, shade)
+							if bg then
+								local hl = "MiniHipatternsTailwind" .. color .. shade
+								if not tailwind_hl[hl] then
+									tailwind_hl[hl] = true
+									-- Pick a contrasting fg shade so the class
+									-- name stays readable on the color background:
+									-- 500 -> 950 (dark fg on mid bg)
+									-- <500 -> 900 (dark fg on light bg)
+									-- >500 -> 100 (light fg on dark bg)
+									local bg_shade = shade == 500 and 950
+										or (shade < 500 and 900 or 100)
+									local fg = vim.tbl_get(colors, color, bg_shade)
+									vim.api.nvim_set_hl(0, hl, { bg = "#" .. bg, fg = "#" .. fg })
+								end
+								return hl
+							end
+						end,
+						extmark_opts = { priority = 2000 },
+					},
+				},
+			}
+		end,
+	},
 }

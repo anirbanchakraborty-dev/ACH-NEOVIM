@@ -70,11 +70,12 @@ ACH-NEOVIM/
     ├── init.lua            entry point: options → keymaps → autocmds → lazy
     └── lua/
         ├── config/
-        │   ├── icons.lua       central Nerd Font glyph table (M.ui, M.git, ...)
-        │   ├── lazy.lua        bootstraps lazy.nvim, imports lua/plugins/*
-        │   ├── options.lua     vim.opt defaults (leader, folds, splits, ...)
-        │   ├── keymaps.lua     non-plugin keymaps (motions, windows, buffers)
-        │   └── autocmds.lua    augroups (yank flash, big-file, prose mode, ...)
+        │   ├── icons.lua            central Nerd Font glyph table (M.ui, M.git, ...)
+        │   ├── lazy.lua             bootstraps lazy.nvim, imports lua/plugins/*
+        │   ├── options.lua          vim.opt defaults (leader, folds, splits, ...)
+        │   ├── keymaps.lua          non-plugin keymaps (motions, windows, buffers)
+        │   ├── autocmds.lua         augroups (yank flash, big-file, prose mode, ...)
+        │   └── tailwind_colors.lua  Tailwind v3 palette data module (mini.hipatterns)
         └── plugins/
             ├── ai.lua          coder/claudecode.nvim integration
             ├── coding.lua      blink.cmp, mini.pairs/surround/ai, lazydev, ts-comments, ts-autotag
@@ -324,6 +325,101 @@ extract function, `rv` extract variable, `ri` inline, etc.). Build /
 run / test now live under **`<leader>o`** via `overseer.nvim` in
 `util.lua` (`oo` Run, `ow` Task List, `ot` Action, `oq` Quick Action,
 `oi` Info). Don't conflate the two prefixes when adding new keymaps.
+
+### Octo (GitHub) lives in `git.lua`, picker is hardcoded to fzf-lua
+
+`pwntester/octo.nvim` is declared in `git.lua` next to the other git
+plugins (gitsigns, diffview, git-conflict, lazygit, gitbrowse). Borrowed
+from LazyVim's `extras/util/octo.lua` with three deviations:
+
+1. **Picker hardcoded to `"fzf-lua"`** instead of LazyVim's runtime
+   `LazyVim.has_extra("editor.fzf")` check. We know which picker we
+   ship — no need for the auto-detect block.
+2. **No snacks-disabling block.** LazyVim's spec disables its own
+   `<leader>gi/gI/gp/gP` snacks bindings before octo binds them, but
+   ACH-NEOVIM doesn't bind those keys to snacks in the first place
+   (the only `<leader>g*` snacks bindings here are `gg`/`gG` for
+   lazygit and `gB` for gitbrowse, none of which collide).
+3. **Single spec entry** instead of LazyVim's two-spec layered setup.
+   We collapse the picker config + the markdown treesitter register +
+   the ExitPre autocmd into one `config = function()` body.
+
+The **`vim.treesitter.language.register("markdown", "octo")` call** is
+critical: octo's PR/issue body buffers use the `octo` filetype (not
+`markdown`), and treesitter doesn't have an `octo` parser. Registering
+markdown as the parser for octo buffers makes them render with proper
+markdown syntax highlighting (bold/italic/code fences/etc.).
+
+The **`ExitPre` autocmd** sets `buftype = ""` on every open octo buffer
+right before nvim quits so persistence.nvim sessions can save them as
+regular file buffers. Without this, octo's `acwrite` buftype gets
+serialized into the session file and the next session restore tries to
+re-fetch the URL — which fails if the user is offline or unauthenticated.
+
+**Auth setup is out of scope.** Octo authenticates via the `gh` CLI;
+the user must run `gh auth login` once before first use. `install.sh`
+does NOT set this up automatically because it's an interactive flow.
+
+The keymap surface adds:
+
+- Six top-level entry points under `<leader>g`: `gi`/`gI` (issues),
+  `gp`/`gP` (PRs), `gr` (repos), `gS` (search). Bound globally.
+- Twelve `<localleader>*` group labels filtered with `ft = "octo"` so
+  they only appear in which-key when the cursor is inside an octo
+  buffer. They're labels for octo's own internal mappings (assignee,
+  comment, label, react, review, etc.) — the actions themselves are
+  bound by octo.nvim's mappings module, not by us.
+- Two `@` and `#` insert-mode remaps that fire `<C-x><C-o>` (omni
+  completion) so typing `@` or `#` in an octo buffer triggers the
+  user/issue/PR completion popup. Also filtered with `ft = "octo"`.
+
+### mini.hipatterns is Tailwind-only; colorizer keeps hex/rgb/hsl
+
+`nvim-mini/mini.hipatterns` lives in `ui.lua` right after the
+nvim-colorizer block. Both plugins coexist with **zero overlap**:
+
+- **nvim-colorizer** handles `#RRGGBB`, `#RRGGBBAA`, `rgb()`, `hsl()`,
+  and CSS named colors. This is the user's existing setup and stays
+  unchanged.
+- **mini.hipatterns** is configured with **only the `tailwind`
+  highlighter** — the LazyVim default `hex_color` and `shorthand`
+  highlighters are deliberately omitted to avoid duplicating
+  colorizer's job. mini.hipatterns is here purely for Tailwind class
+  highlighting (`bg-blue-500`, `text-emerald-300`, etc.).
+
+The **Tailwind palette data** lives in
+`nvim/lua/config/tailwind_colors.lua` as a pure data module returning
+a `{ palette_name = { [shade] = "RRGGBB" } }` table. Borrowed verbatim
+from LazyVim's inlined `M.colors` table (~270 lines). Split out into
+its own file because static color data has no business living in a
+plugin spec file — it's reusable, never edited, and bloats `ui.lua`
+unnecessarily if inlined.
+
+The **highlight cache** (`tailwind_hl`) is reset on `ColorScheme`
+events via the `ACHHipatternsTailwindReset` augroup so switching
+colorschemes doesn't leave stale highlight groups around. Each cache
+entry is keyed by the highlight group name
+(`MiniHipatternsTailwindblue500`, etc.) and gets its bg + fg pair
+recomputed against the new colorscheme.
+
+The **fg shade picker** is the contrast trick from LazyVim:
+
+- shade `500` → fg uses shade `950` (dark fg on mid bg)
+- shade `<500` → fg uses shade `900` (dark fg on light bg)
+- shade `>500` → fg uses shade `100` (light fg on dark bg)
+
+This guarantees the class name text stays readable on its colored
+background regardless of which Tailwind shade was used.
+
+If you want to also highlight `text-` and other prefixes besides `bg-`,
+the pattern is broad enough to catch any `prefix-color-shade` form
+(`%f[%w:-]()[%w:-]+%-[a-z%-]+%-%d+()%f[^%w:-]`). The `tailwind_ft`
+allowlist gates which filetypes the highlighter activates in — extend
+it if you adopt a new web framework filetype.
+
+**vim-startuptime** also lives in `util.lua` and is unremarkable: lazy
+on `:StartupTime`, `tries = 10` for stable averages. No keymaps, no
+which-key entries — it's a one-shot diagnostic command.
 
 ### edgy.nvim window manager + bufferline offset patch
 

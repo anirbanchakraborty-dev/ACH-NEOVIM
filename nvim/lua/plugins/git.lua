@@ -123,6 +123,83 @@ return {
     },
   },
 
+  -- octo.nvim: GitHub PR/issue/repo management inside nvim. Authenticates
+  -- via the `gh` CLI (run `gh auth login` once before first use). Uses
+  -- fzf-lua as the picker since that's what this config ships -- LazyVim
+  -- has a runtime check (`LazyVim.has_extra("editor.fzf")`) that we don't
+  -- need because we know which picker we have.
+  --
+  -- The keymap surface adds six top-level <leader>g* bindings (issues,
+  -- PRs, repos, search) and a set of <localleader>* group labels that
+  -- only show up inside `octo` filetype buffers (which-key picks them up
+  -- via the `ft = "octo"` filter). The @ and # mappings remap to the
+  -- omnicompletion trigger so typing @ or # inside an octo buffer fires
+  -- the user/issue/PR completion popup automatically.
+  --
+  -- The ExitPre autocmd flips octo buffers to `buftype = ""` right before
+  -- nvim quits so persistence.nvim sessions can save them as regular
+  -- file buffers (without this, octo's `acwrite` buftype gets serialized
+  -- and the next session restore tries to fetch the URL again).
+  {
+    "pwntester/octo.nvim",
+    cmd = "Octo",
+    event = { { event = "BufReadCmd", pattern = "octo://*" } },
+    opts = {
+      enable_builtin = true,
+      default_to_projects_v2 = true,
+      default_merge_method = "squash",
+      picker = "fzf-lua",
+    },
+    config = function(_, opts)
+      require("octo").setup(opts)
+      -- Render octo buffer bodies (PR/issue descriptions, comments) as
+      -- markdown. Without this they show as plain text since octo's
+      -- own filetype isn't a treesitter language.
+      vim.treesitter.language.register("markdown", "octo")
+
+      -- Keep octo windows around when nvim exits so persistence.nvim
+      -- can restore them. Borrowed from LazyVim's extras/util/octo.lua.
+      vim.api.nvim_create_autocmd("ExitPre", {
+        group = vim.api.nvim_create_augroup("ACHOctoExitPre", { clear = true }),
+        callback = function()
+          for _, win in ipairs(vim.api.nvim_list_wins()) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            if vim.bo[buf].filetype == "octo" then
+              vim.bo[buf].buftype = ""
+            end
+          end
+        end,
+      })
+    end,
+    keys = {
+      -- Top-level entry points
+      { "<leader>gi", "<cmd>Octo issue list<CR>",  desc = "List Issues (Octo)" },
+      { "<leader>gI", "<cmd>Octo issue search<CR>", desc = "Search Issues (Octo)" },
+      { "<leader>gp", "<cmd>Octo pr list<CR>",     desc = "List PRs (Octo)" },
+      { "<leader>gP", "<cmd>Octo pr search<CR>",   desc = "Search PRs (Octo)" },
+      { "<leader>gr", "<cmd>Octo repo list<CR>",   desc = "List Repos (Octo)" },
+      { "<leader>gS", "<cmd>Octo search<CR>",      desc = "Search (Octo)" },
+
+      -- Localleader group labels inside octo buffers (which-key picks
+      -- these up only when buffer filetype == "octo"). The actions
+      -- themselves are bound by octo.nvim's own mappings module.
+      { "<localleader>a",  "", desc = "+assignee (Octo)",  ft = "octo" },
+      { "<localleader>c",  "", desc = "+comment/code (Octo)", ft = "octo" },
+      { "<localleader>l",  "", desc = "+label (Octo)",     ft = "octo" },
+      { "<localleader>i",  "", desc = "+issue (Octo)",     ft = "octo" },
+      { "<localleader>r",  "", desc = "+react (Octo)",     ft = "octo" },
+      { "<localleader>p",  "", desc = "+pr (Octo)",        ft = "octo" },
+      { "<localleader>pr", "", desc = "+rebase (Octo)",    ft = "octo" },
+      { "<localleader>ps", "", desc = "+squash (Octo)",    ft = "octo" },
+      { "<localleader>v",  "", desc = "+review (Octo)",    ft = "octo" },
+      { "<localleader>g",  "", desc = "+goto_issue (Octo)", ft = "octo" },
+
+      -- @ and # in insert mode trigger omnicompletion (user / issue / PR pickers).
+      { "@", "@<C-x><C-o>", mode = "i", ft = "octo", silent = true },
+      { "#", "#<C-x><C-o>", mode = "i", ft = "octo", silent = true },
+    },
+  },
+
   -- which-key.nvim: extend spec with git groups + individual keymap icons
   {
     "folke/which-key.nvim",
@@ -144,6 +221,14 @@ return {
         { "<leader>gl", desc = "Repo Log",               icon = { icon = icons.git.log,      color = "blue" } },
         { "<leader>gd", desc = "Diffview Open",          icon = { icon = icons.git.diff,     color = "green" } },
         { "<leader>gD", desc = "Diffview Close",         icon = { icon = icons.ui.quit,      color = "red" } },
+
+        -- Octo (GitHub PR/issue/repo management)
+        { "<leader>gi", desc = "List Issues (Octo)",     icon = { icon = icons.git.issue_open,   color = "green"  } },
+        { "<leader>gI", desc = "Search Issues (Octo)",   icon = { icon = icons.git.issue_open,   color = "yellow" } },
+        { "<leader>gp", desc = "List PRs (Octo)",        icon = { icon = icons.git.pull_request, color = "purple" } },
+        { "<leader>gP", desc = "Search PRs (Octo)",      icon = { icon = icons.git.pull_request, color = "yellow" } },
+        { "<leader>gr", desc = "List Repos (Octo)",      icon = { icon = icons.git.repo,         color = "blue"   } },
+        { "<leader>gS", desc = "Search (Octo)",          icon = { icon = icons.find.grep,        color = "yellow" } },
 
         -- Hunk actions
         { "<leader>ghs", desc = "Stage Hunk",          icon = { icon = icons.git.added,  color = "green"  } },

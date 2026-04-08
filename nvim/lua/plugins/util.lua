@@ -151,4 +151,17 @@ return {
       },
     },
   },
+
+  -- vim-startuptime: profile Neovim startup time. Lazy-loaded on
+  -- `:StartupTime` so it costs zero unless you actually invoke it.
+  -- `startuptime_tries = 10` averages over 10 cold launches for stable
+  -- numbers. Use this when troubleshooting slow startup -- the timeline
+  -- view shows every plugin's load cost broken down by phase.
+  {
+    "dstein64/vim-startuptime",
+    cmd = "StartupTime",
+    config = function()
+      vim.g.startuptime_tries = 10
+    end,
+  },
 }
