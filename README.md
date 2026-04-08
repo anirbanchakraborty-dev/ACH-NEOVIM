@@ -30,9 +30,14 @@ setup. Run one script and the editor is ready.
   prettierd → prettier fallback chain for web files, gated by a
   `prettier --file-info` parser check so prettier silently falls back to
   the LSP formatter on filetypes it can't parse. `nvim-lint` runs
-  external linters (eslint_d, shellcheck, markdownlint, hadolint, yamllint,
+  external linters (shellcheck, markdownlint, hadolint, yamllint,
   golangci-lint, ansible-lint, tflint, sqlfluff, solhint, cmakelint) via a
-  debounced dispatcher and feeds results into `vim.diagnostic`. Markdown
+  debounced dispatcher and feeds results into `vim.diagnostic`. ESLint
+  diagnostics + auto-fix-on-save come from the **eslint LSP** (real-time,
+  with code actions) rather than the standalone `eslint_d` linter; the
+  LSP's `source.fixAll.eslint` is invoked from conform's `format_on_save`
+  callback right before prettier so eslint fixes lint issues and prettier
+  has the final word on cosmetic formatting. Markdown
   picks up two **conditional** formatters: `markdown-toc` only fires on
   buffers with a `<!-- toc -->` marker, `markdownlint-cli2` only fires
   when there are existing markdownlint diagnostics.
@@ -122,7 +127,7 @@ list.
 |-----------------|----------------------------------|------------------------------------|----------------|
 | Lua             | lua_ls                           | stylua                             | —              |
 | Python          | pyright + ruff (hover disabled)  | ruff (organize+fmt)                | ruff (LSP)     |
-| TypeScript / JS | ts_ls                            | prettierd / prettier               | eslint_d       |
+| TypeScript / JS | ts_ls + eslint (LSP)             | prettierd / prettier + eslint fix  | eslint (LSP)   |
 | HTML / CSS      | html + emmet, cssls              | prettierd / prettier               | —              |
 | JSON / YAML     | jsonls / yamlls + SchemaStore    | prettierd / prettier               | yamllint       |
 | Markdown        | marksman                         | prettier + markdown-toc + mdlint   | markdownlint   |

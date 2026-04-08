@@ -79,6 +79,38 @@ local servers = {
 		},
 	},
 
+	-- ESLint via vscode-eslint-language-server. Replaces the old eslint_d
+	-- linter that used to live in linting.lua: the LSP gives real-time
+	-- diagnostics + code actions instead of save-only feedback, and the
+	-- `format = true` setting enables eslint's `source.fixAll.eslint`
+	-- code action which conform's format_on_save calls before prettier
+	-- runs (see formatting.lua's format_on_save callback for the wiring).
+	--
+	-- `workingDirectories = { mode = "auto" }` is a monorepo papercut
+	-- fix borrowed from LazyVim's extras/linting/eslint.lua: it lets the
+	-- eslint LSP find the nearest .eslintrc when it's in a subfolder
+	-- instead of always looking at the project root.
+	eslint = {
+		mason = "eslint-lsp",
+		filetypes = {
+			"javascript",
+			"javascriptreact",
+			"javascript.jsx",
+			"typescript",
+			"typescriptreact",
+			"typescript.tsx",
+			"vue",
+			"svelte",
+			"astro",
+		},
+		config = {
+			settings = {
+				workingDirectories = { mode = "auto" },
+				format = true,
+			},
+		},
+	},
+
 	-- Web
 	html = {
 		mason = "html-lsp",

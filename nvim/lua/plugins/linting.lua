@@ -11,8 +11,13 @@ local icons = require("config.icons")
 
 -- nvim-lint linter name -> mason package name. nil entries are
 -- system-provided / not in mason.
+--
+-- ESLint is intentionally absent: we use the eslint LSP
+-- (vscode-eslint-language-server, registered in lsp.lua) for real-time
+-- diagnostics + code actions + auto-fix-on-save instead of running
+-- eslint_d as a separate linter. The LSP supersedes the linter; running
+-- both would double-count every issue.
 local linter_to_mason = {
-  eslint_d         = "eslint_d",
   shellcheck       = "shellcheck",
   markdownlint     = "markdownlint",
   hadolint         = "hadolint",
@@ -32,10 +37,8 @@ local linter_to_mason = {
 }
 
 local linters_by_ft = {
-  javascript      = { "eslint_d" },
-  javascriptreact = { "eslint_d" },
-  typescript      = { "eslint_d" },
-  typescriptreact = { "eslint_d" },
+  -- JS / TS get their lint diagnostics from the eslint LSP, not
+  -- from a separate eslint_d linter. See linter_to_mason comment above.
   sh              = { "shellcheck" },
   bash            = { "shellcheck" },
   zsh             = { "shellcheck" },

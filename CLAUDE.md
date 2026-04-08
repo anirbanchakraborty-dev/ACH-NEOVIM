@@ -386,6 +386,44 @@ deleted. Search for `3826d0c4` or `first_node` in `treesitter.lua` to
 find it. Tracked in detail in the
 `project_pending_treesitter_info_string` memory.
 
+### ESLint is an LSP, not a linter
+
+ESLint runs as the **`eslint` LSP** (`vscode-eslint-language-server` /
+mason package `eslint-lsp`), declared in `lsp.lua`'s servers table. It
+is **not** registered as an `nvim-lint` linter — `eslint_d` was removed
+from `linting.lua` when the LSP took over. Running both would
+double-count every issue and waste cycles.
+
+The LSP setup carries two non-default settings borrowed from LazyVim's
+`extras/linting/eslint.lua`:
+
+- **`workingDirectories = { mode = "auto" }`** — lets the eslint LSP
+  find the nearest `.eslintrc` in subfolders instead of always looking
+  at the project root. Critical for monorepos.
+- **`format = true`** — enables eslint's `source.fixAll.eslint` code
+  action, which is the LSP equivalent of `eslint --fix`.
+
+**Auto-fix on save is wired through conform's `format_on_save`
+callback** (in `formatting.lua`), NOT through a separate
+`BufWritePre` autocmd. The callback first checks for an attached
+eslint client on the buffer and runs `vim.lsp.buf.code_action` with
+`only = { "source.fixAll.eslint" }, apply = true` BEFORE returning the
+prettier formatter list. The order matters: eslint fixes first
+(unused vars, missing semicolons, broken patterns), then prettier
+reformats so prettier has the final word on cosmetics. This is the
+canonical "eslint --fix && prettier" pipeline. The eslint code action
+call is wrapped in `pcall` so a failed fix-all (syntax error, eslint
+not yet ready) never blocks the prettier save path.
+
+Disabling format-on-save via `g:disable_autoformat` /
+`b:disable_autoformat` ALSO disables the eslint fix-all step, since
+both run inside the same `format_on_save` callback. There's no
+separate gate for the eslint half.
+
+If you ever want to invoke fix-all manually outside of save, the LSP
+also exposes the standard code action menu via `<leader>ca` -- pick
+"Fix all eslint problems".
+
 ### `vim.filetype.add` block in `lsp.lua`
 
 `lsp.lua`'s config function opens with a `vim.filetype.add({...})` block

@@ -277,9 +277,26 @@ return {
       -- Format-on-save: sync so the formatted content is what lands on disk.
       -- Guarded by g:disable_autoformat / b:disable_autoformat so the user
       -- can turn it off per session or per buffer without unloading conform.
+      --
+      -- Eslint integration: if the eslint LSP is attached to the buffer,
+      -- run its `source.fixAll.eslint` code action FIRST so eslint
+      -- auto-fixes (unused vars, missing semicolons, etc.) land before
+      -- prettier reformats. This gives prettier the final word on
+      -- cosmetic formatting, which is the convention when projects use
+      -- eslint-config-prettier to disable conflicting rules. Wrapped in
+      -- pcall because the code action can throw if the buffer has a
+      -- syntax error or eslint hasn't finished initial scan yet -- a
+      -- failed fix-all should never block the prettier save path.
       format_on_save = function(bufnr)
         if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
           return
+        end
+        local eslint_clients = vim.lsp.get_clients({ name = "eslint", bufnr = bufnr })
+        if #eslint_clients > 0 then
+          pcall(vim.lsp.buf.code_action, {
+            context = { only = { "source.fixAll.eslint" }, diagnostics = {} },
+            apply = true,
+          })
         end
         return { timeout_ms = 1500, lsp_format = "fallback" }
       end,
