@@ -116,6 +116,14 @@ Powered by ]]
 			gitbrowse = {
 				enabled = true,
 			},
+			-- File tree explorer. The snacks ecosystem already loads, so
+			-- enabling this is one line vs adding neo-tree as a separate
+			-- plugin. Bound to <leader>e (root dir) and <leader>E (cwd)
+			-- in the snacks keys block in util.lua, with <leader>fe / <leader>fE
+			-- as the canonical names that <leader>e / <leader>E remap to.
+			explorer = {
+				enabled = true,
+			},
 			-- Defers some buffer setup operations on file open so the buffer
 			-- renders faster. Pure speedup, no behavior change.
 			quickfile = {

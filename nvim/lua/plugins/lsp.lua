@@ -290,12 +290,14 @@ return {
           map("i", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
 
           -- Code actions (format-on-save + manual <leader>cf is owned by
-          -- conform.nvim in formatting.lua).
+          -- conform.nvim in formatting.lua). <leader>cr (Rename) is owned
+          -- by inc-rename.nvim below for live in-buffer preview, and
+          -- <leader>cs (Outline) is owned by outline.nvim in editor.lua --
+          -- the vanilla vim.lsp.buf.document_symbol dumps to quickfix
+          -- which is much worse UX than a sidebar tree.
           map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
-          map("n", "<leader>cr", vim.lsp.buf.rename,           "Rename Symbol")
           map("n", "<leader>cd", vim.diagnostic.open_float,    "Line Diagnostic")
           map("n", "<leader>cl", "<cmd>LspInfo<cr>",           "LSP Info")
-          map("n", "<leader>cs", vim.lsp.buf.document_symbol,  "Document Symbols")
           map("n", "<leader>cS", vim.lsp.buf.workspace_symbol, "Workspace Symbols")
 
           -- Diagnostic navigation (uses the 0.11+ jump API)
@@ -429,6 +431,45 @@ return {
     end,
   },
 
+  -- inc-rename.nvim: live LSP rename with in-buffer preview. Replaces the
+  -- old vim.ui.input -> vim.lsp.buf.rename flow with `:IncRename newname`,
+  -- where every keystroke previews the rename across every reference in
+  -- the current buffer (and adjacent buffers if the LSP server reports
+  -- workspace edits). Bound to <leader>cr below as an expr keymap so the
+  -- cmdline pre-fills with `IncRename <cword>` and the user just edits
+  -- the existing token instead of typing it from scratch.
+  --
+  -- Pairs with the noice cmdline preset that's set in ui.lua via the
+  -- `inc_rename = true` preset toggle so the live preview floats look
+  -- consistent with the rest of the UI.
+  {
+    "smjonas/inc-rename.nvim",
+    cmd = "IncRename",
+    keys = {
+      {
+        "<leader>cr",
+        function()
+          return ":IncRename " .. vim.fn.expand("<cword>")
+        end,
+        expr = true,
+        desc = "Rename Symbol (inc-rename)",
+      },
+    },
+    opts = {},
+  },
+
+  -- noice.nvim: enable the inc-rename preset so noice's cmdline popup
+  -- formats the IncRename live preview correctly. The base noice config
+  -- lives in ui.lua; this is a keys-only / opts-only extension that
+  -- lazy.nvim will deep-merge.
+  {
+    "folke/noice.nvim",
+    optional = true,
+    opts = {
+      presets = { inc_rename = true },
+    },
+  },
+
   -- which-key: extend spec with code / LSP / mason keymap icons.
   {
     "folke/which-key.nvim",
@@ -442,7 +483,9 @@ return {
         { "<leader>cr", desc = "Rename Symbol",      icon = { icon = icons.lsp.rename,           color = "orange" } },
         { "<leader>cd", desc = "Line Diagnostic",    icon = { icon = icons.lsp.diagnostic,       color = "red"    } },
         { "<leader>cl", desc = "LSP Info",           icon = { icon = icons.ui.info,              color = "cyan"   } },
-        { "<leader>cs", desc = "Document Symbols",   icon = { icon = icons.lsp.document_symbol,  color = "green"  } },
+        -- <leader>cs (Outline) lives in editor.lua's which-key spec since
+        -- outline.nvim owns it. Keeping the icon registration there
+        -- adjacent to the keymap definition.
         { "<leader>cS", desc = "Workspace Symbols",  icon = { icon = icons.lsp.workspace_symbol, color = "green"  } },
 
         -- Mason group

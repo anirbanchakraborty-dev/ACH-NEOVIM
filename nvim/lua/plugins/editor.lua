@@ -311,4 +311,109 @@ return {
       },
     },
   },
+
+  -- harpoon (branch harpoon2): quick file marks. Mark files with
+  -- <leader>H, jump to marks 1-9 with <leader>1..<leader>9, or open the
+  -- pickable menu with <leader>h. Mental model: browser tabs but for
+  -- files -- once you're working in a known set of 3-9 files, jumping by
+  -- mark number is faster than fuzzy finding or buffer cycling.
+  --
+  -- save_on_toggle persists the mark list across sessions so the
+  -- numbered jumps survive a restart for any project the user has
+  -- harpooned files in. The menu width adapts to the current window
+  -- width minus a small margin so the popup never feels cramped.
+  {
+    "ThePrimeagen/harpoon",
+    branch = "harpoon2",
+    opts = {
+      menu = {
+        width = vim.api.nvim_win_get_width(0) - 4,
+      },
+      settings = {
+        save_on_toggle = true,
+      },
+    },
+    keys = function()
+      local keys = {
+        {
+          "<leader>H",
+          function() require("harpoon"):list():add() end,
+          desc = "Harpoon File",
+        },
+        {
+          "<leader>h",
+          function()
+            local harpoon = require("harpoon")
+            harpoon.ui:toggle_quick_menu(harpoon:list())
+          end,
+          desc = "Harpoon Quick Menu",
+        },
+      }
+      for i = 1, 9 do
+        table.insert(keys, {
+          "<leader>" .. i,
+          function() require("harpoon"):list():select(i) end,
+          desc = "Harpoon to File " .. i,
+        })
+      end
+      return keys
+    end,
+  },
+
+  -- outline.nvim: persistent symbol outline sidebar. Toggle with
+  -- <leader>cs (which previously dumped vim.lsp.buf.document_symbol to
+  -- the quickfix list -- a sidebar tree is much better UX). The icons
+  -- table is sourced from icons.kinds so the outline tree uses the same
+  -- glyphs as blink.cmp's completion popup.
+  --
+  -- For ad-hoc fuzzy symbol jumping the user still has fzf-lua's
+  -- lsp_document_symbols command (no keybind, run via :FzfLua); outline
+  -- is for the "I want to keep this open while navigating a 1500-line
+  -- file" workflow.
+  {
+    "hedyhli/outline.nvim",
+    cmd = { "Outline", "OutlineOpen", "OutlineClose" },
+    keys = {
+      { "<leader>cs", "<cmd>Outline<cr>", desc = "Toggle Outline" },
+    },
+    opts = function()
+      local defaults = require("outline.config").defaults
+      local opts = {
+        symbols = {
+          icons = {},
+        },
+        keymaps = {
+          up_and_jump   = "<up>",
+          down_and_jump = "<down>",
+        },
+      }
+      -- Merge icons.kinds into outline's per-kind icon table. Falls back
+      -- to the upstream default for any kind we haven't defined.
+      for kind, symbol in pairs(defaults.symbols.icons) do
+        opts.symbols.icons[kind] = {
+          icon = (icons.kinds[kind] or symbol.icon):gsub("%s+$", ""),
+          hl   = symbol.hl,
+        }
+      end
+      return opts
+    end,
+  },
+
+  -- which-key: extend spec with harpoon + outline keys (the harpoon mark
+  -- jumps <leader>1-9 are deliberately omitted from the spec -- they're
+  -- a numeric shortcut series and listing nine entries would clutter the
+  -- which-key popup; their descs are inlined on the keymaps themselves
+  -- so they still surface in :WhichKey listings).
+  {
+    "folke/which-key.nvim",
+    optional = true,
+    opts_extend = { "spec" },
+    opts = {
+      spec = {
+        { "<leader>H",  desc = "Harpoon File",       icon = { icon = icons.ui.pin,  color = "yellow" } },
+        { "<leader>h",  desc = "Harpoon Quick Menu", icon = { icon = icons.ui.menu, color = "yellow" } },
+        { "<leader>cs", desc = "Toggle Outline",     icon = { icon = icons.find.lsp_symbols, color = "green" } },
+      },
+    },
+  },
 }

@@ -38,7 +38,16 @@ setup. Run one script and the editor is ready.
 - **Polished UI.** snacks.dashboard on startup, snacks.notifier for toasts,
   snacks.indent rainbow guides, bufferline tabs with diagnostics, lualine
   with a custom ocean theme, noice floating cmdline, rainbow-delimiters,
-  inline color preview, and a flash-style 2-character jump motion.
+  inline color preview, snacks.explorer file tree, and a flash-style
+  2-character jump motion.
+- **Productivity tools.** Yank ring with history cycling (`yanky.nvim`),
+  per-project file marks (`harpoon2`), live in-buffer LSP rename preview
+  (`inc-rename.nvim`), treesitter docstring generator (`neogen`), real
+  refactoring operations like extract function / inline variable
+  (`refactoring.nvim`), task runner with template auto-discovery
+  (`overseer.nvim`), persistent symbol outline sidebar (`outline.nvim`),
+  and supercharged `<C-a>` / `<C-x>` for booleans, dates, hex colors,
+  weekdays, and language-specific keywords (`dial.nvim`).
 
 ---
 
@@ -147,28 +156,35 @@ ACH-NEOVIM/
 Leader is `<Space>`. Holding leader pops up which-key with every binding
 labelled and iconned. The headline groups:
 
-| Prefix       | Group                 |
-|--------------|-----------------------|
-| `<leader>a`  | AI / Claude           |
-| `<leader>b`  | Buffer                |
-| `<leader>c`  | Code (LSP)            |
-| `<leader>f`  | File / Find           |
-| `<leader>g`  | Git                   |
-| `<leader>gh` | Git Hunks             |
-| `<leader>gx` | Git Conflicts         |
-| `<leader>l`  | Lazy                  |
-| `<leader>m`  | Mason                 |
-| `<leader>q`  | Session               |
-| `<leader>s`  | Search                |
-| `<leader>sn` | Noice messages        |
-| `<leader>t`  | Terminal / REPLs      |
-| `<leader>u`  | UI toggles            |
-| `<leader>w`  | Window                |
-| `<leader>x`  | Diagnostics / Trouble |
+| Prefix                  | Group                    |
+|-------------------------|--------------------------|
+| `<leader>a`             | AI / Claude              |
+| `<leader>b`             | Buffer                   |
+| `<leader>c`             | Code (LSP)               |
+| `<leader>e`             | Explorer (root)          |
+| `<leader>f`             | File / Find              |
+| `<leader>g`             | Git                      |
+| `<leader>gh`            | Git Hunks                |
+| `<leader>gx`            | Git Conflicts            |
+| `<leader>h`             | Harpoon Quick Menu       |
+| `<leader>l`             | Lazy                     |
+| `<leader>m`             | Mason                    |
+| `<leader>o`             | Overseer (Tasks)         |
+| `<leader>p`             | Yank History             |
+| `<leader>q`             | Session                  |
+| `<leader>r`             | Refactor                 |
+| `<leader>s`             | Search                   |
+| `<leader>sn`            | Noice messages           |
+| `<leader>t`             | Terminal / REPLs         |
+| `<leader>u`             | UI toggles               |
+| `<leader>w`             | Window                   |
+| `<leader>x`             | Diagnostics / Trouble    |
+| `<leader>1`–`<leader>9` | Harpoon jump to file 1–9 |
 
 A few standalone bindings worth knowing:
 
 - `<C-/>` — toggle floating terminal
+- `<C-a>` / `<C-x>` — increment / decrement (booleans, dates, hex, weekdays, ...)
 - `<C-h/j/k/l>` — window navigation
 - `<S-h>` / `<S-l>` — previous / next buffer (bufferline order)
 - `<A-j>` / `<A-k>` — move line(s) down / up
@@ -176,7 +192,12 @@ A few standalone bindings worth knowing:
 - `]d` / `[d` — next / previous diagnostic (any severity)
 - `]e` / `[e` — next / previous error (severity-filtered)
 - `]h` / `[h` — next / previous git hunk
+- `]y` / `[y` — cycle yank history (after a paste)
 - `gco` / `gcO` — add comment line below / above
+- `gsa` / `gsd` / `gsr` — surround add / delete / replace
+- `<leader>cn` — generate annotations (neogen)
+- `<leader>cr` — rename symbol with live preview (inc-rename)
+- `<leader>cs` — toggle symbol outline sidebar
 - `K` — LSP hover docs
 
 ---

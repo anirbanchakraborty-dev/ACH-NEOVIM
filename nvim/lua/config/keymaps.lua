@@ -194,6 +194,26 @@ map("n", "<leader>uI", function()
 end, { desc = "Inspect Tree" })
 
 -- ---------------------------------------------------------------------------
+-- vim.snippet tabstop navigation. Used by neogen (which routes its
+-- docstring insertion through vim.snippet via snippet_engine = "nvim").
+-- Kept separate from blink.cmp's <Tab>/<S-Tab> chain because blink's
+-- snippet_forward action only sees blink-inserted snippets and is
+-- invisible to vim.snippet sessions, so vim.snippet needs its own keys.
+-- ---------------------------------------------------------------------------
+
+map({ "i", "s" }, "<C-l>", function()
+  if vim.snippet.active({ direction = 1 }) then
+    vim.snippet.jump(1)
+  end
+end, { desc = "Snippet Forward (vim.snippet)" })
+
+map({ "i", "s" }, "<C-h>", function()
+  if vim.snippet.active({ direction = -1 }) then
+    vim.snippet.jump(-1)
+  end
+end, { desc = "Snippet Backward (vim.snippet)" })
+
+-- ---------------------------------------------------------------------------
 -- Commenting: add an empty commented line below/above and drop into insert.
 -- Relies on Neovim 0.10+'s built-in `gcc` operator (no plugin required).
 -- ---------------------------------------------------------------------------

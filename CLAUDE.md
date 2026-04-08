@@ -285,6 +285,55 @@ not in any tagged release as of 2026-04-07. When v1.10.3 ships, revert
 all three (they're all comment-marked with `v1.10.2`). Tracked in detail
 in the `project_pending_blink_cmp_1_10_3` memory.
 
+### Plugin-owned LSP keymaps (`<leader>cr`, `<leader>cs`)
+
+`<leader>cr` (rename) and `<leader>cs` (symbol view) look like vanilla
+LSP buf-local keymaps but they're actually owned by **plugins**, not the
+`LspAttach` handler in `lsp.lua`. If you grep for them in the `LspAttach`
+callback you won't find them — they're deliberately removed.
+
+- **`<leader>cr`** is owned by `inc-rename.nvim` (declared in `lsp.lua`
+  outside the LspAttach block). It's an `expr` keymap that drops you
+  into the cmdline with `:IncRename <cword>` pre-filled, and every
+  keystroke previews the rename across every reference visibly. The
+  binding requires `cmd = "IncRename"` lazy-loading which fires the
+  first time the expr returns the command string. There's also a
+  `presets.inc_rename = true` opt extension on noice.nvim in `lsp.lua`
+  so noice's cmdline popup formats the live preview consistently.
+
+- **`<leader>cs`** is owned by `outline.nvim` (declared in `editor.lua`).
+  Replaced the old `vim.lsp.buf.document_symbol` binding which dumped to
+  the quickfix list — outline's persistent sidebar tree is much better
+  UX and the icon set is sourced from `M.kinds`. For ad-hoc fuzzy symbol
+  jumping you still have `:FzfLua lsp_document_symbols` (no keybind by
+  design — the outline sidebar covers the persistent case and fzf-lua
+  covers the ad-hoc case).
+
+If you re-add either of these into `LspAttach`, you'll create a silent
+duplicate-keymap conflict where lazy.nvim's plugin keys win on first
+press but the LspAttach version overrides on subsequent buffer reads.
+Don't.
+
+### `<leader>r` is refactor, not run/build
+
+CLAUDE.md and earlier README versions reserved `<leader>r` as a "Run /
+Build" placeholder, but the keymaps were never implemented. The prefix
+is now owned by `refactoring.nvim` in `coding.lua` (`rs` pick, `rE`
+extract function, `rv` extract variable, `ri` inline, etc.). Build /
+run / test now live under **`<leader>o`** via `overseer.nvim` in
+`util.lua` (`oo` Run, `ow` Task List, `ot` Action, `oq` Quick Action,
+`oi` Info). Don't conflate the two prefixes when adding new keymaps.
+
+### outline.nvim trims trailing spaces from `M.kinds`
+
+`editor.lua`'s outline spec sources its per-kind icons from
+`icons.kinds` but calls `:gsub("%s+$", "")` on every value before
+passing it to outline. This is required because `M.kinds` entries all
+end with a trailing space (intentional, see the `M.kinds` section
+above) and outline renders the glyph followed by its own spacing — the
+extra space would create a visual double-gap in the sidebar tree. Any
+new outline-style consumer of `M.kinds` should do the same trim.
+
 ---
 
 ## Git workflow notes
