@@ -130,20 +130,38 @@ and `linting.lua`. It looks like:
    lazy-loaded — without `refresh` cold-start `has_package` lookups silently
    return false), then installs the package via `pkg:install():once("closed", ...)`
    with toast notifications via `vim.notify` for both start and finish.
-4. After install, the module's "enable" hook (e.g. `vim.lsp.enable(name)` for
+4. **Cross-installer race guard.** Before calling `pkg:install()`, the
+   installer checks `pkg:is_installing()` and if true, attaches a
+   `:once("closed", on_done)` listener to the existing handle via
+   `pkg:get_install_handle():if_present(...)` instead of calling install
+   itself. This handles the case where the same mason package is targeted
+   by two installers simultaneously (e.g. `ruff` is both an LSP server in
+   `lsp.lua` and a formatter in `formatting.lua` — opening a Python file
+   cold fires both autocmds, both reach `ensure_<tool>` for the same `ruff`
+   package, and the second one would otherwise hit mason's internal
+   `assert(not self:is_installing(), "Package is already installing.")`
+   in `mason-core/package/init.lua:123`). The on_done callback fires
+   exactly once per closer regardless of which installer kicked it off
+   and re-checks `pkg:is_installed()` to decide success vs failure.
+   See lsp.lua's installer for the canonical comment block; formatting.lua
+   and linting.lua both reference it.
+5. After install, the module's "enable" hook (e.g. `vim.lsp.enable(name)` for
    LSPs, or just re-running `lint.try_lint()` for linters) wires the tool up.
-5. **Crucially**, after wiring up, the module re-fires `FileType` for any
+6. **Crucially**, after wiring up, the module re-fires `FileType` for any
    already-loaded buffers whose filetype matches, so the buffer that triggered
    the install actually gets the tool attached without needing a manual
    reload.
 
 If you add a new LSP / formatter / linter, follow this pattern. Don't add an
-`ensure_installed` table.
+`ensure_installed` table. The race guard in step 4 must be preserved on every
+new installer site — it's the difference between a clean cold-start and a
+toast spam of `Package is already installing.` errors the first time the
+user opens a file in a new language.
 
-Treesitter uses a simpler form: `ensure_installed = {}` plus
-`auto_install = true`, with a separate `FileType` autocmd in
-`treesitter.lua`'s config function that polls for parser availability and
-fires toast notifications.
+Treesitter on the `main` branch uses a different installer because the new
+install API (`require("nvim-treesitter").install({lang})`) returns an
+`async.Task` instead of going through mason. See the
+"nvim-treesitter `main` branch" section below for the details.
 
 ---
 

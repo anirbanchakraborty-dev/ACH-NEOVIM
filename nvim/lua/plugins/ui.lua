@@ -571,8 +571,20 @@ Powered by ]]
 		"folke/edgy.nvim",
 		event = "VeryLazy",
 		keys = {
-			{ "<leader>ue", function() require("edgy").toggle() end, desc = "Edgy Toggle" },
-			{ "<leader>uE", function() require("edgy").select() end, desc = "Edgy Select Window" },
+			{
+				"<leader>ue",
+				function()
+					require("edgy").toggle()
+				end,
+				desc = "Edgy Toggle",
+			},
+			{
+				"<leader>uE",
+				function()
+					require("edgy").select()
+				end,
+				desc = "Edgy Select Window",
+			},
 		},
 		opts = function()
 			local opts = {
@@ -608,10 +620,18 @@ Powered by ]]
 				},
 				keys = {
 					-- Increase / decrease pane width inside an edgy group
-					["<c-Right>"] = function(win) win:resize("width", 2) end,
-					["<c-Left>"]  = function(win) win:resize("width", -2) end,
-					["<c-Up>"]    = function(win) win:resize("height", 2) end,
-					["<c-Down>"]  = function(win) win:resize("height", -2) end,
+					["<c-Right>"] = function(win)
+						win:resize("width", 2)
+					end,
+					["<c-Left>"] = function(win)
+						win:resize("width", -2)
+					end,
+					["<c-Up>"] = function(win)
+						win:resize("height", 2)
+					end,
+					["<c-Down>"] = function(win)
+						win:resize("height", -2)
+					end,
 				},
 			}
 
@@ -789,7 +809,9 @@ Powered by ]]
 
 			vim.api.nvim_create_autocmd("ColorScheme", {
 				group = vim.api.nvim_create_augroup("ACHHipatternsTailwindReset", { clear = true }),
-				callback = function() tailwind_hl = {} end,
+				callback = function()
+					tailwind_hl = {}
+				end,
 			})
 
 			return {
@@ -820,8 +842,7 @@ Powered by ]]
 									-- 500 -> 950 (dark fg on mid bg)
 									-- <500 -> 900 (dark fg on light bg)
 									-- >500 -> 100 (light fg on dark bg)
-									local bg_shade = shade == 500 and 950
-										or (shade < 500 and 900 or 100)
+									local bg_shade = shade == 500 and 950 or (shade < 500 and 900 or 100)
 									local fg = vim.tbl_get(colors, color, bg_shade)
 									vim.api.nvim_set_hl(0, hl, { bg = "#" .. bg, fg = "#" .. fg })
 								end

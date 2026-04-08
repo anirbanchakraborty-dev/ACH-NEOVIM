@@ -182,13 +182,8 @@ return {
           if pkg:is_installed() then return end
 
           installing[name] = true
-          vim.notify(
-            ("Installing linter: %s"):format(mason_name),
-            vim.log.levels.INFO,
-            { title = "Lint", icon = icons.lsp.diagnostic }
-          )
 
-          pkg:install():once("closed", vim.schedule_wrap(function()
+          local function on_done()
             installing[name] = nil
             if pkg:is_installed() then
               vim.notify(
@@ -206,7 +201,26 @@ return {
                 { title = "Lint", icon = icons.lsp.diagnostic }
               )
             end
-          end))
+          end
+
+          -- Cross-installer race guard. Same mason package can be
+          -- targeted by lsp.lua (LSP), formatting.lua (formatter), and
+          -- this file (linter). mason asserts on a second pkg:install()
+          -- while one is in flight, so attach to the existing handle
+          -- instead. See lsp.lua for the canonical explanation.
+          if pkg:is_installing() then
+            pkg:get_install_handle():if_present(function(handle)
+              handle:once("closed", vim.schedule_wrap(on_done))
+            end)
+            return
+          end
+
+          vim.notify(
+            ("Installing linter: %s"):format(mason_name),
+            vim.log.levels.INFO,
+            { title = "Lint", icon = icons.lsp.diagnostic }
+          )
+          pkg:install():once("closed", vim.schedule_wrap(on_done))
         end))
       end
 

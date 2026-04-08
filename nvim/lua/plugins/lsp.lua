@@ -1017,32 +1017,51 @@ return {
 					end
 
 					installing[name] = true
+
+					local function on_done()
+						installing[name] = nil
+						if pkg:is_installed() then
+							vim.notify(
+								("LSP installed: %s"):format(entry.mason),
+								vim.log.levels.INFO,
+								{ title = "LSP", icon = icons.plugins.lsp }
+							)
+							enable_server(name)
+						else
+							vim.notify(
+								("LSP install failed: %s"):format(entry.mason),
+								vim.log.levels.WARN,
+								{ title = "LSP", icon = icons.plugins.lsp }
+							)
+						end
+					end
+
+					-- Cross-installer race guard. mason-registry returns the
+					-- SAME `pkg` object instance for a given mason package
+					-- across every caller (the registry caches), and
+					-- `pkg:install()` asserts internally that the package
+					-- isn't already installing. So if formatting.lua or
+					-- linting.lua started an install for this same mason
+					-- package (e.g. `ruff` is both an LSP and a formatter)
+					-- before this callback fired, we must NOT call install()
+					-- ourselves -- attach a `closed` listener to the
+					-- existing handle instead. The on_done callback fires
+					-- exactly once per closer, regardless of which installer
+					-- kicked it off, and re-checks pkg:is_installed() to
+					-- decide success vs failure.
+					if pkg:is_installing() then
+						pkg:get_install_handle():if_present(function(handle)
+							handle:once("closed", vim.schedule_wrap(on_done))
+						end)
+						return
+					end
+
 					vim.notify(
 						("Installing LSP: %s"):format(entry.mason),
 						vim.log.levels.INFO,
 						{ title = "LSP", icon = icons.plugins.lsp }
 					)
-
-					pkg:install():once(
-						"closed",
-						vim.schedule_wrap(function()
-							installing[name] = nil
-							if pkg:is_installed() then
-								vim.notify(
-									("LSP installed: %s"):format(entry.mason),
-									vim.log.levels.INFO,
-									{ title = "LSP", icon = icons.plugins.lsp }
-								)
-								enable_server(name)
-							else
-								vim.notify(
-									("LSP install failed: %s"):format(entry.mason),
-									vim.log.levels.WARN,
-									{ title = "LSP", icon = icons.plugins.lsp }
-								)
-							end
-						end)
-					)
+					pkg:install():once("closed", vim.schedule_wrap(on_done))
 				end))
 			end
 
