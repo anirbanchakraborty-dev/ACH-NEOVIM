@@ -15,11 +15,35 @@ return {
     event = "BufReadPre",
     opts = {},
     keys = {
-      { "<leader>qs", function() require("persistence").load() end,                desc = "Restore Session" },
-      { "<leader>ql", function() require("persistence").load({ last = true }) end, desc = "Last Session" },
-      { "<leader>qS", function() require("persistence").select() end,              desc = "Select Session" },
-      { "<leader>qd", function() require("persistence").stop() end,                desc = "Don't Save Session" },
-      { "<leader>qq", "<cmd>qa<cr>",                                                desc = "Quit All" },
+      {
+        "<leader>qs",
+        function()
+          require("persistence").load()
+        end,
+        desc = "Restore Session",
+      },
+      {
+        "<leader>ql",
+        function()
+          require("persistence").load({ last = true })
+        end,
+        desc = "Last Session",
+      },
+      {
+        "<leader>qS",
+        function()
+          require("persistence").select()
+        end,
+        desc = "Select Session",
+      },
+      {
+        "<leader>qd",
+        function()
+          require("persistence").stop()
+        end,
+        desc = "Don't Save Session",
+      },
+      { "<leader>qq", "<cmd>qa<cr>", desc = "Quit All" },
     },
   },
 
@@ -43,9 +67,27 @@ return {
   {
     "folke/snacks.nvim",
     keys = {
-      { "<leader>un", function() Snacks.notifier.hide() end,  desc = "Dismiss Notifications" },
-      { "<leader>.",  function() Snacks.scratch() end,        desc = "Toggle Scratch Buffer" },
-      { "<leader>S",  function() Snacks.scratch.select() end, desc = "Select Scratch Buffer" },
+      {
+        "<leader>un",
+        function()
+          Snacks.notifier.hide()
+        end,
+        desc = "Dismiss Notifications",
+      },
+      {
+        "<leader>.",
+        function()
+          Snacks.scratch()
+        end,
+        desc = "Toggle Scratch Buffer",
+      },
+      {
+        "<leader>S",
+        function()
+          Snacks.scratch.select()
+        end,
+        desc = "Select Scratch Buffer",
+      },
 
       -- snacks.explorer
       {
@@ -59,9 +101,15 @@ return {
         end,
         desc = "Explorer (root)",
       },
-      { "<leader>fE", function() Snacks.explorer() end, desc = "Explorer (cwd)" },
-      { "<leader>e",  "<leader>fe", desc = "Explorer (root)", remap = true },
-      { "<leader>E",  "<leader>fE", desc = "Explorer (cwd)",  remap = true },
+      {
+        "<leader>fE",
+        function()
+          Snacks.explorer()
+        end,
+        desc = "Explorer (cwd)",
+      },
+      { "<leader>e", "<leader>fe", desc = "Explorer (root)", remap = true },
+      { "<leader>E", "<leader>fE", desc = "Explorer (cwd)", remap = true },
     },
   },
 
@@ -107,11 +155,11 @@ return {
       },
     },
     keys = {
-      { "<leader>oo", "<cmd>OverseerRun<cr>",        desc = "Run Task" },
-      { "<leader>ow", "<cmd>OverseerToggle!<cr>",    desc = "Task List" },
+      { "<leader>oo", "<cmd>OverseerRun<cr>", desc = "Run Task" },
+      { "<leader>ow", "<cmd>OverseerToggle!<cr>", desc = "Task List" },
       { "<leader>ot", "<cmd>OverseerTaskAction<cr>", desc = "Task Action" },
       { "<leader>oq", "<cmd>OverseerQuickAction<cr>", desc = "Quick Action" },
-      { "<leader>oi", "<cmd>OverseerInfo<cr>",       desc = "Overseer Info" },
+      { "<leader>oi", "<cmd>OverseerInfo<cr>", desc = "Overseer Info" },
     },
   },
 
@@ -126,28 +174,28 @@ return {
         -- Session group
         { "<leader>q", group = "Session", icon = { icon = icons.ui.quit, color = "red" } },
 
-        { "<leader>qs", desc = "Restore Session",    icon = { icon = icons.ui.undo,    color = "green" } },
-        { "<leader>ql", desc = "Last Session",       icon = { icon = icons.ui.recent,  color = "cyan"  } },
-        { "<leader>qS", desc = "Select Session",     icon = { icon = icons.find.buffer, color = "blue" } },
-        { "<leader>qd", desc = "Don't Save Session", icon = { icon = icons.ui.close,   color = "red"   } },
-        { "<leader>qq", desc = "Quit All",           icon = { icon = icons.ui.quit,    color = "red"   } },
+        { "<leader>qs", desc = "Restore Session", icon = { icon = icons.ui.undo, color = "green" } },
+        { "<leader>ql", desc = "Last Session", icon = { icon = icons.ui.recent, color = "cyan" } },
+        { "<leader>qS", desc = "Select Session", icon = { icon = icons.find.buffer, color = "blue" } },
+        { "<leader>qd", desc = "Don't Save Session", icon = { icon = icons.ui.close, color = "red" } },
+        { "<leader>qq", desc = "Quit All", icon = { icon = icons.ui.quit, color = "red" } },
 
         -- Explorer (snacks.explorer) -- the dashboard already reserves
         -- the icon under <leader>e in CLAUDE.md, this just labels it.
-        { "<leader>e",  desc = "Explorer (root)",     icon = { icon = icons.ui.tree,         color = "blue"  } },
-        { "<leader>E",  desc = "Explorer (cwd)",      icon = { icon = icons.ui.folder_open,  color = "blue"  } },
-        { "<leader>fe", desc = "Explorer (root)",     icon = { icon = icons.ui.tree,         color = "blue"  } },
-        { "<leader>fE", desc = "Explorer (cwd)",      icon = { icon = icons.ui.folder_open,  color = "blue"  } },
+        { "<leader>e", desc = "Explorer (root)", icon = { icon = icons.ui.tree, color = "blue" } },
+        { "<leader>E", desc = "Explorer (cwd)", icon = { icon = icons.ui.folder_open, color = "blue" } },
+        { "<leader>fe", desc = "Explorer (root)", icon = { icon = icons.ui.tree, color = "blue" } },
+        { "<leader>fE", desc = "Explorer (cwd)", icon = { icon = icons.ui.folder_open, color = "blue" } },
 
         -- Overseer (build / run / test). Replaces the old <leader>r
         -- "Run/Build" placeholder from CLAUDE.md, which is now the
         -- refactoring group in coding.lua.
-        { "<leader>o",  group = "Overseer (Tasks)", icon = { icon = icons.ui.rocket,    color = "orange" } },
-        { "<leader>oo", desc = "Run Task",          icon = { icon = icons.ui.play,      color = "green"  } },
-        { "<leader>ow", desc = "Task List",         icon = { icon = icons.find.cmd,     color = "blue"   } },
-        { "<leader>ot", desc = "Task Action",       icon = { icon = icons.ui.menu,      color = "purple" } },
-        { "<leader>oq", desc = "Quick Action",      icon = { icon = icons.ui.lightbulb, color = "yellow" } },
-        { "<leader>oi", desc = "Overseer Info",     icon = { icon = icons.ui.info,     color = "cyan"   } },
+        { "<leader>o", group = "Overseer (Tasks)", icon = { icon = icons.ui.rocket, color = "orange" } },
+        { "<leader>oo", desc = "Run Task", icon = { icon = icons.ui.play, color = "green" } },
+        { "<leader>ow", desc = "Task List", icon = { icon = icons.find.cmd, color = "blue" } },
+        { "<leader>ot", desc = "Task Action", icon = { icon = icons.ui.menu, color = "purple" } },
+        { "<leader>oq", desc = "Quick Action", icon = { icon = icons.ui.lightbulb, color = "yellow" } },
+        { "<leader>oi", desc = "Overseer Info", icon = { icon = icons.ui.info, color = "cyan" } },
       },
     },
   },

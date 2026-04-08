@@ -70,32 +70,32 @@ return {
         -- theme so completion items echo the editor's mode colors.
         -- ----------------------------------------------------------------
         -- Main completion menu
-        hl.BlinkCmpMenu                       = { bg = bg_dark, fg = fg }
-        hl.BlinkCmpMenuBorder                 = { bg = bg_dark, fg = border }
-        hl.BlinkCmpMenuSelection              = { bg = bg_hl, bold = true }
-        hl.BlinkCmpScrollBarThumb             = { bg = border }
-        hl.BlinkCmpScrollBarGutter            = { bg = bg_dark }
-        hl.BlinkCmpCursorLine                 = { bg = bg_hl }
+        hl.BlinkCmpMenu = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpMenuBorder = { bg = bg_dark, fg = border }
+        hl.BlinkCmpMenuSelection = { bg = bg_hl, bold = true }
+        hl.BlinkCmpScrollBarThumb = { bg = border }
+        hl.BlinkCmpScrollBarGutter = { bg = bg_dark }
+        hl.BlinkCmpCursorLine = { bg = bg_hl }
 
         -- Item rendering
-        hl.BlinkCmpLabel                      = { bg = bg_dark, fg = fg }
-        hl.BlinkCmpLabelDeprecated            = { bg = bg_dark, fg = "#627E97", strikethrough = true }
-        hl.BlinkCmpLabelMatch                 = { bg = bg_dark, fg = c.orange, bold = true }
-        hl.BlinkCmpLabelDescription           = { bg = bg_dark, fg = "#627E97" }
-        hl.BlinkCmpLabelDetail                = { bg = bg_dark, fg = "#627E97" }
-        hl.BlinkCmpKind                       = { bg = bg_dark, fg = c.blue }
-        hl.BlinkCmpSource                     = { bg = bg_dark, fg = "#627E97", italic = true }
-        hl.BlinkCmpGhostText                  = { fg = "#627E97", italic = true }
+        hl.BlinkCmpLabel = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpLabelDeprecated = { bg = bg_dark, fg = "#627E97", strikethrough = true }
+        hl.BlinkCmpLabelMatch = { bg = bg_dark, fg = c.orange, bold = true }
+        hl.BlinkCmpLabelDescription = { bg = bg_dark, fg = "#627E97" }
+        hl.BlinkCmpLabelDetail = { bg = bg_dark, fg = "#627E97" }
+        hl.BlinkCmpKind = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpSource = { bg = bg_dark, fg = "#627E97", italic = true }
+        hl.BlinkCmpGhostText = { fg = "#627E97", italic = true }
 
         -- Documentation popup
-        hl.BlinkCmpDoc                        = { bg = bg_dark, fg = fg }
-        hl.BlinkCmpDocBorder                  = { bg = bg_dark, fg = border }
-        hl.BlinkCmpDocSeparator               = { bg = bg_dark, fg = border }
-        hl.BlinkCmpDocCursorLine              = { bg = bg_hl }
+        hl.BlinkCmpDoc = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpDocBorder = { bg = bg_dark, fg = border }
+        hl.BlinkCmpDocSeparator = { bg = bg_dark, fg = border }
+        hl.BlinkCmpDocCursorLine = { bg = bg_hl }
 
         -- Signature help popup
-        hl.BlinkCmpSignatureHelp              = { bg = bg_dark, fg = fg }
-        hl.BlinkCmpSignatureHelpBorder        = { bg = bg_dark, fg = border }
+        hl.BlinkCmpSignatureHelp = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpSignatureHelpBorder = { bg = bg_dark, fg = border }
         hl.BlinkCmpSignatureHelpActiveParameter = { bg = bg_search, fg = fg, bold = true }
 
         -- Per-kind icon colors. blink.cmp emits BlinkCmpKind<KindName>
@@ -103,33 +103,33 @@ return {
         -- glyph distinctly. Mirrors lualine's ocean theme: blue for
         -- functions/methods, green for fields/values, purple for classes
         -- /interfaces, orange for keywords, cyan for variables.
-        hl.BlinkCmpKindFunction      = { bg = bg_dark, fg = c.blue }
-        hl.BlinkCmpKindMethod        = { bg = bg_dark, fg = c.blue }
-        hl.BlinkCmpKindConstructor   = { bg = bg_dark, fg = c.blue }
-        hl.BlinkCmpKindClass         = { bg = bg_dark, fg = c.purple }
-        hl.BlinkCmpKindInterface     = { bg = bg_dark, fg = c.purple }
-        hl.BlinkCmpKindStruct        = { bg = bg_dark, fg = c.purple }
-        hl.BlinkCmpKindEnum          = { bg = bg_dark, fg = c.purple }
-        hl.BlinkCmpKindEnumMember    = { bg = bg_dark, fg = c.green }
-        hl.BlinkCmpKindField         = { bg = bg_dark, fg = c.green }
-        hl.BlinkCmpKindProperty      = { bg = bg_dark, fg = c.green }
-        hl.BlinkCmpKindValue         = { bg = bg_dark, fg = c.green }
-        hl.BlinkCmpKindConstant      = { bg = bg_dark, fg = c.orange }
-        hl.BlinkCmpKindKeyword       = { bg = bg_dark, fg = c.orange }
-        hl.BlinkCmpKindOperator      = { bg = bg_dark, fg = c.orange }
-        hl.BlinkCmpKindVariable      = { bg = bg_dark, fg = c.cyan }
-        hl.BlinkCmpKindModule        = { bg = bg_dark, fg = c.cyan }
-        hl.BlinkCmpKindNamespace     = { bg = bg_dark, fg = c.cyan }
-        hl.BlinkCmpKindReference     = { bg = bg_dark, fg = c.cyan }
-        hl.BlinkCmpKindSnippet       = { bg = bg_dark, fg = c.yellow }
-        hl.BlinkCmpKindText          = { bg = bg_dark, fg = fg }
-        hl.BlinkCmpKindFile          = { bg = bg_dark, fg = c.blue }
-        hl.BlinkCmpKindFolder        = { bg = bg_dark, fg = c.blue }
-        hl.BlinkCmpKindUnit          = { bg = bg_dark, fg = c.green }
-        hl.BlinkCmpKindEvent         = { bg = bg_dark, fg = c.purple }
-        hl.BlinkCmpKindColor         = { bg = bg_dark, fg = c.red }
+        hl.BlinkCmpKindFunction = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindMethod = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindConstructor = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindClass = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindInterface = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindStruct = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindEnum = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindEnumMember = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindField = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindProperty = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindValue = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindConstant = { bg = bg_dark, fg = c.orange }
+        hl.BlinkCmpKindKeyword = { bg = bg_dark, fg = c.orange }
+        hl.BlinkCmpKindOperator = { bg = bg_dark, fg = c.orange }
+        hl.BlinkCmpKindVariable = { bg = bg_dark, fg = c.cyan }
+        hl.BlinkCmpKindModule = { bg = bg_dark, fg = c.cyan }
+        hl.BlinkCmpKindNamespace = { bg = bg_dark, fg = c.cyan }
+        hl.BlinkCmpKindReference = { bg = bg_dark, fg = c.cyan }
+        hl.BlinkCmpKindSnippet = { bg = bg_dark, fg = c.yellow }
+        hl.BlinkCmpKindText = { bg = bg_dark, fg = fg }
+        hl.BlinkCmpKindFile = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindFolder = { bg = bg_dark, fg = c.blue }
+        hl.BlinkCmpKindUnit = { bg = bg_dark, fg = c.green }
+        hl.BlinkCmpKindEvent = { bg = bg_dark, fg = c.purple }
+        hl.BlinkCmpKindColor = { bg = bg_dark, fg = c.red }
         hl.BlinkCmpKindTypeParameter = { bg = bg_dark, fg = c.purple }
-        hl.BlinkCmpKindLazyDev       = { bg = bg_dark, fg = c.cyan }
+        hl.BlinkCmpKindLazyDev = { bg = bg_dark, fg = c.cyan }
 
         -- Cursor line and line numbers
         hl.CursorLine = { bg = bg_hl }
@@ -226,32 +226,32 @@ return {
         hl.NotifyBackground = { bg = bg_dark }
 
         -- Snacks notifier (themed toast notifications)
-        hl.SnacksNotifierInfo        = { bg = bg_dark, fg = c.blue }
-        hl.SnacksNotifierWarn        = { bg = bg_dark, fg = c.yellow }
-        hl.SnacksNotifierError       = { bg = bg_dark, fg = c.red }
-        hl.SnacksNotifierDebug       = { bg = bg_dark, fg = c.purple }
-        hl.SnacksNotifierTrace       = { bg = bg_dark, fg = "#627E97" }
-        hl.SnacksNotifierIconInfo    = { bg = bg_dark, fg = c.blue }
-        hl.SnacksNotifierIconWarn    = { bg = bg_dark, fg = c.yellow }
-        hl.SnacksNotifierIconError   = { bg = bg_dark, fg = c.red }
-        hl.SnacksNotifierIconDebug   = { bg = bg_dark, fg = c.purple }
-        hl.SnacksNotifierIconTrace   = { bg = bg_dark, fg = "#627E97" }
-        hl.SnacksNotifierTitleInfo   = { bg = bg_dark, fg = c.blue, bold = true }
-        hl.SnacksNotifierTitleWarn   = { bg = bg_dark, fg = c.yellow, bold = true }
-        hl.SnacksNotifierTitleError  = { bg = bg_dark, fg = c.red, bold = true }
-        hl.SnacksNotifierTitleDebug  = { bg = bg_dark, fg = c.purple, bold = true }
-        hl.SnacksNotifierTitleTrace  = { bg = bg_dark, fg = "#627E97", bold = true }
-        hl.SnacksNotifierBorderInfo  = { bg = bg_dark, fg = c.blue }
-        hl.SnacksNotifierBorderWarn  = { bg = bg_dark, fg = c.yellow }
+        hl.SnacksNotifierInfo = { bg = bg_dark, fg = c.blue }
+        hl.SnacksNotifierWarn = { bg = bg_dark, fg = c.yellow }
+        hl.SnacksNotifierError = { bg = bg_dark, fg = c.red }
+        hl.SnacksNotifierDebug = { bg = bg_dark, fg = c.purple }
+        hl.SnacksNotifierTrace = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierIconInfo = { bg = bg_dark, fg = c.blue }
+        hl.SnacksNotifierIconWarn = { bg = bg_dark, fg = c.yellow }
+        hl.SnacksNotifierIconError = { bg = bg_dark, fg = c.red }
+        hl.SnacksNotifierIconDebug = { bg = bg_dark, fg = c.purple }
+        hl.SnacksNotifierIconTrace = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierTitleInfo = { bg = bg_dark, fg = c.blue, bold = true }
+        hl.SnacksNotifierTitleWarn = { bg = bg_dark, fg = c.yellow, bold = true }
+        hl.SnacksNotifierTitleError = { bg = bg_dark, fg = c.red, bold = true }
+        hl.SnacksNotifierTitleDebug = { bg = bg_dark, fg = c.purple, bold = true }
+        hl.SnacksNotifierTitleTrace = { bg = bg_dark, fg = "#627E97", bold = true }
+        hl.SnacksNotifierBorderInfo = { bg = bg_dark, fg = c.blue }
+        hl.SnacksNotifierBorderWarn = { bg = bg_dark, fg = c.yellow }
         hl.SnacksNotifierBorderError = { bg = bg_dark, fg = c.red }
         hl.SnacksNotifierBorderDebug = { bg = bg_dark, fg = c.purple }
         hl.SnacksNotifierBorderTrace = { bg = bg_dark, fg = "#627E97" }
-        hl.SnacksNotifierFooterInfo  = { bg = bg_dark, fg = "#627E97" }
-        hl.SnacksNotifierFooterWarn  = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierFooterInfo = { bg = bg_dark, fg = "#627E97" }
+        hl.SnacksNotifierFooterWarn = { bg = bg_dark, fg = "#627E97" }
         hl.SnacksNotifierFooterError = { bg = bg_dark, fg = "#627E97" }
         hl.SnacksNotifierFooterDebug = { bg = bg_dark, fg = "#627E97" }
         hl.SnacksNotifierFooterTrace = { bg = bg_dark, fg = "#627E97" }
-        hl.SnacksNotifierHistory     = { bg = bg_dark, fg = fg }
+        hl.SnacksNotifierHistory = { bg = bg_dark, fg = fg }
         hl.SnacksNotifierHistoryTitle = { bg = bg_dark, fg = c.blue, bold = true }
 
         -- Noice
@@ -264,45 +264,45 @@ return {
         -- ----------------------------------------------------------------
         -- Diffview.nvim
         -- ----------------------------------------------------------------
-        hl.DiffviewNormal              = { bg = bg_dark, fg = fg }
-        hl.DiffviewStatusLine          = { bg = bg_dark, fg = fg }
-        hl.DiffviewStatusLineNC        = { bg = bg_dark, fg = "#627E97" }
-        hl.DiffviewWinSeparator        = { bg = bg_dark, fg = border }
-        hl.DiffviewCursorLine          = { bg = bg_hl }
-        hl.DiffviewNonText             = { bg = bg_dark, fg = "#627E97" }
-        hl.DiffviewDim1                = { fg = "#627E97" }
+        hl.DiffviewNormal = { bg = bg_dark, fg = fg }
+        hl.DiffviewStatusLine = { bg = bg_dark, fg = fg }
+        hl.DiffviewStatusLineNC = { bg = bg_dark, fg = "#627E97" }
+        hl.DiffviewWinSeparator = { bg = bg_dark, fg = border }
+        hl.DiffviewCursorLine = { bg = bg_hl }
+        hl.DiffviewNonText = { bg = bg_dark, fg = "#627E97" }
+        hl.DiffviewDim1 = { fg = "#627E97" }
 
         -- File panel (left sidebar listing changed files)
-        hl.DiffviewFilePanelTitle      = { bg = bg_dark, fg = c.blue,   bold = true }
-        hl.DiffviewFilePanelCounter    = { bg = bg_dark, fg = c.orange, bold = true }
-        hl.DiffviewFilePanelFileName   = { bg = bg_dark, fg = fg }
-        hl.DiffviewFilePanelRootPath   = { bg = bg_dark, fg = "#627E97" }
-        hl.DiffviewFilePanelPath       = { bg = bg_dark, fg = "#627E97" }
-        hl.DiffviewFilePanelSelected   = { bg = bg_hl,   fg = fg, bold = true }
+        hl.DiffviewFilePanelTitle = { bg = bg_dark, fg = c.blue, bold = true }
+        hl.DiffviewFilePanelCounter = { bg = bg_dark, fg = c.orange, bold = true }
+        hl.DiffviewFilePanelFileName = { bg = bg_dark, fg = fg }
+        hl.DiffviewFilePanelRootPath = { bg = bg_dark, fg = "#627E97" }
+        hl.DiffviewFilePanelPath = { bg = bg_dark, fg = "#627E97" }
+        hl.DiffviewFilePanelSelected = { bg = bg_hl, fg = fg, bold = true }
         hl.DiffviewFilePanelInsertions = { bg = bg_dark, fg = c.green }
-        hl.DiffviewFilePanelDeletions  = { bg = bg_dark, fg = c.red }
+        hl.DiffviewFilePanelDeletions = { bg = bg_dark, fg = c.red }
 
         -- File status indicators (next to file names in the panel)
-        hl.DiffviewStatusAdded         = { fg = c.green }
-        hl.DiffviewStatusModified      = { fg = c.blue }
-        hl.DiffviewStatusDeleted       = { fg = c.red }
-        hl.DiffviewStatusRenamed       = { fg = c.cyan }
-        hl.DiffviewStatusUntracked     = { fg = c.orange }
-        hl.DiffviewStatusIgnored       = { fg = "#627E97" }
-        hl.DiffviewStatusUnmerged      = { fg = c.yellow }
-        hl.DiffviewStatusUnknown       = { fg = "#627E97" }
-        hl.DiffviewStatusBroken        = { fg = c.red }
-        hl.DiffviewStatusTypeChange    = { fg = c.purple }
-        hl.DiffviewStatusCopied        = { fg = c.cyan }
+        hl.DiffviewStatusAdded = { fg = c.green }
+        hl.DiffviewStatusModified = { fg = c.blue }
+        hl.DiffviewStatusDeleted = { fg = c.red }
+        hl.DiffviewStatusRenamed = { fg = c.cyan }
+        hl.DiffviewStatusUntracked = { fg = c.orange }
+        hl.DiffviewStatusIgnored = { fg = "#627E97" }
+        hl.DiffviewStatusUnmerged = { fg = c.yellow }
+        hl.DiffviewStatusUnknown = { fg = "#627E97" }
+        hl.DiffviewStatusBroken = { fg = c.red }
+        hl.DiffviewStatusTypeChange = { fg = c.purple }
+        hl.DiffviewStatusCopied = { fg = c.cyan }
 
         -- Folder tree in the file panel
-        hl.DiffviewFolderName          = { bg = bg_dark, fg = c.blue }
-        hl.DiffviewFolderSign          = { bg = bg_dark, fg = border }
+        hl.DiffviewFolderName = { bg = bg_dark, fg = c.blue }
+        hl.DiffviewFolderSign = { bg = bg_dark, fg = border }
 
         -- File history view (commit list)
-        hl.DiffviewHash                = { fg = c.orange }
-        hl.DiffviewReference           = { fg = c.purple }
-        hl.DiffviewSecondary           = { fg = c.cyan }
+        hl.DiffviewHash = { fg = c.orange }
+        hl.DiffviewReference = { fg = c.purple }
+        hl.DiffviewSecondary = { fg = c.cyan }
 
         -- ----------------------------------------------------------------
         -- git-conflict.nvim
@@ -311,12 +311,12 @@ return {
         -- Labels (the <<<<<<<, =======, >>>>>>> markers) get a stronger tint
         -- and bold colored text so they're scannable at a glance.
         -- ----------------------------------------------------------------
-        hl.GitConflictCurrent          = { bg = "#0a1a0a" }                          -- ours: green tint
-        hl.GitConflictCurrentLabel     = { bg = "#0a2a0a", fg = c.green,  bold = true }
-        hl.GitConflictIncoming         = { bg = "#0a0a1a" }                          -- theirs: blue tint
-        hl.GitConflictIncomingLabel    = { bg = "#0a0a2a", fg = c.blue,   bold = true }
-        hl.GitConflictAncestor         = { bg = "#1a0a1a" }                          -- common ancestor: purple tint
-        hl.GitConflictAncestorLabel    = { bg = "#2a0a2a", fg = c.purple, bold = true }
+        hl.GitConflictCurrent = { bg = "#0a1a0a" } -- ours: green tint
+        hl.GitConflictCurrentLabel = { bg = "#0a2a0a", fg = c.green, bold = true }
+        hl.GitConflictIncoming = { bg = "#0a0a1a" } -- theirs: blue tint
+        hl.GitConflictIncomingLabel = { bg = "#0a0a2a", fg = c.blue, bold = true }
+        hl.GitConflictAncestor = { bg = "#1a0a1a" } -- common ancestor: purple tint
+        hl.GitConflictAncestorLabel = { bg = "#2a0a2a", fg = c.purple, bold = true }
       end,
     },
     config = function(_, opts)

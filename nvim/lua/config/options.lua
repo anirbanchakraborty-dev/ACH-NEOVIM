@@ -1,7 +1,7 @@
 -- Options
 -- Sensible defaults for ACH-NEOVIM
 
-local opt   = vim.opt
+local opt = vim.opt
 local icons = require("config.icons")
 
 -- Leader key (must be set before lazy.nvim)
@@ -49,12 +49,12 @@ opt.pumblend = 10 -- popup menu transparency
 opt.pumheight = 10 -- max popup menu items
 opt.winminwidth = 5 -- minimum window width
 opt.fillchars = {
-  foldopen  = icons.ui.expand,   -- chevron-down
+  foldopen = icons.ui.expand, -- chevron-down
   foldclose = icons.ui.collapse, -- chevron-right
-  fold      = " ",
-  foldsep   = " ",
-  diff      = "╱",
-  eob       = " ",
+  fold = " ",
+  foldsep = " ",
+  diff = "╱",
+  eob = " ",
 }
 
 -- Splits

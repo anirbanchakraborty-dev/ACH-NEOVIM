@@ -10,7 +10,7 @@
 
 return {
   slate = {
-    [50]  = "f8fafc",
+    [50] = "f8fafc",
     [100] = "f1f5f9",
     [200] = "e2e8f0",
     [300] = "cbd5e1",
@@ -24,7 +24,7 @@ return {
   },
 
   gray = {
-    [50]  = "f9fafb",
+    [50] = "f9fafb",
     [100] = "f3f4f6",
     [200] = "e5e7eb",
     [300] = "d1d5db",
@@ -38,7 +38,7 @@ return {
   },
 
   zinc = {
-    [50]  = "fafafa",
+    [50] = "fafafa",
     [100] = "f4f4f5",
     [200] = "e4e4e7",
     [300] = "d4d4d8",
@@ -52,7 +52,7 @@ return {
   },
 
   neutral = {
-    [50]  = "fafafa",
+    [50] = "fafafa",
     [100] = "f5f5f5",
     [200] = "e5e5e5",
     [300] = "d4d4d4",
@@ -66,7 +66,7 @@ return {
   },
 
   stone = {
-    [50]  = "fafaf9",
+    [50] = "fafaf9",
     [100] = "f5f5f4",
     [200] = "e7e5e4",
     [300] = "d6d3d1",
@@ -80,7 +80,7 @@ return {
   },
 
   red = {
-    [50]  = "fef2f2",
+    [50] = "fef2f2",
     [100] = "fee2e2",
     [200] = "fecaca",
     [300] = "fca5a5",
@@ -94,7 +94,7 @@ return {
   },
 
   orange = {
-    [50]  = "fff7ed",
+    [50] = "fff7ed",
     [100] = "ffedd5",
     [200] = "fed7aa",
     [300] = "fdba74",
@@ -108,7 +108,7 @@ return {
   },
 
   amber = {
-    [50]  = "fffbeb",
+    [50] = "fffbeb",
     [100] = "fef3c7",
     [200] = "fde68a",
     [300] = "fcd34d",
@@ -122,7 +122,7 @@ return {
   },
 
   yellow = {
-    [50]  = "fefce8",
+    [50] = "fefce8",
     [100] = "fef9c3",
     [200] = "fef08a",
     [300] = "fde047",
@@ -136,7 +136,7 @@ return {
   },
 
   lime = {
-    [50]  = "f7fee7",
+    [50] = "f7fee7",
     [100] = "ecfccb",
     [200] = "d9f99d",
     [300] = "bef264",
@@ -150,7 +150,7 @@ return {
   },
 
   green = {
-    [50]  = "f0fdf4",
+    [50] = "f0fdf4",
     [100] = "dcfce7",
     [200] = "bbf7d0",
     [300] = "86efac",
@@ -164,7 +164,7 @@ return {
   },
 
   emerald = {
-    [50]  = "ecfdf5",
+    [50] = "ecfdf5",
     [100] = "d1fae5",
     [200] = "a7f3d0",
     [300] = "6ee7b7",
@@ -178,7 +178,7 @@ return {
   },
 
   teal = {
-    [50]  = "f0fdfa",
+    [50] = "f0fdfa",
     [100] = "ccfbf1",
     [200] = "99f6e4",
     [300] = "5eead4",
@@ -192,7 +192,7 @@ return {
   },
 
   cyan = {
-    [50]  = "ecfeff",
+    [50] = "ecfeff",
     [100] = "cffafe",
     [200] = "a5f3fc",
     [300] = "67e8f9",
@@ -206,7 +206,7 @@ return {
   },
 
   sky = {
-    [50]  = "f0f9ff",
+    [50] = "f0f9ff",
     [100] = "e0f2fe",
     [200] = "bae6fd",
     [300] = "7dd3fc",
@@ -220,7 +220,7 @@ return {
   },
 
   blue = {
-    [50]  = "eff6ff",
+    [50] = "eff6ff",
     [100] = "dbeafe",
     [200] = "bfdbfe",
     [300] = "93c5fd",
@@ -234,7 +234,7 @@ return {
   },
 
   indigo = {
-    [50]  = "eef2ff",
+    [50] = "eef2ff",
     [100] = "e0e7ff",
     [200] = "c7d2fe",
     [300] = "a5b4fc",
@@ -248,7 +248,7 @@ return {
   },
 
   violet = {
-    [50]  = "f5f3ff",
+    [50] = "f5f3ff",
     [100] = "ede9fe",
     [200] = "ddd6fe",
     [300] = "c4b5fd",
@@ -262,7 +262,7 @@ return {
   },
 
   purple = {
-    [50]  = "faf5ff",
+    [50] = "faf5ff",
     [100] = "f3e8ff",
     [200] = "e9d5ff",
     [300] = "d8b4fe",
@@ -276,7 +276,7 @@ return {
   },
 
   fuchsia = {
-    [50]  = "fdf4ff",
+    [50] = "fdf4ff",
     [100] = "fae8ff",
     [200] = "f5d0fe",
     [300] = "f0abfc",
@@ -290,7 +290,7 @@ return {
   },
 
   pink = {
-    [50]  = "fdf2f8",
+    [50] = "fdf2f8",
     [100] = "fce7f3",
     [200] = "fbcfe8",
     [300] = "f9a8d4",
@@ -304,7 +304,7 @@ return {
   },
 
   rose = {
-    [50]  = "fff1f2",
+    [50] = "fff1f2",
     [100] = "ffe4e6",
     [200] = "fecdd3",
     [300] = "fda4af",

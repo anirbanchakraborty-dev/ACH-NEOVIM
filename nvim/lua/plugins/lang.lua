@@ -27,12 +27,12 @@ return {
     ft = { "markdown", "markdown.mdx", "norg", "rmd", "org" },
     opts = {
       code = {
-        sign      = false,
-        width     = "block",
+        sign = false,
+        width = "block",
         right_pad = 1,
       },
       heading = {
-        sign  = false,
+        sign = false,
         icons = {},
       },
       checkbox = {
@@ -43,10 +43,16 @@ return {
       require("render-markdown").setup(opts)
       Snacks.toggle({
         name = "Render Markdown",
-        get  = function() return require("render-markdown.state").enabled end,
-        set  = function(enabled)
+        get = function()
+          return require("render-markdown.state").enabled
+        end,
+        set = function(enabled)
           local m = require("render-markdown")
-          if enabled then m.enable() else m.disable() end
+          if enabled then
+            m.enable()
+          else
+            m.disable()
+          end
         end,
       }):map("<leader>um")
     end,
@@ -62,7 +68,7 @@ return {
   {
     "iamcco/markdown-preview.nvim",
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-    ft  = { "markdown", "markdown.mdx" },
+    ft = { "markdown", "markdown.mdx" },
     build = function()
       require("lazy").load({ plugins = { "markdown-preview.nvim" } })
       vim.fn["mkdp#util#install"]()
@@ -70,7 +76,7 @@ return {
     keys = {
       {
         "<leader>cp",
-        ft   = "markdown",
+        ft = "markdown",
         "<cmd>MarkdownPreviewToggle<cr>",
         desc = "Markdown Preview",
       },
@@ -95,10 +101,10 @@ return {
     "lervag/vimtex",
     lazy = false,
     init = function()
-      vim.g.vimtex_mappings_disable    = { ["n"] = { "K" } }
-      vim.g.vimtex_quickfix_method     = vim.fn.executable("pplatex") == 1 and "pplatex" or "latexlog"
-      vim.g.vimtex_view_method         = "skim" -- macOS PDF viewer
-      vim.g.vimtex_compiler_method     = "latexmk"
+      vim.g.vimtex_mappings_disable = { ["n"] = { "K" } }
+      vim.g.vimtex_quickfix_method = vim.fn.executable("pplatex") == 1 and "pplatex" or "latexlog"
+      vim.g.vimtex_view_method = "skim" -- macOS PDF viewer
+      vim.g.vimtex_compiler_method = "latexmk"
     end,
     keys = {
       { "<localLeader>l", "", desc = "+vimtex", ft = "tex" },
@@ -115,9 +121,9 @@ return {
   -- ──────────────────────────────────────────────────────────────────
   {
     "linux-cultist/venv-selector.nvim",
-    branch       = "regexp",
-    cmd          = "VenvSelect",
-    ft           = "python",
+    branch = "regexp",
+    cmd = "VenvSelect",
+    ft = "python",
     dependencies = {
       "neovim/nvim-lspconfig",
       "mfussenegger/nvim-dap",
@@ -148,9 +154,9 @@ return {
     opts_extend = { "spec" },
     opts = {
       spec = {
-        { "<leader>cp", desc = "Markdown Preview",       icon = { icon = icons.ui.eye,    color = "cyan"   } },
-        { "<leader>cv", desc = "Select Python VirtualEnv", icon = { icon = icons.devtools.pip, color = "green"  } },
-        { "<leader>um", desc = "Toggle Render Markdown", icon = { icon = icons.ui.eye,    color = "purple" } },
+        { "<leader>cp", desc = "Markdown Preview", icon = { icon = icons.ui.eye, color = "cyan" } },
+        { "<leader>cv", desc = "Select Python VirtualEnv", icon = { icon = icons.devtools.pip, color = "green" } },
+        { "<leader>um", desc = "Toggle Render Markdown", icon = { icon = icons.ui.eye, color = "purple" } },
       },
     },
   },

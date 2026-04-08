@@ -67,7 +67,9 @@ return {
             keys = {
               claude_hide = {
                 "<Esc><Esc>",
-                function(self) self:hide() end,
+                function(self)
+                  self:hide()
+                end,
                 mode = "t",
                 desc = "Hide Claude",
               },
@@ -82,15 +84,15 @@ return {
       }
     end,
     keys = {
-      { "<leader>ac", "<cmd>ClaudeCode<cr>",            desc = "Toggle Claude" },
-      { "<leader>af", "<cmd>ClaudeCodeFocus<cr>",       desc = "Focus Claude" },
-      { "<leader>ar", "<cmd>ClaudeCode --resume<cr>",   desc = "Resume Claude" },
+      { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
+      { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
+      { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
       { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
       { "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select Model" },
-      { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>",       desc = "Add Current Buffer" },
-      { "<leader>as", "<cmd>ClaudeCodeSend<cr>",        mode = "v", desc = "Send Selection to Claude" },
-      { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>",  desc = "Accept Diff" },
-      { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>",    desc = "Deny Diff" },
+      { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add Current Buffer" },
+      { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send Selection to Claude" },
+      { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept Diff" },
+      { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny Diff" },
     },
   },
 
@@ -102,18 +104,28 @@ return {
     opts = {
       spec = {
         -- Group (n + v because <leader>as is visual-mode)
-        { "<leader>a", group = "AI / Claude", icon = { icon = icons.ai.claude, color = "purple" }, mode = { "n", "v" } },
+        {
+          "<leader>a",
+          group = "AI / Claude",
+          icon = { icon = icons.ai.claude, color = "purple" },
+          mode = { "n", "v" },
+        },
 
         -- Individual keymaps
-        { "<leader>ac", desc = "Toggle Claude",            icon = { icon = icons.ai.claude,   color = "purple" } },
-        { "<leader>af", desc = "Focus Claude",             icon = { icon = icons.ai.focus,    color = "cyan"   } },
-        { "<leader>ar", desc = "Resume Claude",            icon = { icon = icons.ai.resume,   color = "blue"   } },
-        { "<leader>aC", desc = "Continue Claude",          icon = { icon = icons.ai.continue, color = "blue"   } },
-        { "<leader>am", desc = "Select Model",             icon = { icon = icons.ai.model,    color = "yellow" } },
-        { "<leader>ab", desc = "Add Current Buffer",       icon = { icon = icons.ai.add_buf,  color = "green"  } },
-        { "<leader>as", desc = "Send Selection to Claude", icon = { icon = icons.ai.send,     color = "cyan"   }, mode = "v" },
-        { "<leader>aa", desc = "Accept Diff",              icon = { icon = icons.ai.accept,   color = "green"  } },
-        { "<leader>ad", desc = "Deny Diff",                icon = { icon = icons.ai.deny,     color = "red"    } },
+        { "<leader>ac", desc = "Toggle Claude", icon = { icon = icons.ai.claude, color = "purple" } },
+        { "<leader>af", desc = "Focus Claude", icon = { icon = icons.ai.focus, color = "cyan" } },
+        { "<leader>ar", desc = "Resume Claude", icon = { icon = icons.ai.resume, color = "blue" } },
+        { "<leader>aC", desc = "Continue Claude", icon = { icon = icons.ai.continue, color = "blue" } },
+        { "<leader>am", desc = "Select Model", icon = { icon = icons.ai.model, color = "yellow" } },
+        { "<leader>ab", desc = "Add Current Buffer", icon = { icon = icons.ai.add_buf, color = "green" } },
+        {
+          "<leader>as",
+          desc = "Send Selection to Claude",
+          icon = { icon = icons.ai.send, color = "cyan" },
+          mode = "v",
+        },
+        { "<leader>aa", desc = "Accept Diff", icon = { icon = icons.ai.accept, color = "green" } },
+        { "<leader>ad", desc = "Deny Diff", icon = { icon = icons.ai.deny, color = "red" } },
       },
     },
   },

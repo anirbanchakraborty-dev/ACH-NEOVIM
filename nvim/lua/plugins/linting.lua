@@ -18,44 +18,44 @@ local icons = require("config.icons")
 -- eslint_d as a separate linter. The LSP supersedes the linter; running
 -- both would double-count every issue.
 local linter_to_mason = {
-  shellcheck       = "shellcheck",
-  markdownlint     = "markdownlint",
-  hadolint         = "hadolint",
-  yamllint         = "yamllint",
+  shellcheck = "shellcheck",
+  markdownlint = "markdownlint",
+  hadolint = "hadolint",
+  yamllint = "yamllint",
 
   -- New linters added alongside the lang/* additions in lsp.lua. The
   -- LSP servers themselves serve diagnostics for most languages, so
   -- this list is intentionally short -- only meta-linters that catch
   -- things the LSP doesn't (golangci-lint, ansible-lint, tflint,
   -- sqlfluff, solhint).
-  golangcilint     = "golangci-lint",
+  golangcilint = "golangci-lint",
   ["ansible-lint"] = "ansible-lint",
-  cmakelint        = "cmakelint",
-  tflint           = "tflint",
-  sqlfluff         = "sqlfluff",
-  solhint          = "solhint",
+  cmakelint = "cmakelint",
+  tflint = "tflint",
+  sqlfluff = "sqlfluff",
+  solhint = "solhint",
 }
 
 local linters_by_ft = {
   -- JS / TS get their lint diagnostics from the eslint LSP, not
   -- from a separate eslint_d linter. See linter_to_mason comment above.
-  sh              = { "shellcheck" },
-  bash            = { "shellcheck" },
-  zsh             = { "shellcheck" },
-  markdown        = { "markdownlint" },
+  sh = { "shellcheck" },
+  bash = { "shellcheck" },
+  zsh = { "shellcheck" },
+  markdown = { "markdownlint" },
   ["markdown.mdx"] = { "markdownlint" },
-  dockerfile      = { "hadolint" },
-  yaml            = { "yamllint" },
+  dockerfile = { "hadolint" },
+  yaml = { "yamllint" },
 
   -- ── Additional linters (LSP-only languages omitted on purpose) ──
-  go              = { "golangcilint" },
+  go = { "golangcilint" },
   ["yaml.ansible"] = { "ansible-lint" },
-  cmake           = { "cmakelint" },
-  terraform       = { "tflint" },
+  cmake = { "cmakelint" },
+  terraform = { "tflint" },
   ["terraform-vars"] = { "tflint" },
-  sql             = { "sqlfluff" },
-  mysql           = { "sqlfluff" },
-  solidity        = { "solhint" },
+  sql = { "sqlfluff" },
+  mysql = { "sqlfluff" },
+  solidity = { "solhint" },
 }
 
 return {
@@ -162,12 +162,18 @@ return {
       local installing = {}
 
       local function ensure_linter(name)
-        if installing[name] then return end
+        if installing[name] then
+          return
+        end
         local mason_name = linter_to_mason[name]
-        if not mason_name then return end
+        if not mason_name then
+          return
+        end
 
         local ok, mr = pcall(require, "mason-registry")
-        if not ok then return end
+        if not ok then
+          return
+        end
 
         -- mason-registry is lazy-loaded: on a cold-start nvim the package
         -- index hasn't been fetched yet and has_package() silently returns
@@ -175,11 +181,17 @@ return {
         -- after the registry is populated (no-op on subsequent calls since
         -- the refresh result is cached).
         mr.refresh(vim.schedule_wrap(function()
-          if installing[name] then return end
-          if not mr.has_package(mason_name) then return end
+          if installing[name] then
+            return
+          end
+          if not mr.has_package(mason_name) then
+            return
+          end
 
           local pkg = mr.get_package(mason_name)
-          if pkg:is_installed() then return end
+          if pkg:is_installed() then
+            return
+          end
 
           installing[name] = true
 
@@ -193,7 +205,9 @@ return {
               )
               -- Re-run lint on currently-open buffers of this filetype so
               -- the freshly-installed linter produces results immediately.
-              vim.schedule(function() lint.try_lint() end)
+              vim.schedule(function()
+                lint.try_lint()
+              end)
             else
               vim.notify(
                 ("Linter install failed: %s"):format(mason_name),
@@ -228,7 +242,9 @@ return {
         group = vim.api.nvim_create_augroup("ACHLintInstall", { clear = true }),
         callback = function(args)
           local list = linters_by_ft[args.match]
-          if not list then return end
+          if not list then
+            return
+          end
           for _, name in ipairs(list) do
             ensure_linter(name)
           end

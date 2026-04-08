@@ -21,10 +21,10 @@ map({ "i", "n" }, "<Esc>", "<cmd>noh<cr><esc>", { desc = "Escape and Clear hlsea
 map({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
 
 -- Better up/down: respect wrapped lines (also mirror to arrow keys)
-map({ "n", "x" }, "j",      "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Down (respect wrap)" })
-map({ "n", "x" }, "k",      "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Up (respect wrap)" })
+map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Down (respect wrap)" })
+map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Up (respect wrap)" })
 map({ "n", "x" }, "<Down>", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Down (respect wrap)" })
-map({ "n", "x" }, "<Up>",   "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Up (respect wrap)" })
+map({ "n", "x" }, "<Up>", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Up (respect wrap)" })
 
 -- Centered scroll
 map("n", "<C-d>", "<C-d>zz", { desc = "Scroll Down (centered)" })
@@ -38,11 +38,11 @@ map("n", "<C-u>", "<C-u>zz", { desc = "Scroll Up (centered)" })
 -- Operator-pending / visual modes skip .zv since fold-opening would
 -- interfere with text-object selection.
 map("n", "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next Search Result" })
-map("x", "n", "'Nn'[v:searchforward]",      { expr = true, desc = "Next Search Result" })
-map("o", "n", "'Nn'[v:searchforward]",      { expr = true, desc = "Next Search Result" })
+map("x", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next Search Result" })
+map("o", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next Search Result" })
 map("n", "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev Search Result" })
-map("x", "N", "'nN'[v:searchforward]",      { expr = true, desc = "Prev Search Result" })
-map("o", "N", "'nN'[v:searchforward]",      { expr = true, desc = "Prev Search Result" })
+map("x", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev Search Result" })
+map("o", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev Search Result" })
 
 -- Keep visual selection after indent
 map("v", "<", "<gv", { desc = "Indent Left" })
@@ -54,12 +54,12 @@ map("x", "p", "P", { desc = "Paste (keep register)" })
 
 -- Move lines up/down (normal/insert/visual) with Alt+j/k.
 -- Normal/visual versions respect a count prefix (e.g. `5<A-j>` moves 5 lines).
-map("n", "<A-j>", "<cmd>execute 'move .+' . v:count1<cr>==",                       { desc = "Move Line Down" })
-map("n", "<A-k>", "<cmd>execute 'move .-' . (v:count1 + 1)<cr>==",                 { desc = "Move Line Up" })
-map("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi",                                       { desc = "Move Line Down" })
-map("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi",                                       { desc = "Move Line Up" })
-map("v", "<A-j>", ":<C-u>execute \"'<,'>move '>+\" . v:count1<cr>gv=gv",           { desc = "Move Lines Down" })
-map("v", "<A-k>", ":<C-u>execute \"'<,'>move '<-\" . (v:count1 + 1)<cr>gv=gv",     { desc = "Move Lines Up" })
+map("n", "<A-j>", "<cmd>execute 'move .+' . v:count1<cr>==", { desc = "Move Line Down" })
+map("n", "<A-k>", "<cmd>execute 'move .-' . (v:count1 + 1)<cr>==", { desc = "Move Line Up" })
+map("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi", { desc = "Move Line Down" })
+map("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move Line Up" })
+map("v", "<A-j>", ":<C-u>execute \"'<,'>move '>+\" . v:count1<cr>gv=gv", { desc = "Move Lines Down" })
+map("v", "<A-k>", ":<C-u>execute \"'<,'>move '<-\" . (v:count1 + 1)<cr>gv=gv", { desc = "Move Lines Up" })
 
 -- Undo break-points: split the insert-mode undo history at punctuation so
 -- `u` can step back word/phrase by phrase instead of nuking the whole insert.
@@ -71,23 +71,23 @@ map("i", ";", ";<c-g>u", { desc = "Undo Breakpoint (;)" })
 -- Window navigation & management
 -- ---------------------------------------------------------------------------
 
-map("n", "<C-h>", "<C-w>h", { desc = "Go to Left Window",  remap = true })
+map("n", "<C-h>", "<C-w>h", { desc = "Go to Left Window", remap = true })
 map("n", "<C-j>", "<C-w>j", { desc = "Go to Lower Window", remap = true })
 map("n", "<C-k>", "<C-w>k", { desc = "Go to Upper Window", remap = true })
 map("n", "<C-l>", "<C-w>l", { desc = "Go to Right Window", remap = true })
 
 -- Resize with arrows
-map("n", "<C-Up>",    "<cmd>resize +2<cr>",          { desc = "Increase Window Height" })
-map("n", "<C-Down>",  "<cmd>resize -2<cr>",          { desc = "Decrease Window Height" })
-map("n", "<C-Left>",  "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
+map("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
+map("n", "<C-Down>", "<cmd>resize -2<cr>", { desc = "Decrease Window Height" })
+map("n", "<C-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
 map("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window Width" })
 
 -- <leader>w Window group
-map("n", "<leader>wd", "<C-w>c",         { desc = "Delete Window",     remap = true })
-map("n", "<leader>ws", "<C-w>s",         { desc = "Split Below",       remap = true })
-map("n", "<leader>wv", "<C-w>v",         { desc = "Split Right",       remap = true })
-map("n", "<leader>w=", "<C-w>=",         { desc = "Balance Windows",   remap = true })
-map("n", "<leader>wm", "<C-w>_<C-w>|",   { desc = "Maximize Window",   remap = true })
+map("n", "<leader>wd", "<C-w>c", { desc = "Delete Window", remap = true })
+map("n", "<leader>ws", "<C-w>s", { desc = "Split Below", remap = true })
+map("n", "<leader>wv", "<C-w>v", { desc = "Split Right", remap = true })
+map("n", "<leader>w=", "<C-w>=", { desc = "Balance Windows", remap = true })
+map("n", "<leader>wm", "<C-w>_<C-w>|", { desc = "Maximize Window", remap = true })
 
 -- ---------------------------------------------------------------------------
 -- Buffer navigation
@@ -97,8 +97,8 @@ map("n", "<leader>wm", "<C-w>_<C-w>|",   { desc = "Maximize Window",   remap = t
 -- ui.lua so they honor the bufferline order (drag-to-reorder, pinning, etc.).
 
 -- Switch to the alternate (most recently used) buffer. Same as built-in <C-^>.
-map("n", "<leader>bb", "<cmd>e #<cr>",       { desc = "Switch to Other Buffer" })
-map("n", "<leader>`",  "<cmd>e #<cr>",       { desc = "Switch to Other Buffer" })
+map("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
+map("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 
 -- Buffer delete: prefer Snacks.bufdelete if snacks has loaded (keeps the
 -- window open); fall back to vanilla :bdelete otherwise.
@@ -115,7 +115,7 @@ map("n", "<leader>bo", function()
   if _G.Snacks and Snacks.bufdelete and Snacks.bufdelete.other then
     Snacks.bufdelete.other()
   else
-    vim.cmd("%bdelete|edit #|normal `\"")
+    vim.cmd('%bdelete|edit #|normal `"')
   end
 end, { desc = "Delete Other Buffers" })
 
@@ -142,10 +142,10 @@ end, { desc = "Toggle Format on Save" })
 -- Lazy.nvim shortcuts under <leader>l
 -- ---------------------------------------------------------------------------
 
-map("n", "<leader>ll", "<cmd>Lazy<cr>",         { desc = "Lazy Home" })
-map("n", "<leader>lu", "<cmd>Lazy update<cr>",  { desc = "Update Plugins" })
-map("n", "<leader>ls", "<cmd>Lazy sync<cr>",    { desc = "Sync Plugins" })
-map("n", "<leader>lc", "<cmd>Lazy check<cr>",   { desc = "Check Plugins" })
+map("n", "<leader>ll", "<cmd>Lazy<cr>", { desc = "Lazy Home" })
+map("n", "<leader>lu", "<cmd>Lazy update<cr>", { desc = "Update Plugins" })
+map("n", "<leader>ls", "<cmd>Lazy sync<cr>", { desc = "Sync Plugins" })
+map("n", "<leader>lc", "<cmd>Lazy check<cr>", { desc = "Check Plugins" })
 map("n", "<leader>lp", "<cmd>Lazy profile<cr>", { desc = "Profile" })
 
 -- ---------------------------------------------------------------------------
@@ -163,10 +163,10 @@ local function diag_jump(next, severity)
   end
 end
 
-map("n", "]e", diag_jump(true,  "ERROR"), { desc = "Next Error" })
+map("n", "]e", diag_jump(true, "ERROR"), { desc = "Next Error" })
 map("n", "[e", diag_jump(false, "ERROR"), { desc = "Prev Error" })
-map("n", "]w", diag_jump(true,  "WARN"),  { desc = "Next Warning" })
-map("n", "[w", diag_jump(false, "WARN"),  { desc = "Prev Warning" })
+map("n", "]w", diag_jump(true, "WARN"), { desc = "Next Warning" })
+map("n", "[w", diag_jump(false, "WARN"), { desc = "Prev Warning" })
 
 -- ---------------------------------------------------------------------------
 -- Productivity miscellany

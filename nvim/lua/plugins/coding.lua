@@ -32,12 +32,12 @@ return {
       -- snippet placeholders.
       keymap = {
         preset = "enter",
-        ["<Tab>"]   = { "snippet_forward",  "fallback" },
+        ["<Tab>"] = { "snippet_forward", "fallback" },
         ["<S-Tab>"] = { "snippet_backward", "fallback" },
         -- Vim-traditional accept binding alongside <CR>. Lets you confirm a
         -- completion without leaving the home row when <CR> would otherwise
         -- insert a literal newline (e.g. multi-line popup contexts).
-        ["<C-y>"]   = { "select_and_accept" },
+        ["<C-y>"] = { "select_and_accept" },
       },
 
       appearance = {
@@ -152,7 +152,7 @@ return {
   {
     "nvim-mini/mini.surround",
     keys = {
-      { "gsa", desc = "Add Surrounding",        mode = { "n", "x" } },
+      { "gsa", desc = "Add Surrounding", mode = { "n", "x" } },
       { "gsd", desc = "Delete Surrounding" },
       { "gsf", desc = "Find Right Surrounding" },
       { "gsF", desc = "Find Left Surrounding" },
@@ -162,12 +162,12 @@ return {
     },
     opts = {
       mappings = {
-        add            = "gsa", -- Add surrounding
-        delete         = "gsd", -- Delete surrounding
-        find           = "gsf", -- Find surrounding (right)
-        find_left      = "gsF", -- Find surrounding (left)
-        highlight      = "gsh", -- Highlight surrounding
-        replace        = "gsr", -- Replace surrounding
+        add = "gsa", -- Add surrounding
+        delete = "gsd", -- Delete surrounding
+        find = "gsf", -- Find surrounding (right)
+        find_left = "gsF", -- Find surrounding (left)
+        highlight = "gsh", -- Highlight surrounding
+        replace = "gsr", -- Replace surrounding
         update_n_lines = "gsn", -- Update n_lines
       },
     },
@@ -319,29 +319,29 @@ return {
       local augend = require("dial.augend")
       return {
         dials_by_ft = {
-          css             = "css",
-          scss            = "css",
-          sass            = "css",
-          javascript      = "typescript",
+          css = "css",
+          scss = "css",
+          sass = "css",
+          javascript = "typescript",
           javascriptreact = "typescript",
-          typescript      = "typescript",
+          typescript = "typescript",
           typescriptreact = "typescript",
-          json            = "json",
-          lua             = "lua",
-          markdown        = "markdown",
-          python          = "python",
+          json = "json",
+          lua = "lua",
+          markdown = "markdown",
+          python = "python",
         },
         groups = {
           default = {
-            augend.integer.alias.decimal,     -- 0, 1, 2, 3, ...
+            augend.integer.alias.decimal, -- 0, 1, 2, 3, ...
             augend.integer.alias.decimal_int, -- includes negatives
-            augend.integer.alias.hex,         -- 0x01, 0x1a1f, ...
-            augend.date.alias["%Y-%m-%d"],    -- ISO date (matches the project's date format)
+            augend.integer.alias.hex, -- 0x01, 0x1a1f, ...
+            augend.date.alias["%Y-%m-%d"], -- ISO date (matches the project's date format)
             augend.date.alias["%Y/%m/%d"],
             augend.constant.alias.en_weekday, -- Mon, Tue, ..., Sun
             augend.constant.alias.en_weekday_full,
-            augend.constant.alias.bool,       -- true / false
-            augend.constant.alias.Bool,       -- True / False
+            augend.constant.alias.bool, -- true / false
+            augend.constant.alias.Bool, -- True / False
             augend.constant.new({ elements = { "&&", "||" }, word = false, cyclic = true }),
           },
           typescript = {
@@ -404,10 +404,22 @@ return {
     },
     opts = {
       prompt_func_return_type = {
-        go = false, java = false, cpp = false, c = false, h = false, hpp = false, cxx = false,
+        go = false,
+        java = false,
+        cpp = false,
+        c = false,
+        h = false,
+        hpp = false,
+        cxx = false,
       },
       prompt_func_param_type = {
-        go = false, java = false, cpp = false, c = false, h = false, hpp = false, cxx = false,
+        go = false,
+        java = false,
+        cpp = false,
+        c = false,
+        h = false,
+        hpp = false,
+        cxx = false,
       },
       printf_statements = {},
       print_var_statements = {},
@@ -423,22 +435,91 @@ return {
             fzf_opts = {},
             fzf_colors = true,
             actions = {
-              ["default"] = function(selected) refactoring.refactor(selected[1]) end,
+              ["default"] = function(selected)
+                refactoring.refactor(selected[1])
+              end,
             },
           })
         end,
         mode = { "n", "x" },
         desc = "Refactor (pick)",
       },
-      { "<leader>rE", function() return require("refactoring").refactor("Extract Function")         end, mode = { "n", "x" }, expr = true, desc = "Extract Function" },
-      { "<leader>rF", function() return require("refactoring").refactor("Extract Function To File") end, mode = { "n", "x" }, expr = true, desc = "Extract Function To File" },
-      { "<leader>rv", function() return require("refactoring").refactor("Extract Variable")        end, mode = { "n", "x" }, expr = true, desc = "Extract Variable" },
-      { "<leader>ri", function() return require("refactoring").refactor("Inline Variable")         end, mode = { "n", "x" }, expr = true, desc = "Inline Variable" },
-      { "<leader>rb", function() return require("refactoring").refactor("Extract Block")           end, mode = { "n", "x" }, expr = true, desc = "Extract Block" },
-      { "<leader>rB", function() return require("refactoring").refactor("Extract Block To File")   end, mode = { "n", "x" }, expr = true, desc = "Extract Block To File" },
-      { "<leader>rp", function() require("refactoring").debug.print_var({ normal = true })          end, mode = { "n", "x" }, desc = "Debug Print Variable" },
-      { "<leader>rP", function() require("refactoring").debug.printf({ below = false })             end, desc = "Debug Print" },
-      { "<leader>rc", function() require("refactoring").debug.cleanup({})                           end, desc = "Debug Cleanup" },
+      {
+        "<leader>rE",
+        function()
+          return require("refactoring").refactor("Extract Function")
+        end,
+        mode = { "n", "x" },
+        expr = true,
+        desc = "Extract Function",
+      },
+      {
+        "<leader>rF",
+        function()
+          return require("refactoring").refactor("Extract Function To File")
+        end,
+        mode = { "n", "x" },
+        expr = true,
+        desc = "Extract Function To File",
+      },
+      {
+        "<leader>rv",
+        function()
+          return require("refactoring").refactor("Extract Variable")
+        end,
+        mode = { "n", "x" },
+        expr = true,
+        desc = "Extract Variable",
+      },
+      {
+        "<leader>ri",
+        function()
+          return require("refactoring").refactor("Inline Variable")
+        end,
+        mode = { "n", "x" },
+        expr = true,
+        desc = "Inline Variable",
+      },
+      {
+        "<leader>rb",
+        function()
+          return require("refactoring").refactor("Extract Block")
+        end,
+        mode = { "n", "x" },
+        expr = true,
+        desc = "Extract Block",
+      },
+      {
+        "<leader>rB",
+        function()
+          return require("refactoring").refactor("Extract Block To File")
+        end,
+        mode = { "n", "x" },
+        expr = true,
+        desc = "Extract Block To File",
+      },
+      {
+        "<leader>rp",
+        function()
+          require("refactoring").debug.print_var({ normal = true })
+        end,
+        mode = { "n", "x" },
+        desc = "Debug Print Variable",
+      },
+      {
+        "<leader>rP",
+        function()
+          require("refactoring").debug.printf({ below = false })
+        end,
+        desc = "Debug Print",
+      },
+      {
+        "<leader>rc",
+        function()
+          require("refactoring").debug.cleanup({})
+        end,
+        desc = "Debug Cleanup",
+      },
     },
   },
 
@@ -476,31 +557,31 @@ return {
       { "<leader>p", "<cmd>YankyRingHistory<cr>", mode = { "n", "x" }, desc = "Yank History" },
 
       -- Core operators (Plug remaps that route through yanky's ring tracker)
-      { "y",  "<Plug>(YankyYank)",       mode = { "n", "x" }, desc = "Yank Text" },
-      { "p",  "<Plug>(YankyPutAfter)",   mode = { "n", "x" }, desc = "Put After Cursor" },
-      { "P",  "<Plug>(YankyPutBefore)",  mode = { "n", "x" }, desc = "Put Before Cursor" },
-      { "gp", "<Plug>(YankyGPutAfter)",  mode = { "n", "x" }, desc = "Put After Selection" },
+      { "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank Text" },
+      { "p", "<Plug>(YankyPutAfter)", mode = { "n", "x" }, desc = "Put After Cursor" },
+      { "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" }, desc = "Put Before Cursor" },
+      { "gp", "<Plug>(YankyGPutAfter)", mode = { "n", "x" }, desc = "Put After Selection" },
       { "gP", "<Plug>(YankyGPutBefore)", mode = { "n", "x" }, desc = "Put Before Selection" },
 
       -- Cycle through yank history. Only meaningful immediately after a paste.
-      { "[y", "<Plug>(YankyCycleForward)",  desc = "Cycle Forward Through Yank History" },
+      { "[y", "<Plug>(YankyCycleForward)", desc = "Cycle Forward Through Yank History" },
       { "]y", "<Plug>(YankyCycleBackward)", desc = "Cycle Backward Through Yank History" },
 
       -- Indented put (linewise). Overrides vim's native [p / ]p with
       -- yanky's more reliable indent-matching implementation.
-      { "]p", "<Plug>(YankyPutIndentAfterLinewise)",  desc = "Put Indented After (Linewise)" },
+      { "]p", "<Plug>(YankyPutIndentAfterLinewise)", desc = "Put Indented After (Linewise)" },
       { "[p", "<Plug>(YankyPutIndentBeforeLinewise)", desc = "Put Indented Before (Linewise)" },
-      { "]P", "<Plug>(YankyPutIndentAfterLinewise)",  desc = "Put Indented After (Linewise)" },
+      { "]P", "<Plug>(YankyPutIndentAfterLinewise)", desc = "Put Indented After (Linewise)" },
       { "[P", "<Plug>(YankyPutIndentBeforeLinewise)", desc = "Put Indented Before (Linewise)" },
 
       -- Put then shift indent. Useful for moving pasted blocks left/right.
-      { ">p", "<Plug>(YankyPutIndentAfterShiftRight)",  desc = "Put and Indent Right" },
-      { "<p", "<Plug>(YankyPutIndentAfterShiftLeft)",   desc = "Put and Indent Left" },
+      { ">p", "<Plug>(YankyPutIndentAfterShiftRight)", desc = "Put and Indent Right" },
+      { "<p", "<Plug>(YankyPutIndentAfterShiftLeft)", desc = "Put and Indent Left" },
       { ">P", "<Plug>(YankyPutIndentBeforeShiftRight)", desc = "Put Before and Indent Right" },
-      { "<P", "<Plug>(YankyPutIndentBeforeShiftLeft)",  desc = "Put Before and Indent Left" },
+      { "<P", "<Plug>(YankyPutIndentBeforeShiftLeft)", desc = "Put Before and Indent Left" },
 
       -- Put through a filter (yanky's filter API). Niche but harmless.
-      { "=p", "<Plug>(YankyPutAfterFilter)",  desc = "Put After Applying Filter" },
+      { "=p", "<Plug>(YankyPutAfterFilter)", desc = "Put After Applying Filter" },
       { "=P", "<Plug>(YankyPutBeforeFilter)", desc = "Put Before Applying Filter" },
     },
   },
@@ -523,7 +604,9 @@ return {
     keys = {
       {
         "<leader>cn",
-        function() require("neogen").generate() end,
+        function()
+          require("neogen").generate()
+        end,
         desc = "Generate Annotations",
       },
     },
@@ -548,14 +631,14 @@ return {
   -- other Lua file in the config.
   {
     "folke/lazydev.nvim",
-    ft  = "lua",
+    ft = "lua",
     cmd = "LazyDev",
     opts = {
       library = {
         { path = "${3rd}/luv/library", words = { "vim%.uv" } },
-        { path = "snacks.nvim",        words = { "Snacks" } },
-        { path = "lazy.nvim",          words = { "Lazy" } },
-        { path = "nvim-lspconfig",     words = { "lspconfig.settings" } },
+        { path = "snacks.nvim", words = { "Snacks" } },
+        { path = "lazy.nvim", words = { "Lazy" } },
+        { path = "nvim-lspconfig", words = { "lspconfig.settings" } },
       },
     },
   },
@@ -570,16 +653,45 @@ return {
     opts = {
       spec = {
         -- Group
-        { "gs",  group = "Surround", icon = { icon = icons.ui.code, color = "cyan" } },
+        { "gs", group = "Surround", icon = { icon = icons.ui.code, color = "cyan" } },
 
         -- Individual bindings
-        { "gsa", desc = "Add Surrounding",        mode = { "n", "x" }, icon = { icon = icons.ui.pencil,  color = "green"  } },
-        { "gsd", desc = "Delete Surrounding",                          icon = { icon = icons.ui.trash,   color = "red"    } },
-        { "gsf", desc = "Find Right Surrounding",                      icon = { icon = icons.ui.search,  color = "cyan"   } },
-        { "gsF", desc = "Find Left Surrounding",                       icon = { icon = icons.ui.search,  color = "cyan"   } },
-        { "gsh", desc = "Highlight Surrounding",                       icon = { icon = icons.ui.eye,     color = "yellow" } },
-        { "gsr", desc = "Replace Surrounding",                         icon = { icon = icons.ui.replace, color = "orange" } },
-        { "gsn", desc = "Update n_lines",                              icon = { icon = icons.ui.refresh, color = "blue"   } },
+        {
+          "gsa",
+          desc = "Add Surrounding",
+          mode = { "n", "x" },
+          icon = { icon = icons.ui.pencil, color = "green" },
+        },
+        {
+          "gsd",
+          desc = "Delete Surrounding",
+          icon = { icon = icons.ui.trash, color = "red" },
+        },
+        {
+          "gsf",
+          desc = "Find Right Surrounding",
+          icon = { icon = icons.ui.search, color = "cyan" },
+        },
+        {
+          "gsF",
+          desc = "Find Left Surrounding",
+          icon = { icon = icons.ui.search, color = "cyan" },
+        },
+        {
+          "gsh",
+          desc = "Highlight Surrounding",
+          icon = { icon = icons.ui.eye, color = "yellow" },
+        },
+        {
+          "gsr",
+          desc = "Replace Surrounding",
+          icon = { icon = icons.ui.replace, color = "orange" },
+        },
+        {
+          "gsn",
+          desc = "Update n_lines",
+          icon = { icon = icons.ui.refresh, color = "blue" },
+        },
 
         -- Neogen
         { "<leader>cn", desc = "Generate Annotations", icon = { icon = icons.lsp.format, color = "green" } },
@@ -587,29 +699,90 @@ return {
         -- Yanky (only the discoverable keys -- y / p / P / gp / gP are
         -- universal vim and don't need which-key labels; the indented
         -- and shift-paste variants are similarly muscle-memory-driven).
-        { "<leader>p", desc = "Yank History",                        mode = { "n", "x" }, icon = { icon = icons.ui.clipboard,    color = "yellow" } },
-        { "[y",        desc = "Cycle Forward Through Yank History",                       icon = { icon = icons.misc.arrow_left,  color = "yellow" } },
-        { "]y",        desc = "Cycle Backward Through Yank History",                      icon = { icon = icons.misc.arrow_right, color = "yellow" } },
+        {
+          "<leader>p",
+          desc = "Yank History",
+          mode = { "n", "x" },
+          icon = { icon = icons.ui.clipboard, color = "yellow" },
+        },
+        {
+          "[y",
+          desc = "Cycle Forward Through Yank History",
+          icon = { icon = icons.misc.arrow_left, color = "yellow" },
+        },
+        {
+          "]y",
+          desc = "Cycle Backward Through Yank History",
+          icon = { icon = icons.misc.arrow_right, color = "yellow" },
+        },
 
         -- dial.nvim (top-level <C-a>/<C-x> are vim defaults; only
         -- registering descs so which-key surfaces them on the cheatsheet).
-        { "<C-a>", desc = "Increment", mode = { "n", "v" }, icon = { icon = icons.ui.zoom_in,  color = "green" } },
-        { "<C-x>", desc = "Decrement", mode = { "n", "v" }, icon = { icon = icons.ui.zoom_out, color = "red"   } },
+        { "<C-a>", desc = "Increment", mode = { "n", "v" }, icon = { icon = icons.ui.zoom_in, color = "green" } },
+        { "<C-x>", desc = "Decrement", mode = { "n", "v" }, icon = { icon = icons.ui.zoom_out, color = "red" } },
 
         -- Refactoring group (<leader>r). Repurposed from CLAUDE.md's
         -- old "Run/Build" placeholder; build/run/test now live under
         -- <leader>o (overseer) in util.lua.
-        { "<leader>r",  group = "Refactor", icon = { icon = icons.ui.wand,    color = "purple" } },
-        { "<leader>rs", desc = "Refactor (pick)",         mode = { "n", "x" }, icon = { icon = icons.ui.menu,    color = "purple" } },
-        { "<leader>rE", desc = "Extract Function",        mode = { "n", "x" }, icon = { icon = icons.kinds.Function, color = "blue"   } },
-        { "<leader>rF", desc = "Extract Function To File",mode = { "n", "x" }, icon = { icon = icons.kinds.Function, color = "blue"   } },
-        { "<leader>rv", desc = "Extract Variable",        mode = { "n", "x" }, icon = { icon = icons.kinds.Variable, color = "cyan"   } },
-        { "<leader>ri", desc = "Inline Variable",         mode = { "n", "x" }, icon = { icon = icons.kinds.Variable, color = "orange" } },
-        { "<leader>rb", desc = "Extract Block",           mode = { "n", "x" }, icon = { icon = icons.ui.code,    color = "yellow" } },
-        { "<leader>rB", desc = "Extract Block To File",   mode = { "n", "x" }, icon = { icon = icons.ui.code,    color = "yellow" } },
-        { "<leader>rp", desc = "Debug Print Variable",    mode = { "n", "x" }, icon = { icon = icons.ui.bug,     color = "red"    } },
-        { "<leader>rP", desc = "Debug Print",                                  icon = { icon = icons.ui.bug,     color = "red"    } },
-        { "<leader>rc", desc = "Debug Cleanup",                                icon = { icon = icons.ui.trash,   color = "grey"   } },
+        { "<leader>r", group = "Refactor", icon = { icon = icons.ui.wand, color = "purple" } },
+        {
+          "<leader>rs",
+          desc = "Refactor (pick)",
+          mode = { "n", "x" },
+          icon = { icon = icons.ui.menu, color = "purple" },
+        },
+        {
+          "<leader>rE",
+          desc = "Extract Function",
+          mode = { "n", "x" },
+          icon = { icon = icons.kinds.Function, color = "blue" },
+        },
+        {
+          "<leader>rF",
+          desc = "Extract Function To File",
+          mode = { "n", "x" },
+          icon = { icon = icons.kinds.Function, color = "blue" },
+        },
+        {
+          "<leader>rv",
+          desc = "Extract Variable",
+          mode = { "n", "x" },
+          icon = { icon = icons.kinds.Variable, color = "cyan" },
+        },
+        {
+          "<leader>ri",
+          desc = "Inline Variable",
+          mode = { "n", "x" },
+          icon = { icon = icons.kinds.Variable, color = "orange" },
+        },
+        {
+          "<leader>rb",
+          desc = "Extract Block",
+          mode = { "n", "x" },
+          icon = { icon = icons.ui.code, color = "yellow" },
+        },
+        {
+          "<leader>rB",
+          desc = "Extract Block To File",
+          mode = { "n", "x" },
+          icon = { icon = icons.ui.code, color = "yellow" },
+        },
+        {
+          "<leader>rp",
+          desc = "Debug Print Variable",
+          mode = { "n", "x" },
+          icon = { icon = icons.ui.bug, color = "red" },
+        },
+        {
+          "<leader>rP",
+          desc = "Debug Print",
+          icon = { icon = icons.ui.bug, color = "red" },
+        },
+        {
+          "<leader>rc",
+          desc = "Debug Cleanup",
+          icon = { icon = icons.ui.trash, color = "grey" },
+        },
       },
     },
   },
