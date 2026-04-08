@@ -69,6 +69,8 @@ ACH-NEOVIM/
 ├── README.md               user-facing docs
 ├── CLAUDE.md               this file
 ├── LICENSE                 MIT
+├── stylua.toml             stylua config (Spaces, indent_width=2, column=120, sort_requires)
+├── .markdownlint.json      markdownlint rules (MD013/MD033 disabled)
 └── nvim/
     ├── init.lua            entry point: options → keymaps → autocmds → lazy
     └── lua/
@@ -162,6 +164,52 @@ Treesitter on the `main` branch uses a different installer because the new
 install API (`require("nvim-treesitter").install({lang})`) returns an
 `async.Task` instead of going through mason. See the
 "nvim-treesitter `main` branch" section below for the details.
+
+---
+
+## Repo-root tooling configs
+
+Two small config files at the repo root pin the formatter / linter behavior
+so the codebase stays consistent regardless of which version of stylua /
+markdownlint a contributor (or `:Format`) happens to invoke. Both are
+borrowed verbatim from LazyVim's repo and tuned to ACH-NEOVIM's conventions.
+
+**`stylua.toml`** — pins stylua to 2-space indentation, 120-column width,
+and `sort_requires.enabled = true`. Without this file, stylua's default
+config is **tabs, 4-wide** which silently reformats every saved Lua file
+in the wrong direction relative to the project's predominant convention
+(2-space spaces in 14 of 19 files at adoption time). The format-on-save
+path in `formatting.lua` chains every Lua save through stylua, so
+without this pin a single save would corrupt the file. The
+`sort_requires` block reorders consecutive `local x = require("...")`
+lines alphabetically, which is mostly cosmetic but makes diffs cleaner
+when adding a new require.
+
+Stylua's table-with-function-literal heuristic forces compact
+`keys = { { "lhs", function() ... end, desc = "..." } }` entries to
+**expand** to multi-line form on every reformat. There is no stylua
+option to disable this; the only opt-out is a `-- stylua: ignore`
+marker above the table (LazyVim sprinkles these throughout their core
+plugin files). ACH-NEOVIM does NOT use these markers — the convention
+is to write keymap tables in expanded form from the start. If you
+import a snippet from LazyVim that uses compact form, expand it on
+adoption rather than carrying the marker over.
+
+**`.markdownlint.json`** — disables `MD013` (line length) and `MD033`
+(no inline HTML). Without this, opening `CLAUDE.md` or `README.md`
+would surface a barrage of warnings on every wrapped line. The file
+uses the `.markdownlint.json` filename (not `.markdownlint-cli2.yaml`
+like LazyVim) because the project uses BOTH `markdownlint` (the CLI,
+via nvim-lint in `linting.lua`) and `markdownlint-cli2` (the conditional
+formatter via conform in `formatting.lua`); the former only reads
+`.markdownlint.{json,yaml,yml}`, the latter falls back to it. A single
+`.markdownlint.json` covers both tools.
+
+If you ever need to override either config for a specific file (e.g.,
+allow inline HTML in a single doc), use the per-file syntax that each
+tool supports (`<!-- markdownlint-disable MD033 -->` for markdown,
+`-- stylua: ignore start/end` for Lua) rather than tweaking the
+top-level config file.
 
 ---
 
