@@ -775,14 +775,30 @@ return {
 
 					-- Code actions (format-on-save + manual <leader>cf is owned by
 					-- conform.nvim in formatting.lua). <leader>cr (Rename) is owned
-					-- by inc-rename.nvim below for live in-buffer preview, and
-					-- <leader>cs (Outline) is owned by outline.nvim in editor.lua --
-					-- the vanilla vim.lsp.buf.document_symbol dumps to quickfix
-					-- which is much worse UX than a sidebar tree.
+					-- by inc-rename.nvim below for live in-buffer preview,
+					-- <leader>cR (Rename File) is owned by Snacks.rename via the
+					-- snacks keys spec below, and <leader>cs (Outline) is owned by
+					-- outline.nvim in editor.lua -- the vanilla
+					-- vim.lsp.buf.document_symbol dumps to quickfix which is much
+					-- worse UX than a sidebar tree.
 					map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
 					map("n", "<leader>cd", vim.diagnostic.open_float, "Line Diagnostic")
 					map("n", "<leader>cl", "<cmd>LspInfo<cr>", "LSP Info")
 					map("n", "<leader>cS", vim.lsp.buf.workspace_symbol, "Workspace Symbols")
+
+					-- Organize Imports: directly fires the `source.organizeImports`
+					-- code action so the user doesn't have to go through the
+					-- <leader>ca menu. For TS this removes unused imports + sorts
+					-- them; for Python (via pyright) it sorts imports; etc. Wrapped
+					-- in pcall so a buffer where the LSP doesn't expose this action
+					-- silently no-ops instead of erroring. Borrowed from LazyVim's
+					-- main lsp/init.lua <leader>co binding.
+					map("n", "<leader>co", function()
+						pcall(vim.lsp.buf.code_action, {
+							context = { only = { "source.organizeImports" }, diagnostics = {} },
+							apply = true,
+						})
+					end, "Organize Imports")
 
 					-- Diagnostic navigation (uses the 0.11+ jump API)
 					map("n", "]d", function()
@@ -792,10 +808,42 @@ return {
 						vim.diagnostic.jump({ count = -1, float = true })
 					end, "Prev Diagnostic")
 
-					-- Inlay hints: enable when the server supports them. Can be
-					-- toggled globally later via <leader>uh in keymaps.lua.
-					if client:supports_method("textDocument/inlayHint") then
+					-- Inlay hints: enable when the server supports them, EXCEPT
+					-- on vue buffers. vue_ls (Volar) emits inlay hints on every
+					-- prop binding which is noisy and slows down rendering --
+					-- LazyVim's main lsp/init.lua excludes vue from the inlay
+					-- hints filetype list for the same reason. Can be toggled
+					-- globally later via <leader>uh in keymaps.lua.
+					if client:supports_method("textDocument/inlayHint") and vim.bo[bufnr].filetype ~= "vue" then
 						vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+					end
+
+					-- Code lenses: bind run + refresh, set up auto-refresh on
+					-- BufEnter / CursorHold / InsertLeave so the lenses don't go
+					-- stale, and fire an initial refresh. Gated on the server
+					-- supporting textDocument/codeLens. The user's gopls config
+					-- enables the full codelens set (gc_details, generate,
+					-- regenerate_cgo, run_govulncheck, test, tidy,
+					-- upgrade_dependency, vendor) so this binding is what makes
+					-- those lenses actually invokable. Borrowed from LazyVim's
+					-- main lsp/init.lua codelens block. The augroup uses
+					-- clear = false so other buffers' autocmds aren't wiped when
+					-- we register this one.
+					if client:supports_method("textDocument/codeLens") then
+						map({ "n", "v" }, "<leader>cc", vim.lsp.codelens.run, "Run Codelens")
+						map("n", "<leader>cC", vim.lsp.codelens.refresh, "Refresh Codelens")
+						vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
+							buffer = bufnr,
+							group = vim.api.nvim_create_augroup("ACHCodelensRefresh", { clear = false }),
+							callback = function()
+								pcall(vim.lsp.codelens.refresh, { bufnr = bufnr })
+							end,
+						})
+						-- Initial refresh so lenses appear without waiting for
+						-- the first BufEnter / CursorHold trigger.
+						vim.schedule(function()
+							pcall(vim.lsp.codelens.refresh, { bufnr = bufnr })
+						end)
 					end
 
 					-- Ruff serves textDocument/hover on Python files but its hover
@@ -1022,6 +1070,26 @@ return {
 		},
 	},
 
+	-- snacks rename file: workspace-aware file rename via the
+	-- `Snacks.rename.rename_file()` utility. Prompts for the new name,
+	-- sends `workspace/willRenameFiles` to the LSP (so it can update
+	-- imports BEFORE the file moves), renames the file on disk, then
+	-- sends `workspace/didRenameFiles` to finalize. For TS this means
+	-- renaming `Foo.tsx` -> `Bar.tsx` automatically updates every
+	-- `import Foo from "./Foo"` across the workspace. Borrowed from
+	-- LazyVim's main lsp/init.lua <leader>cR binding.
+	--
+	-- Bound as a top-level snacks keys spec (not in LspAttach) so it
+	-- works in any buffer regardless of LSP attachment status -- when
+	-- no LSP is attached the file still gets renamed, just without
+	-- import propagation.
+	{
+		"folke/snacks.nvim",
+		keys = {
+			{ "<leader>cR", function() Snacks.rename.rename_file() end, desc = "Rename File" },
+		},
+	},
+
 	-- which-key: extend spec with code / LSP / mason keymap icons.
 	{
 		"folke/which-key.nvim",
@@ -1040,6 +1108,26 @@ return {
 					"<leader>cr",
 					desc = "Rename Symbol",
 					icon = { icon = icons.lsp.rename, color = "orange" },
+				},
+				{
+					"<leader>cR",
+					desc = "Rename File",
+					icon = { icon = icons.ui.pencil, color = "orange" },
+				},
+				{
+					"<leader>cc",
+					desc = "Run Codelens",
+					icon = { icon = icons.lsp.code_lens, color = "green" },
+				},
+				{
+					"<leader>cC",
+					desc = "Refresh Codelens",
+					icon = { icon = icons.lsp.code_lens, color = "yellow" },
+				},
+				{
+					"<leader>co",
+					desc = "Organize Imports",
+					icon = { icon = icons.ui.sort, color = "blue" },
 				},
 				{
 					"<leader>cd",

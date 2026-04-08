@@ -323,7 +323,10 @@ A few standalone bindings worth knowing:
 - `gsa` / `gsd` / `gsr` — surround add / delete / replace
 - `<leader>cn` — generate annotations (neogen)
 - `<leader>cr` — rename symbol with live preview (inc-rename)
+- `<leader>cR` — rename file with workspace import propagation (snacks)
 - `<leader>cs` — toggle symbol outline sidebar
+- `<leader>cc` / `<leader>cC` — run / refresh LSP codelenses
+- `<leader>co` — organize imports (LSP `source.organizeImports`)
 - `<leader>ch` — switch C/C++ source/header (clangd)
 - `<leader>cp` — markdown preview in browser (markdown-preview.nvim)
 - `<leader>cv` — pick a Python virtualenv (venv-selector)

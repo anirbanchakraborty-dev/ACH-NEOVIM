@@ -326,6 +326,53 @@ run / test now live under **`<leader>o`** via `overseer.nvim` in
 `util.lua` (`oo` Run, `ow` Task List, `ot` Action, `oq` Quick Action,
 `oi` Info). Don't conflate the two prefixes when adding new keymaps.
 
+### LSP codelens, organize imports, rename file, vue inlay-hints exclude
+
+Four small patterns borrowed from LazyVim's main `lua/lazyvim/plugins/lsp/init.lua`
+that fill specific gaps in the LspAttach block:
+
+**`<leader>cc` / `<leader>cC` (Run / Refresh Codelens)** — gated on the
+client supporting `textDocument/codeLens`. Includes a `BufEnter` /
+`CursorHold` / `InsertLeave` autocmd in the `ACHCodelensRefresh`
+augroup that auto-refreshes lenses so they don't go stale, plus a
+`vim.schedule` initial refresh so lenses appear without waiting for
+the first event. The augroup uses `clear = false` so registering a
+new buffer's autocmd doesn't wipe other buffers' codelens autocmds.
+This is what makes gopls's full codelens set (`gc_details`,
+`generate`, `regenerate_cgo`, `run_govulncheck`, `test`, `tidy`,
+`upgrade_dependency`, `vendor`) actually invokable -- before this,
+gopls was advertising the lenses but there was no keymap to fire them.
+
+**`<leader>co` (Organize Imports)** — directly fires the
+`source.organizeImports` LSP code action via `vim.lsp.buf.code_action`
+with `apply = true`. Wrapped in `pcall` so a buffer where the LSP
+doesn't expose this action silently no-ops instead of erroring. For TS
+this removes unused imports + sorts them; for Python (via pyright) it
+sorts imports; etc. Faster path than going through the `<leader>ca`
+menu for an operation that's done dozens of times per session.
+
+**`<leader>cR` (Rename File)** — declared as a **top-level** snacks
+keys spec, NOT in LspAttach. This is intentional: `Snacks.rename
+.rename_file()` works on any buffer regardless of LSP attachment. When
+an LSP IS attached, the rename also fires `workspace/willRenameFiles`
+and `workspace/didRenameFiles` so the LSP can update imports across
+the workspace before/after the file moves. For TS this means renaming
+`Foo.tsx` -> `Bar.tsx` automatically updates every
+`import Foo from "./Foo"` in the project.
+
+The snacks.rename module is a utility module (lives at
+`snacks/rename.lua`) and does not need explicit `enabled = true` in
+ui.lua's snacks opts -- it's auto-loaded when accessed via
+`Snacks.rename`.
+
+**Vue inlay hints exclude** — the existing `inlay_hint.enable(true,
+{bufnr})` call in LspAttach now also checks `vim.bo[bufnr].filetype ~=
+"vue"`. Vue's inlay hints (from `vue_ls` / Volar, declared in lsp.lua's
+servers table) are notoriously noisy -- they show parameter names on
+every prop binding and slow down rendering on large templates. LazyVim
+has the same exclude in its main lsp/init.lua (`exclude = { "vue" }`
+on the `inlay_hints` opts table). One-line fix.
+
 ### Octo (GitHub) lives in `git.lua`, picker is hardcoded to fzf-lua
 
 `pwntester/octo.nvim` is declared in `git.lua` next to the other git
