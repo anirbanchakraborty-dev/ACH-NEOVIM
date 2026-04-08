@@ -84,35 +84,45 @@ return {
       -- Workaround for nvim-treesitter master vs Neovim 0.12 incompat.
       --
       -- In Neovim 0.12 the `all = false` option to `vim.treesitter.query
-      -- .add_directive` was REMOVED. Look at vim/treesitter/query.lua's
-      -- M.add_directive: it only processes `force`, and the handler
-      -- signature documents `match` as `table mapping capture IDs to a
-      -- list of captured nodes` -- always an array. There is zero
-      -- handling of `opts.all` anywhere in 0.12's query.lua.
+      -- .add_directive` and `add_predicate` was REMOVED. Look at
+      -- vim/treesitter/query.lua's M.add_directive / M.add_predicate:
+      -- they only process `force`, and the handler signatures document
+      -- `match` as "table mapping capture IDs to a list of captured
+      -- nodes" -- always a TSNode[] array. There is zero handling of
+      -- `opts.all` anywhere in 0.12's query.lua.
       --
       -- nvim-treesitter master tried to work around the breaking change
       -- in commit 3826d0c4 ("fix(query): explicitly opt-in to legacy
       -- behavior") by passing `{ force = true, all = false }`, but on
-      -- 0.12 that opt is silently ignored. So every directive in
-      -- query_predicates.lua that does `local node = match[capture_id]`
-      -- and then calls a TSNode method (`:range()`, `:type()`, or feeds
-      -- it through `vim.treesitter.get_node_text`) crashes -- because
-      -- `node` is actually a `TSNode[]` array, not a TSNode.
+      -- 0.12 that opt is silently ignored. So every predicate and
+      -- directive in query_predicates.lua that does
+      --   `local node = match[capture_id]`
+      -- and then calls a TSNode method (`:range()`, `:type()`,
+      -- `:parent()`, or feeds it through `vim.treesitter.get_node_text`
+      -- or `nvim-treesitter.locals.find_definition`) crashes -- because
+      -- `node` is actually the array, not a TSNode.
       --
       -- The visible symptom is the noice toast:
       --   Decoration provider "conceal_line" (ns=nvim.treesitter.highlighter):
       --   ... attempt to call a method 'range' (a nil value)
       -- The "conceal_line" name is the decoration provider that was
       -- running when the crash happened; the actual fault is one of the
-      -- nvim-treesitter directives below.
+      -- nvim-treesitter handlers below.
       --
-      -- Re-register all three broken directives with array-aware copies
-      -- (the `first_node` helper extracts the first TSNode from the
-      -- array form, with a fallback for legacy single-node form on
-      -- older Neovim). `force = true` replaces the upstream registrations.
-      -- `all` is intentionally omitted from opts since it's a no-op on
-      -- 0.12 anyway. Remove this block when nvim-treesitter master
-      -- catches up to the 0.12 directive contract.
+      -- Re-register every broken handler with an array-aware copy.
+      -- `first_node` extracts the first TSNode from the array form (with
+      -- a fallback for legacy single-node form on older Neovim).
+      -- `force = true` replaces the upstream registrations. `all` is
+      -- intentionally omitted from opts since it's a no-op on 0.12 anyway.
+      --
+      -- Note: `has-ancestor?`, `has-parent?`, and `trim!` were already
+      -- removed from upstream nvim-treesitter in commit 9210b9a4 (Oct
+      -- 2024) because they're upstreamed to Neovim's built-in handlers,
+      -- so they don't need overriding here. Only the handlers still
+      -- present in upstream `query_predicates.lua` are listed below.
+      --
+      -- Remove this block when nvim-treesitter master catches up to the
+      -- 0.12 match[] contract.
       -- ----------------------------------------------------------------
       do
         local ok_query, query = pcall(require, "vim.treesitter.query")
@@ -126,6 +136,34 @@ return {
             if type(raw) == "table" then return raw[1] end
             return raw
           end
+
+          -- Inline copy of nvim-treesitter's `valid_args` so we can
+          -- preserve the original argument-count validation behavior
+          -- without reaching into the upstream module-local function.
+          local function valid_args(name, pred, count, strict)
+            local arg_count = #pred - 1
+            if strict then
+              if arg_count ~= count then
+                vim.notify(
+                  string.format("%s must have exactly %d arguments", name, count),
+                  vim.log.levels.ERROR,
+                  { title = "treesitter" }
+                )
+                return false
+              end
+            elseif arg_count < count then
+              vim.notify(
+                string.format("%s must have at least %d arguments", name, count),
+                vim.log.levels.ERROR,
+                { title = "treesitter" }
+              )
+              return false
+            end
+            return true
+          end
+
+          -- Lua 5.1/LuaJIT vs 5.2+ unpack compat (mirrors linting.lua).
+          local unpack = table.unpack or unpack ---@diagnostic disable-line: deprecated
 
           local non_filetype_aliases = {
             ex  = "elixir",
@@ -145,6 +183,50 @@ return {
             ["application/ecmascript"] = "javascript",
             ["text/ecmascript"]        = "javascript",
           }
+
+          -- ── Predicates ──────────────────────────────────────────────
+
+          -- (#nth? @capture n) -> true if @capture is the n-th named child
+          -- of its parent. Calls TSNode `:parent()`, `:named_child_count()`,
+          -- `:named_child()` -- all crash on the array form.
+          query.add_predicate("nth?", function(match, _, _, pred)
+            if not valid_args("nth?", pred, 2, true) then return end
+            local node = first_node(match, pred[2])
+            local n = tonumber(pred[3])
+            if node and node:parent() and node:parent():named_child_count() > n then
+              return node:parent():named_child(n) == node
+            end
+            return false
+          end, { force = true })
+
+          -- (#is? @capture kind...) -> true if the locals analysis says
+          -- the captured node is one of the listed kinds. Reaches into
+          -- nvim-treesitter.locals.find_definition which calls TSNode
+          -- methods internally; passing the array crashes inside there.
+          query.add_predicate("is?", function(match, _, bufnr, pred)
+            if not valid_args("is?", pred, 2) then return end
+            local node = first_node(match, pred[2])
+            local types = { unpack(pred, 3) }
+            if not node then return true end
+            local ok, locals = pcall(require, "nvim-treesitter.locals")
+            if not ok then return false end
+            local _, _, kind = locals.find_definition(node, bufnr)
+            return vim.tbl_contains(types, kind)
+          end, { force = true })
+
+          -- (#kind-eq? @capture type...) -> true if the captured node's
+          -- :type() is one of the listed types. `node:type()` crashes
+          -- on the array form. Renamed from `has-type?` upstream in
+          -- commit a80fe081 to align with Helix.
+          query.add_predicate("kind-eq?", function(match, _, _, pred)
+            if not valid_args("kind-eq?", pred, 2) then return end
+            local node = first_node(match, pred[2])
+            local types = { unpack(pred, 3) }
+            if not node then return true end
+            return vim.tbl_contains(types, node:type())
+          end, { force = true })
+
+          -- ── Directives ──────────────────────────────────────────────
 
           -- markdown code fence: ` ```python ` -> injection.language=python
           query.add_directive("set-lang-from-info-string!", function(match, _, bufnr, pred, metadata)

@@ -325,51 +325,62 @@ run / test now live under **`<leader>o`** via `overseer.nvim` in
 `util.lua` (`oo` Run, `ow` Task List, `ot` Action, `oq` Quick Action,
 `oi` Info). Don't conflate the two prefixes when adding new keymaps.
 
-### nvim-treesitter directives vs Neovim 0.12 `match[]` contract
+### nvim-treesitter directives/predicates vs Neovim 0.12 `match[]` contract
 
-`treesitter.lua`'s config function re-registers **three** broken
-nvim-treesitter directives (`set-lang-from-info-string!`,
-`set-lang-from-mimetype!`, `downcase!`) right after
+`treesitter.lua`'s config function re-registers **six** broken
+nvim-treesitter handlers right after
 `require("nvim-treesitter.configs").setup(opts)`. This is a workaround
 for a structural incompatibility between nvim-treesitter master and
 Neovim 0.12.x.
 
+The overridden handlers are every predicate and directive still present
+in upstream `query_predicates.lua` that uses the legacy single-node
+access pattern:
+
+- **3 predicates:** `nth?`, `is?`, `kind-eq?`
+- **3 directives:** `set-lang-from-info-string!`, `set-lang-from-mimetype!`, `downcase!`
+
 **The breaking change.** In Neovim 0.12, the `all = false` option to
-`vim.treesitter.query.add_directive` was removed. Look at
-`vim/treesitter/query.lua`'s `M.add_directive`: it processes only
-`force`, and `opts.all` is not referenced anywhere in `query.lua`.
-The handler signature documents `match` as a "table mapping capture IDs
-to a list of captured nodes" -- always a `TSNode[]` array.
+`vim.treesitter.query.add_directive` and `add_predicate` was removed.
+Look at `vim/treesitter/query.lua`'s `M.add_directive` /
+`M.add_predicate`: they only process `force`, and `opts.all` is not
+referenced anywhere in `query.lua`. The handler signatures document
+`match` as a "table mapping capture IDs to a list of captured nodes"
+-- always a `TSNode[]` array.
 
 **Why nvim-treesitter is broken.** Master commit `3826d0c4`
 ("fix(query): explicitly opt-in to legacy behavior") tried to opt back
 into the single-node form by passing `{ force = true, all = false }`,
-but on 0.12 that opt is silently ignored. So every directive in
+but on 0.12 that opt is silently ignored. So every handler in
 `query_predicates.lua` that does `local node = match[capture_id]` and
-then calls a TSNode method (`:range()`, `:type()`, or feeds it through
-`vim.treesitter.get_node_text`) crashes -- because `node` is actually
-the array, not a TSNode. The visible symptom is the noice toast
-`Decoration provider "conceal_line" (ns=nvim.treesitter.highlighter):
-... attempt to call a method 'range' (a nil value)`. The "conceal_line"
-name is the decoration provider that was running when the crash
-happened, NOT the actual fault site.
+then calls a TSNode method (`:range()`, `:type()`, `:parent()`, or
+feeds it through `vim.treesitter.get_node_text` /
+`nvim-treesitter.locals.find_definition`) crashes -- because `node` is
+actually the array, not a TSNode. The visible symptom is the noice
+toast `Decoration provider "conceal_line"
+(ns=nvim.treesitter.highlighter): ... attempt to call a method 'range'
+(a nil value)`. The "conceal_line" name is the decoration provider
+that was running when the crash happened, NOT the actual fault site.
 
 **How the fix works.** A `first_node(match, capture_id)` helper extracts
-the first TSNode from the array form (with a fallback to legacy
-single-node form for older Neovim). All three broken directives are
-re-registered with array-aware bodies plus a `pcall` around
-`vim.treesitter.get_node_text` for belt-and-suspenders safety. `force =
-true` replaces the upstream registrations; `all` is omitted from opts
-since it's a no-op on 0.12 anyway.
+the first TSNode from the array form (with a type-check fallback to
+legacy single-node form for older Neovim, since TSNodes are userdata
+and never tables). All six broken handlers are re-registered with
+array-aware bodies. The directives also `pcall`-wrap
+`vim.treesitter.get_node_text` for belt-and-suspenders safety. `force
+= true` replaces the upstream registrations; `all` is omitted from
+opts since it's a no-op on 0.12 anyway. There's an inline copy of
+nvim-treesitter's `valid_args` argument-count helper since it's
+module-local in the upstream file.
 
-**What's NOT fixed.** A few predicates in `query_predicates.lua`
-(`has-ancestor?`, `has-parent?`, `kind-eq?`) use the same legacy
-single-node access pattern but haven't crashed in practice yet -- they
-either return early or call methods that happen not to fault on the
-array form. If a future filetype starts crashing in one of these,
-extend the override block with the same `first_node` pattern.
+**What's NOT in the override.** `has-ancestor?`, `has-parent?`, and
+`trim!` were already removed from upstream nvim-treesitter in commit
+`9210b9a4` (Oct 2024) because they're upstreamed to Neovim's built-in
+handlers. Neovim's built-ins already use the array contract correctly,
+so they need no override. The `make-range!` directive in upstream is a
+no-op (`function() end`) and also needs nothing.
 
-When upstream nvim-treesitter master catches up to the 0.12 directive
+When upstream nvim-treesitter master catches up to the 0.12 match[]
 contract, this whole `do...end` block in `treesitter.lua` can be
 deleted. Search for `3826d0c4` or `first_node` in `treesitter.lua` to
 find it. Tracked in detail in the
