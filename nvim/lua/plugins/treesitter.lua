@@ -81,28 +81,52 @@ return {
       require("nvim-treesitter.configs").setup(opts)
 
       -- ----------------------------------------------------------------
-      -- Workaround for nvim-treesitter master commit 19ac9e8b (2024-05-17)
-      -- which added `:lower()` to the result of `vim.treesitter.get_node_text`
-      -- in the `set-lang-from-info-string!` directive without guarding
-      -- against `get_node_text` returning nil.
+      -- Workaround for nvim-treesitter master vs Neovim 0.12 incompat.
       --
-      -- When a markdown code fence has an empty info string (` ``` ` with
-      -- no language tag), `get_node_text` returns nil and `:lower()` then
-      -- crashes the treesitter highlighter decoration provider with an
-      -- "attempt to index a nil value" error. The error surfaces in noice
-      -- as `Decoration provider "conceal_line" (ns=nvim.treesitter.highlighter)`
-      -- because the conceal_line decoration provider is what was running
-      -- when the crash happened.
+      -- In Neovim 0.12 the `all = false` option to `vim.treesitter.query
+      -- .add_directive` was REMOVED. Look at vim/treesitter/query.lua's
+      -- M.add_directive: it only processes `force`, and the handler
+      -- signature documents `match` as `table mapping capture IDs to a
+      -- list of captured nodes` -- always an array. There is zero
+      -- handling of `opts.all` anywhere in 0.12's query.lua.
       --
-      -- Re-register the directive with a nil-guarded copy. `force = true`
-      -- ensures our version replaces the broken one. The aliases table
-      -- and the resolver mirror nvim-treesitter's `query_predicates.lua`
-      -- verbatim (they're module-local in the upstream file). Remove this
-      -- block when upstream lands a fix and the file no longer crashes.
+      -- nvim-treesitter master tried to work around the breaking change
+      -- in commit 3826d0c4 ("fix(query): explicitly opt-in to legacy
+      -- behavior") by passing `{ force = true, all = false }`, but on
+      -- 0.12 that opt is silently ignored. So every directive in
+      -- query_predicates.lua that does `local node = match[capture_id]`
+      -- and then calls a TSNode method (`:range()`, `:type()`, or feeds
+      -- it through `vim.treesitter.get_node_text`) crashes -- because
+      -- `node` is actually a `TSNode[]` array, not a TSNode.
+      --
+      -- The visible symptom is the noice toast:
+      --   Decoration provider "conceal_line" (ns=nvim.treesitter.highlighter):
+      --   ... attempt to call a method 'range' (a nil value)
+      -- The "conceal_line" name is the decoration provider that was
+      -- running when the crash happened; the actual fault is one of the
+      -- nvim-treesitter directives below.
+      --
+      -- Re-register all three broken directives with array-aware copies
+      -- (the `first_node` helper extracts the first TSNode from the
+      -- array form, with a fallback for legacy single-node form on
+      -- older Neovim). `force = true` replaces the upstream registrations.
+      -- `all` is intentionally omitted from opts since it's a no-op on
+      -- 0.12 anyway. Remove this block when nvim-treesitter master
+      -- catches up to the 0.12 directive contract.
       -- ----------------------------------------------------------------
       do
         local ok_query, query = pcall(require, "vim.treesitter.query")
         if ok_query then
+          -- Extract the first TSNode for a capture, handling both the
+          -- 0.12+ array form (`TSNode[]`) and the legacy single-node
+          -- form so this works on older Neovim too. TSNodes are
+          -- userdata, never tables, so the type check is unambiguous.
+          local function first_node(match, capture_id)
+            local raw = match[capture_id]
+            if type(raw) == "table" then return raw[1] end
+            return raw
+          end
+
           local non_filetype_aliases = {
             ex  = "elixir",
             pl  = "perl",
@@ -110,18 +134,53 @@ return {
             uxn = "uxntal",
             ts  = "typescript",
           }
-          local function resolve(alias)
+          local function resolve_markdown_alias(alias)
             local match = vim.filetype.match({ filename = "a." .. alias })
             return match or non_filetype_aliases[alias] or alias
           end
+
+          local html_script_type_languages = {
+            ["importmap"]              = "json",
+            ["module"]                 = "javascript",
+            ["application/ecmascript"] = "javascript",
+            ["text/ecmascript"]        = "javascript",
+          }
+
+          -- markdown code fence: ` ```python ` -> injection.language=python
           query.add_directive("set-lang-from-info-string!", function(match, _, bufnr, pred, metadata)
-            local capture_id = pred[2]
-            local node = match[capture_id]
+            local node = first_node(match, pred[2])
             if not node then return end
-            local text = vim.treesitter.get_node_text(node, bufnr)
-            if not text or text == "" then return end
-            metadata["injection.language"] = resolve(text:lower())
-          end, { force = true, all = false })
+            local ok, text = pcall(vim.treesitter.get_node_text, node, bufnr)
+            if not ok or not text or text == "" then return end
+            metadata["injection.language"] = resolve_markdown_alias(text:lower())
+          end, { force = true })
+
+          -- HTML <script type="..."> -> injection.language=<resolved>
+          query.add_directive("set-lang-from-mimetype!", function(match, _, bufnr, pred, metadata)
+            local node = first_node(match, pred[2])
+            if not node then return end
+            local ok, text = pcall(vim.treesitter.get_node_text, node, bufnr)
+            if not ok or not text or text == "" then return end
+            local configured = html_script_type_languages[text]
+            if configured then
+              metadata["injection.language"] = configured
+            else
+              local parts = vim.split(text, "/", {})
+              metadata["injection.language"] = parts[#parts]
+            end
+          end, { force = true })
+
+          -- (#downcase! @capture) -> set capture metadata.text to lowercased text
+          query.add_directive("downcase!", function(match, _, bufnr, pred, metadata)
+            local id = pred[2]
+            local node = first_node(match, id)
+            if not node then return end
+            local ok, text = pcall(vim.treesitter.get_node_text, node, bufnr, { metadata = metadata[id] })
+            if not ok then return end
+            text = text or ""
+            if not metadata[id] then metadata[id] = {} end
+            metadata[id].text = string.lower(text)
+          end, { force = true })
         end
       end
 

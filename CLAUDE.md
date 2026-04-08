@@ -325,28 +325,55 @@ run / test now live under **`<leader>o`** via `overseer.nvim` in
 `util.lua` (`oo` Run, `ow` Task List, `ot` Action, `oq` Quick Action,
 `oi` Info). Don't conflate the two prefixes when adding new keymaps.
 
-### nvim-treesitter `set-lang-from-info-string!` nil-guard
+### nvim-treesitter directives vs Neovim 0.12 `match[]` contract
 
-`treesitter.lua`'s config function re-registers the
-`set-lang-from-info-string!` query directive after `setup(opts)` to
-work around an upstream nvim-treesitter bug introduced in master commit
-`19ac9e8b` (2024-05-17). That commit added `:lower()` to the result of
-`vim.treesitter.get_node_text(node, bufnr)` without guarding against
-`get_node_text` returning nil. When a markdown code fence has an empty
-info string (` ``` ` with no language tag), nil reaches `:lower()` and
-crashes the treesitter highlighter decoration provider with
+`treesitter.lua`'s config function re-registers **three** broken
+nvim-treesitter directives (`set-lang-from-info-string!`,
+`set-lang-from-mimetype!`, `downcase!`) right after
+`require("nvim-treesitter.configs").setup(opts)`. This is a workaround
+for a structural incompatibility between nvim-treesitter master and
+Neovim 0.12.x.
+
+**The breaking change.** In Neovim 0.12, the `all = false` option to
+`vim.treesitter.query.add_directive` was removed. Look at
+`vim/treesitter/query.lua`'s `M.add_directive`: it processes only
+`force`, and `opts.all` is not referenced anywhere in `query.lua`.
+The handler signature documents `match` as a "table mapping capture IDs
+to a list of captured nodes" -- always a `TSNode[]` array.
+
+**Why nvim-treesitter is broken.** Master commit `3826d0c4`
+("fix(query): explicitly opt-in to legacy behavior") tried to opt back
+into the single-node form by passing `{ force = true, all = false }`,
+but on 0.12 that opt is silently ignored. So every directive in
+`query_predicates.lua` that does `local node = match[capture_id]` and
+then calls a TSNode method (`:range()`, `:type()`, or feeds it through
+`vim.treesitter.get_node_text`) crashes -- because `node` is actually
+the array, not a TSNode. The visible symptom is the noice toast
 `Decoration provider "conceal_line" (ns=nvim.treesitter.highlighter):
-... attempt to index a nil value`.
+... attempt to call a method 'range' (a nil value)`. The "conceal_line"
+name is the decoration provider that was running when the crash
+happened, NOT the actual fault site.
 
-The override mirrors upstream's directive verbatim except for the nil
-guard, and uses `force = true, all = false` to replace the broken
-registration. The aliases table and `resolve()` helper mirror
-nvim-treesitter's `query_predicates.lua` (those locals are module-local
-in the upstream file so we can't reach them).
+**How the fix works.** A `first_node(match, capture_id)` helper extracts
+the first TSNode from the array form (with a fallback to legacy
+single-node form for older Neovim). All three broken directives are
+re-registered with array-aware bodies plus a `pcall` around
+`vim.treesitter.get_node_text` for belt-and-suspenders safety. `force =
+true` replaces the upstream registrations; `all` is omitted from opts
+since it's a no-op on 0.12 anyway.
 
-When upstream lands a fix and nvim-treesitter master gets pulled forward,
-this whole `do...end` block can be deleted. Search for `19ac9e8b` in
-`treesitter.lua` to find it.
+**What's NOT fixed.** A few predicates in `query_predicates.lua`
+(`has-ancestor?`, `has-parent?`, `kind-eq?`) use the same legacy
+single-node access pattern but haven't crashed in practice yet -- they
+either return early or call methods that happen not to fault on the
+array form. If a future filetype starts crashing in one of these,
+extend the override block with the same `first_node` pattern.
+
+When upstream nvim-treesitter master catches up to the 0.12 directive
+contract, this whole `do...end` block in `treesitter.lua` can be
+deleted. Search for `3826d0c4` or `first_node` in `treesitter.lua` to
+find it. Tracked in detail in the
+`project_pending_treesitter_info_string` memory.
 
 ### `vim.filetype.add` block in `lsp.lua`
 
