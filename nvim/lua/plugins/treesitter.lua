@@ -80,6 +80,51 @@ return {
     config = function(_, opts)
       require("nvim-treesitter.configs").setup(opts)
 
+      -- ----------------------------------------------------------------
+      -- Workaround for nvim-treesitter master commit 19ac9e8b (2024-05-17)
+      -- which added `:lower()` to the result of `vim.treesitter.get_node_text`
+      -- in the `set-lang-from-info-string!` directive without guarding
+      -- against `get_node_text` returning nil.
+      --
+      -- When a markdown code fence has an empty info string (` ``` ` with
+      -- no language tag), `get_node_text` returns nil and `:lower()` then
+      -- crashes the treesitter highlighter decoration provider with an
+      -- "attempt to index a nil value" error. The error surfaces in noice
+      -- as `Decoration provider "conceal_line" (ns=nvim.treesitter.highlighter)`
+      -- because the conceal_line decoration provider is what was running
+      -- when the crash happened.
+      --
+      -- Re-register the directive with a nil-guarded copy. `force = true`
+      -- ensures our version replaces the broken one. The aliases table
+      -- and the resolver mirror nvim-treesitter's `query_predicates.lua`
+      -- verbatim (they're module-local in the upstream file). Remove this
+      -- block when upstream lands a fix and the file no longer crashes.
+      -- ----------------------------------------------------------------
+      do
+        local ok_query, query = pcall(require, "vim.treesitter.query")
+        if ok_query then
+          local non_filetype_aliases = {
+            ex  = "elixir",
+            pl  = "perl",
+            sh  = "bash",
+            uxn = "uxntal",
+            ts  = "typescript",
+          }
+          local function resolve(alias)
+            local match = vim.filetype.match({ filename = "a." .. alias })
+            return match or non_filetype_aliases[alias] or alias
+          end
+          query.add_directive("set-lang-from-info-string!", function(match, _, bufnr, pred, metadata)
+            local capture_id = pred[2]
+            local node = match[capture_id]
+            if not node then return end
+            local text = vim.treesitter.get_node_text(node, bufnr)
+            if not text or text == "" then return end
+            metadata["injection.language"] = resolve(text:lower())
+          end, { force = true, all = false })
+        end
+      end
+
       -- Friendly toast notifications when auto_install kicks in for a new filetype.
       -- Fires a "Installing parser: X" toast, then polls until the parser becomes
       -- available and fires a "Parser installed: X" toast (or a timeout warning).

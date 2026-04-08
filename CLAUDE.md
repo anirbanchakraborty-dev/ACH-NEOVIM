@@ -325,6 +325,29 @@ run / test now live under **`<leader>o`** via `overseer.nvim` in
 `util.lua` (`oo` Run, `ow` Task List, `ot` Action, `oq` Quick Action,
 `oi` Info). Don't conflate the two prefixes when adding new keymaps.
 
+### nvim-treesitter `set-lang-from-info-string!` nil-guard
+
+`treesitter.lua`'s config function re-registers the
+`set-lang-from-info-string!` query directive after `setup(opts)` to
+work around an upstream nvim-treesitter bug introduced in master commit
+`19ac9e8b` (2024-05-17). That commit added `:lower()` to the result of
+`vim.treesitter.get_node_text(node, bufnr)` without guarding against
+`get_node_text` returning nil. When a markdown code fence has an empty
+info string (` ``` ` with no language tag), nil reaches `:lower()` and
+crashes the treesitter highlighter decoration provider with
+`Decoration provider "conceal_line" (ns=nvim.treesitter.highlighter):
+... attempt to index a nil value`.
+
+The override mirrors upstream's directive verbatim except for the nil
+guard, and uses `force = true, all = false` to replace the broken
+registration. The aliases table and `resolve()` helper mirror
+nvim-treesitter's `query_predicates.lua` (those locals are module-local
+in the upstream file so we can't reach them).
+
+When upstream lands a fix and nvim-treesitter master gets pulled forward,
+this whole `do...end` block can be deleted. Search for `19ac9e8b` in
+`treesitter.lua` to find it.
+
 ### `vim.filetype.add` block in `lsp.lua`
 
 `lsp.lua`'s config function opens with a `vim.filetype.add({...})` block
