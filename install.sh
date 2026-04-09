@@ -21,6 +21,41 @@ success() { echo -e "${GREEN}[OK]${NC} $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${NC} $*"; }
 error()   { echo -e "${RED}[ERROR]${NC} $*"; }
 
+# ── Argument parsing ────────────────────────────────────────────────────────
+# --with-hdl is opt-in because the SystemVerilog/Verilog toolchain
+# (verible + verilator + icarus-verilog + yosys + surfer + netlistsvg)
+# pulls ~500 MB of binaries that only hardware-design users need. The
+# default install stays lean for everyone else.
+INSTALL_HDL=false
+for arg in "$@"; do
+  case "$arg" in
+    --with-hdl)
+      INSTALL_HDL=true
+      ;;
+    --help|-h)
+      cat <<EOF
+ACH-NEOVIM Installer
+
+Usage: $0 [--with-hdl]
+
+Options:
+  --with-hdl   Also install the SystemVerilog/Verilog toolchain via brew:
+               verible, verilator, icarus-verilog, yosys, surfer, netlistsvg.
+               Adds the system binaries that the SV LSP, formatter, linter,
+               and run.sh-based workflow need. Skip this flag on machines
+               that aren't doing hardware design.
+  -h, --help   Show this help.
+EOF
+      exit 0
+      ;;
+    *)
+      error "Unknown argument: $arg"
+      error "Run '$0 --help' for usage."
+      exit 1
+      ;;
+  esac
+done
+
 # ── macOS Gate ──────────────────────────────────────────────────────────────
 if [[ "$(uname -s)" != "Darwin" ]]; then
   error "ACH-NEOVIM currently supports macOS only."
@@ -164,6 +199,34 @@ else
   fi
 fi
 
+# ── Optional: SystemVerilog / Verilog toolchain ─────────────────────────────
+# Gated behind --with-hdl. Pulls in:
+#   verible           -- LSP (verible-verilog-ls), formatter, lint engine
+#   verilator         -- linter + simulator
+#   icarus-verilog    -- iverilog + vvp simulator pair
+#   yosys             -- synthesis
+#   surfer            -- waveform viewer
+#   netlistsvg        -- yosys-JSON -> SVG schematic renderer (also pulls
+#                        node + npm transitively, which mason needs to
+#                        install svlangserver on first .sv file open)
+#
+# `brew install` is idempotent: every package already on the system is
+# silently skipped, so re-running this with --with-hdl on a partially
+# provisioned machine just installs whatever's missing.
+#
+# All six tools are wired into the Neovim config at:
+#   nvim/lua/plugins/lsp.lua          (verible LSP + svlangserver)
+#   nvim/lua/plugins/formatting.lua   (verible-verilog-format via conform)
+#   nvim/lua/plugins/linting.lua      (verilator via nvim-lint, with
+#                                      project-aware -f filelist resolver)
+#   nvim/lua/plugins/lang.lua         (<leader>R* run.sh keymaps)
+#   nvim/lua/plugins/util.lua         (overseer run.sh template)
+if $INSTALL_HDL; then
+  info "Installing SystemVerilog/Verilog toolchain via Homebrew..."
+  brew install verible verilator icarus-verilog yosys surfer netlistsvg
+  success "HDL toolchain installed (verible, verilator, icarus-verilog, yosys, surfer, netlistsvg)"
+fi
+
 # ── Config Symlink ──────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NVIM_CONFIG="$HOME/.config/nvim"
@@ -195,8 +258,15 @@ echo -e "  Neovim: ${BOLD}$(nvim --version | head -1)${NC}"
 if command -v claude &>/dev/null; then
   echo -e "  Claude: ${BOLD}$(claude --version 2>/dev/null | head -1 || echo 'installed')${NC}"
 fi
+if $INSTALL_HDL && command -v verible-verilog-ls &>/dev/null; then
+  echo -e "  HDL:    ${BOLD}verible + verilator + icarus-verilog + yosys + surfer + netlistsvg${NC}"
+fi
 echo -e "  Config: ${BOLD}$NVIM_CONFIG -> $SCRIPT_DIR/nvim${NC}"
 echo ""
 info "Launch Neovim with: ${BOLD}nvim${NC}"
 info "First launch will auto-install plugins via lazy.nvim."
+if ! $INSTALL_HDL; then
+  echo ""
+  info "Doing SystemVerilog work? Re-run with ${BOLD}./install.sh --with-hdl${NC} to add the HDL toolchain."
+fi
 echo ""

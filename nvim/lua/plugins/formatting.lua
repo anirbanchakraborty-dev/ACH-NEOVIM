@@ -61,6 +61,9 @@ local formatter_to_mason = {
   ["terraform_fmt"] = nil, -- system (terraform CLI)
   typstyle = "typstyle", -- typst
   ["elm-format"] = "elm-format", -- elm
+
+  -- Hardware / HDL
+  verible = nil, -- system (brew install verible) -- SystemVerilog/Verilog
 }
 
 -- Filetype -> ordered list of formatters. `stop_after_first = true` makes
@@ -142,6 +145,15 @@ local formatters_by_ft = {
   -- ── Niche ──────────────────────────────────────────────────
   typst = { "typstyle" },
   elm = { "elm-format" },
+
+  -- ── Hardware / HDL ─────────────────────────────────────────
+  -- verible-verilog-format (system, brew install verible). Conform's
+  -- builtin verible formatter calls it as
+  -- `verible-verilog-format --stdin_name $FILENAME -`. The same binary
+  -- is shared with the verible LSP server in lsp.lua, so editing-time
+  -- formatting and on-save formatting use one source of truth.
+  systemverilog = { "verible" },
+  verilog = { "verible" },
 }
 
 -- prettier `condition` helper. Asks prettier whether it can parse the

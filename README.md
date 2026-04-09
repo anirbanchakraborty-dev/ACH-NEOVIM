@@ -141,6 +141,25 @@ cd ACH-NEOVIM
 
 The script is idempotent — re-running it skips anything already in place.
 
+### Optional: SystemVerilog / Verilog toolchain
+
+If you do hardware design, add the `--with-hdl` flag to also install
+the open-source HDL toolchain via Homebrew:
+
+```bash
+./install.sh --with-hdl
+```
+
+That pulls in **verible** (LSP, formatter, lint engine), **verilator**
+(linter + simulator), **icarus-verilog** (`iverilog` + `vvp` simulator
+pair), **yosys** (synthesis), **surfer** (waveform viewer), and
+**netlistsvg** (yosys-JSON → SVG schematic renderer). The config wires
+all six into the editor — see [Hardware / HDL](#hardware--hdl) below
+for the full feature list.
+
+Skip the flag on machines that aren't doing hardware work — none of
+these tools are needed for the rest of the editor stack.
+
 After install, launch `nvim`. lazy.nvim bootstraps itself, downloads every
 plugin, and shows the dashboard. Open a file in any supported language and
 the matching LSP server / formatter / linter installs in the background.
@@ -241,6 +260,78 @@ list.
 | Nushell  | — (treesitter only)                 | —          |                   |
 | Elm      | elm-language-server                 | elm-format |                   |
 | Typst    | tinymist                            | typstyle   |                   |
+
+### Hardware / HDL
+
+SystemVerilog / Verilog support is opt-in via `./install.sh --with-hdl`,
+which adds the open-source toolchain via Homebrew. Once the binaries are
+on PATH, the editor stack wires up automatically the first time you open
+an `.sv` / `.svh` / `.v` / `.vh` file.
+
+| Language       | LSP                              | Formatter              | Linter               |
+|----------------|----------------------------------|------------------------|----------------------|
+| SystemVerilog  | svlangserver + verible           | verible-verilog-format | verilator            |
+| Verilog        | svlangserver + verible           | verible-verilog-format | verilator            |
+
+**Two LSPs attach in tandem.** `svlangserver` (mason-installed via npm)
+owns cross-file navigation: `gd`, `gr`, `K` (hover), completion, and
+workspace symbol search. Its `systemverilog.build_index` workspace
+command fires automatically on first attach so the symbol table is
+ready before you press a key. `verible` (system, via brew) owns
+diagnostics + document outline; its `definitionProvider` /
+`referencesProvider` / `renameProvider` are explicitly disabled in
+`LspAttach` because cross-file resolution is broken in the current
+verible release (verified empirically — advertises the capabilities
+but returns empty cross-file). `.rules.verible_lint` files at the
+project root are auto-picked up via `--rules_config_search`.
+
+**Verilator linter is project-aware.** `nvim-lint` runs `verilator
+-sv -Wall --language 1800-2017 -Wno-MULTITOP --bbox-sys --bbox-unsup
+--lint-only` on every save, and a small file-local resolver in
+`linting.lua` walks up from the buffer to find a `*.f` filelist at the
+project root and appends `-f <filelist>` to the args. This is what lets
+verilator resolve cross-folder `import pkg::*;` references via the
+filelist's `-I` directives without enumerating every `.sv` file in
+the linter config. Buffers that aren't inside a project with a `*.f`
+filelist silently fall back to single-file lint mode.
+
+**`run.sh` integration.** The config detects a `run.sh` script at the
+project root (any shell script with that name wrapping the common HDL
+workflow commands — lint / fmt / sim / wave / synth / schematic / clean)
+and exposes its subcommands two ways:
+
+- **Direct keymaps** under `<leader>R*`, filetype-gated to
+  systemverilog/verilog: `Rl` lint, `Rf` fmt, `Rs` simulate (picker),
+  `Ra` sim:all, `Rw` open waveform (picker), `Ry` synthesize (picker),
+  `RS` schematic (picker), `Rc` check tools, `Rk` clean. Each runs
+  `./run.sh <sub>` in a snacks float terminal rooted at the script's
+  directory.
+- **Overseer template** that surfaces every run.sh subcommand under
+  `<leader>oo` with an enum picker. Gated by both filetype and run.sh
+  presence so it doesn't pollute non-SV projects.
+
+The pickers for `Rs` / `Rw` / `Ry` / `RS` glob the conventional SV
+project layout (`tb/**/tb_*.sv` for testbenches, `build/*.vcd` for
+waveforms, `rtl/**/*.sv` for modules). Projects that diverge from this
+layout can still use the Overseer template (which takes a free-form
+target string) or plain `:term ./run.sh <cmd>`.
+
+**What gets installed by `--with-hdl`:**
+
+| Tool             | Brew formula     | Role                                          |
+|------------------|------------------|-----------------------------------------------|
+| `verible`        | verible          | LSP + formatter + lint engine                 |
+| `verilator`      | verilator        | Linter + simulator                            |
+| `iverilog`/`vvp` | icarus-verilog   | Behavioral simulator                          |
+| `yosys`          | yosys            | Synthesis (used by `<leader>Ry`)              |
+| `surfer`         | surfer           | Waveform viewer (used by `<leader>Rw`)        |
+| `netlistsvg`     | netlistsvg       | Schematic renderer (used by `<leader>RS`)     |
+
+`netlistsvg` pulls in `node` + `npm` transitively, which mason then
+uses to install `svlangserver` (`@imc-trading/svlangserver`) on the
+first `.sv` file open. The treesitter `systemverilog` parser also
+installs on demand via the standard nvim-treesitter on-demand path —
+no manual setup needed.
 
 Treesitter parsers install on demand for any filetype that has one.
 

@@ -8,6 +8,18 @@ local function augroup(name)
 end
 
 -- ---------------------------------------------------------------------------
+-- Treesitter language aliases
+-- ---------------------------------------------------------------------------
+
+-- nvim-treesitter only ships a `systemverilog` parser; there is no separate
+-- `verilog` parser. Register the alias so .v / .vh files (filetype = verilog)
+-- use the systemverilog parser via the existing on-demand installer in
+-- treesitter.lua. pcall'd because the call is harmless when no parser is
+-- installed yet -- the alias just sits idle until the parser arrives, and
+-- then highlighting + folds + indent kick in for both filetypes.
+pcall(vim.treesitter.language.register, "systemverilog", "verilog")
+
+-- ---------------------------------------------------------------------------
 -- Visual feedback
 -- ---------------------------------------------------------------------------
 

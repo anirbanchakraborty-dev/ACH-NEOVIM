@@ -9,6 +9,59 @@
 
 local icons = require("config.icons")
 
+-- ── Verilator filelist resolver (SystemVerilog / Verilog) ───────────
+--
+-- Walks up from the current buffer's directory looking for the project
+-- root (run.sh / .rules.verible_lint / .git), then globs for a `*.f`
+-- file at that root and returns its absolute path. Used by the
+-- verilator linter override below to emit `-f <filelist>` so verilator
+-- can resolve cross-folder `import yantra_pkg::*;` style references
+-- via the filelist's `-I` directives.
+--
+-- Cached per-buffer-dir with a 5s TTL so the existing 100ms lint
+-- debounce doesn't re-glob on every event burst.
+local verilator_cache = { dir = nil, filelist = nil, ts = 0 }
+
+local function verilator_resolve()
+  local bufdir = vim.fn.expand("%:p:h")
+  if bufdir == "" or bufdir == "." then
+    return nil
+  end
+  local now = vim.uv.now()
+  if verilator_cache.dir == bufdir and (now - verilator_cache.ts) < 5000 then
+    return verilator_cache.filelist
+  end
+  verilator_cache.dir = bufdir
+  verilator_cache.ts = now
+  verilator_cache.filelist = nil
+
+  local marker = vim.fs.find({ "run.sh", ".rules.verible_lint", ".git" }, {
+    upward = true,
+    path = bufdir,
+  })[1]
+  if not marker then
+    return nil
+  end
+  local root = vim.fs.dirname(marker)
+  local matches = vim.fn.globpath(root, "*.f", false, true)
+  if #matches > 0 then
+    verilator_cache.filelist = matches[1]
+  end
+  return verilator_cache.filelist
+end
+
+-- Functional arg entries used by the verilator override below. nvim-lint
+-- evaluates each `args` entry via `vim.tbl_map(eval, ...)` (lint.lua:386)
+-- and treats a `nil` return as "skip this arg", so the `-f <path>` pair
+-- silently disappears on projects without a filelist.
+local function verilator_filelist_flag()
+  return verilator_resolve() and "-f" or nil
+end
+
+local function verilator_filelist_path()
+  return verilator_resolve()
+end
+
 -- nvim-lint linter name -> mason package name. nil entries are
 -- system-provided / not in mason.
 --
@@ -34,6 +87,12 @@ local linter_to_mason = {
   tflint = "tflint",
   sqlfluff = "sqlfluff",
   solhint = "solhint",
+
+  -- Hardware / HDL: verilator is system-only (brew install verilator).
+  -- Verible's lint is served by the verible LSP in lsp.lua, so we
+  -- intentionally do NOT register a separate verible linter here --
+  -- running both would double-count every diagnostic.
+  verilator = nil,
 }
 
 local linters_by_ft = {
@@ -56,6 +115,12 @@ local linters_by_ft = {
   sql = { "sqlfluff" },
   mysql = { "sqlfluff" },
   solidity = { "solhint" },
+
+  -- ── Hardware / HDL ─────────────────────────────────────────────
+  -- verilator does the heavy syntax + cross-file lint. Run on save
+  -- with project-aware args (see opts.linters.verilator below).
+  systemverilog = { "verilator" },
+  verilog = { "verilator" },
 }
 
 return {
@@ -73,12 +138,47 @@ return {
       -- which the on-demand mason installer also reads.
       linters_by_ft = linters_by_ft,
 
-      -- Per-linter overrides. Empty for now -- entries here can customize
-      -- args, define a custom linter, or set a `condition(ctx)` callback
-      -- that decides at runtime whether to run a linter (e.g. only if a
-      -- project config file exists in an ancestor directory).
+      -- Per-linter overrides. Entries here can customize args, define
+      -- a custom linter, or set a `condition(ctx)` callback that decides
+      -- at runtime whether to run a linter (e.g. only if a project
+      -- config file exists in an ancestor directory).
       ---@type table<string, table>
-      linters = {},
+      linters = {
+        -- Verilator override.
+        --
+        -- Static defaults: SystemVerilog 2017 + multi-top warning silenced
+        -- + black-box system/unsupported tasks + lint-only. Mirrors the
+        -- user's preferred standalone verilator invocation, with the
+        -- standard nvim-lint --bbox-* flags layered on so verilator
+        -- doesn't choke on $display / $monitor / `uvm_*.
+        --
+        -- The trailing two functional entries probe the project for a
+        -- `*.f` filelist (yantra-cpu.f style) and emit `-f <path>` if
+        -- found. nvim-lint at lint.lua:386 evaluates each arg via
+        -- `vim.tbl_map(eval, ...)`, treats `nil` as "skip this arg",
+        -- so on projects without a filelist both entries silently
+        -- disappear and verilator runs in single-file baseline mode.
+        --
+        -- Verilator's `-I` directive in the filelist does double duty
+        -- (include search path AND library lookup directory), so passing
+        -- `-f <filelist>` alone is enough to resolve cross-folder
+        -- `import yantra_pkg::*;` style references without enumerating
+        -- every .sv file or scanning the project for `-y` directories.
+        verilator = {
+          args = {
+            "-sv",
+            "-Wall",
+            "--language",
+            "1800-2017",
+            "-Wno-MULTITOP",
+            "--bbox-sys",
+            "--bbox-unsup",
+            "--lint-only",
+            verilator_filelist_flag,
+            verilator_filelist_path,
+          },
+        },
+      },
     },
     config = function(_, opts)
       local lint = require("lint")

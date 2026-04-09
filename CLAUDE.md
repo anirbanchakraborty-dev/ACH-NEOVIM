@@ -11,9 +11,11 @@ author cares about beyond what code can express.
 
 A personal Neovim configuration for macOS, structured around lazy.nvim. One
 script (`install.sh`) bootstraps Homebrew, the latest stable Neovim, and the
-Claude Code CLI. Plugins, LSP servers, treesitter parsers, formatters, and
-linters all install on demand the first time they are needed — there is no
-manual setup pass.
+Claude Code CLI. An optional `--with-hdl` flag layers on the open-source
+SystemVerilog / Verilog toolchain (verible, verilator, icarus-verilog, yosys,
+surfer, netlistsvg) for hardware-design work. Plugins, LSP servers, treesitter
+parsers, formatters, and linters all install on demand the first time they are
+needed — there is no manual setup pass.
 
 Targets the latest stable Neovim (currently 0.12.x). Tested only on macOS with
 zsh and iTerm2 / MesloLGS NF.
@@ -86,16 +88,16 @@ ACH-NEOVIM/
             ├── coding.lua      blink.cmp, mini.pairs/surround/ai, lazydev, ts-comments, ts-autotag
             ├── colorscheme.lua tokyonight + deep-ocean palette + every highlight override
             ├── editor.lua      which-key, fzf-lua, flash, todo-comments, trouble, grug-far
-            ├── formatting.lua  conform.nvim + on-demand mason installer
+            ├── formatting.lua  conform.nvim + on-demand mason installer + verible formatter
             ├── git.lua         gitsigns, diffview, git-conflict, snacks lazygit/gitbrowse
-            ├── lang.lua        render-markdown, markdown-preview, vimtex, venv-selector
-            ├── linting.lua     nvim-lint + on-demand mason installer + debounced dispatcher
-            ├── lsp.lua         mason + nvim-lspconfig + on-demand vim.lsp.enable + SchemaStore + clangd_extensions
+            ├── lang.lua        render-markdown, markdown-preview, vimtex, venv-selector, run.sh HDL keymaps
+            ├── linting.lua     nvim-lint + on-demand mason installer + debounced dispatcher + verilator filelist resolver
+            ├── lsp.lua         mason + nvim-lspconfig + on-demand vim.lsp.enable + SchemaStore + clangd_extensions + verible/svlangserver
             ├── lualine.lua     lualine with custom ocean theme
             ├── terminal.lua    toggleterm + named language REPLs
             ├── treesitter.lua  nvim-treesitter (main branch) + textobjects (main) + treesitter-context
             ├── ui.lua          snacks (dashboard/notifier/lazygit/indent/...), noice, bufferline, mini.icons, rainbow-delimiters, colorizer
-            └── util.lua        persistence (sessions), vim-sleuth, snacks scratch/notifier keys
+            └── util.lua        persistence, vim-sleuth, snacks scratch/notifier keys, overseer (+ run.sh template)
 ```
 
 ---
@@ -895,10 +897,221 @@ The `<leader>ch` (Switch Source/Header) keymap is owned by this plugin's
 block in `lsp.lua` (alongside `<leader>cf`/`<leader>cr`/etc.) so the
 which-key tree shows the icon even before clangd_extensions has loaded.
 
+### Hardware / HDL stack (SystemVerilog / Verilog)
+
+SystemVerilog / Verilog support is gated behind the optional
+`./install.sh --with-hdl` flag, which brew-installs `verible`,
+`verilator`, `icarus-verilog`, `yosys`, `surfer`, and `netlistsvg` in
+a single transaction. `netlistsvg` pulls `node` + `npm` transitively,
+which mason then uses to install `svlangserver` on first `.sv` open.
+None of the HDL tools are in mason except `svlangserver`.
+
+The stack spans **six files**. If you touch any piece of it, read the
+others before committing:
+
+**`lsp.lua` — two LSPs attach in tandem to every SV buffer.**
+
+- **`verible`** (`system = true`, `cmd = { "verible-verilog-ls",
+  "--rules_config_search" }`) owns diagnostics + document outline. The
+  `--rules_config_search` flag makes verible walk upward from each
+  analyzed file looking for `.rules.verible_lint`, picking up
+  project-level rule overrides without per-project config.
+- **`svlangserver`** (`mason = "svlangserver"`, npm-based) owns
+  cross-file navigation: `gd`, `gr`, `K`, completion, workspace
+  symbols. Its settings set `includeIndexing = { "**/*.{v,vh,sv,svh}" }`,
+  `excludeIndexing = { "build/**" }`, and `linter = "none"` (nvim-lint
+  runs verilator, don't double-lint). Its `on_attach` callback fires
+  the `systemverilog.build_index` workspace command **once per
+  client.id** (guarded by a `_sv_indexed` flag on the client object)
+  because svlangserver does NOT auto-index the workspace on startup —
+  without the explicit command, every cross-file `gd`/`gr`/`K` request
+  silently returns empty.
+
+**Verible capability gating in `LspAttach`.** Verible's current stable
+release advertises `definitionProvider`, `referencesProvider`, and
+`renameProvider` but its cross-file symbol resolution is broken
+(verified empirically: even with a perfect `verible.filelist` and
+absolute `--file_list_path` flag, `workspace/symbol` and
+`textDocument/definition` return empty for cross-file lookups — and
+it's not just our project, the same happens on a minimal 2-file
+pkg/module test). The `LspAttach` callback in `lsp.lua` explicitly
+disables those three capabilities on the verible client so the
+requests fall through to svlangserver, which works correctly:
+
+```lua
+if client.name == "verible" then
+  client.server_capabilities.definitionProvider = false
+  client.server_capabilities.referencesProvider = false
+  client.server_capabilities.renameProvider = false
+end
+```
+
+If you ever remove this gating, `gd` will start returning 0 locations
+on cross-file references again. The gating also has to stay in
+`LspAttach` (not `before_init` or `on_init`) because `server_capabilities`
+isn't populated until after the initialize response has been received
+and processed by Neovim's LSP client — any earlier hook writes into a
+nil table. The same pattern is used for the ruff hover disable
+(`client.name == "ruff"` block above it in the same callback).
+
+**Verible is the formatter via a separate non-LSP path.** The actual
+format-on-save call goes through `conform.nvim`'s built-in `verible`
+formatter, which shells out to the standalone `verible-verilog-format`
+binary with `--stdin_name $FILENAME -`. The LSP's
+`documentFormattingProvider` is never invoked — conform short-circuits
+the LSP formatting path when a conform formatter is registered for the
+filetype. That's why disabling the verible LSP's navigation providers
+doesn't break format-on-save: the two paths never touch.
+
+**`linting.lua` — project-aware verilator args.** The file exposes two
+file-local helpers near the top: `verilator_resolve()` walks up from
+the current buffer to find a project root (markers: `run.sh`,
+`.rules.verible_lint`, `.git`), globs the root for `*.f` files, and
+returns the first match. Cached per-buffer-dir with a 5-second TTL.
+`verilator_filelist_flag()` returns `"-f"` or `nil`, and
+`verilator_filelist_path()` returns the absolute path or `nil`. Both
+helpers are referenced as **functional arg entries** in
+`opts.linters.verilator.args` — nvim-lint at `lint.lua:386` evaluates
+each arg via `vim.tbl_map(eval, linter.args)` where `eval` calls
+functions and passes literals through; a `nil` return from a function
+entry skips that arg silently.
+
+So on a project with a `*.f` filelist at the root, verilator runs as:
+
+```text
+verilator -sv -Wall --language 1800-2017 -Wno-MULTITOP \
+          --bbox-sys --bbox-unsup --lint-only \
+          -f /abs/path/to/project.f <current-file>
+```
+
+And on a standalone `.sv` file with no project, the last two entries
+disappear and verilator lints in single-file baseline mode. The `-I`
+directives inside the filelist do double duty in verilator as both
+include search paths AND library lookup directories, so cross-folder
+`import pkg::*;` references resolve via the filelist alone — no
+per-directory `-y` scanning needed.
+
+**Constraint**: nvim-lint's `args` is a **list**, not a function. Each
+ENTRY can be a function returning a single string (or nil), but the
+list itself is flat. You cannot return a variable number of args from
+one functional entry. If you ever need project-dependent args that
+vary in length (e.g. N `-y <dir>` pairs), pre-flatten them or mutate
+`lint.linters.verilator.args` from a `condition(ctx)` callback in the
+same override table.
+
+**`lang.lua` — `<leader>R*` run.sh keymap layer.** Covered in the
+`lang.lua` section below. Short version: file-local helpers
+(`find_run_sh`, `run_script`, `run_pick`) walk up from the buffer to
+locate `run.sh`, spawn it via `Snacks.terminal`, and the nine
+`<leader>R*` keys (Lint / Format / Simulate / Sim All / Waveform /
+Synthesize / Schematic / Check Tools / Clean) hang off
+`folke/snacks.nvim`'s spec so they register at startup but only fire
+on `systemverilog` / `verilog` buffers.
+
+**`util.lua` — Overseer `run.sh` template provider.** Inside
+`overseer.nvim`'s `config = function(_, opts)` body (which is why the
+spec uses `config = function` instead of `opts =`), `overseer.setup`
+is called first, then `overseer.register_template` registers a
+**generator-style provider** (not a static template) for `run.sh`.
+The generator walks up from the search dir to find `run.sh`; if
+found, it yields one template with an enum `subcommand` param
+(`lint` / `lint:errors` / ... / `clean`) and an optional string
+`target` param. The discovered `script_dir` is captured in the
+generator closure so the template's `builder` can use it as the
+task cwd without re-resolving. `condition.filetype = { "systemverilog",
+"verilog" }` gates the provider to SV buffers only.
+
+The static-template `condition` API only supports `filetype` / `dir` /
+`tags` filters — there is **no `condition.callback` field** despite
+what you might expect. If you see a stale template definition trying
+to use `condition.callback(search)`, it will be silently ignored and
+the template will show up in every cwd. The generator-provider form
+is the correct way to do dynamic, per-project visibility gating in
+the current overseer release.
+
+**`autocmds.lua` — treesitter language alias.** Top of the file, right
+after the `augroup` helper, a single line:
+
+```lua
+pcall(vim.treesitter.language.register, "systemverilog", "verilog")
+```
+
+nvim-treesitter only ships a `systemverilog` parser — there is no
+separate `verilog` parser. The alias tells treesitter to use the
+systemverilog parser for `verilog` filetype buffers (`.v` / `.vh`
+files). `pcall`'d because the call is harmless when no parser is
+installed yet — the alias sits idle until the on-demand installer
+fetches `systemverilog` on first `.sv` open, then takes effect for
+both filetypes. Don't move this line into a plugin spec; it needs to
+run at startup before any treesitter calls happen.
+
+**`install.sh --with-hdl` flag.** Opt-in (default is lean). Runs:
+
+```bash
+brew install verible verilator icarus-verilog yosys surfer netlistsvg
+```
+
+in a single transaction. `brew install` is idempotent; tools already
+present are skipped with a "already installed and up-to-date" warning
+and the run exits 0. The footer prints an `HDL:` line in the summary
+when the flag is set, and a "Re-run with `--with-hdl`" hint when it
+isn't. See the argument parser at the top of `install.sh` for the
+flag handler; the brew block lives between the Claude Code section
+and the config symlink section.
+
+**One macOS wrinkle with netlistsvg.** The brew formula for
+`netlistsvg` symlinks its bin into `/opt/homebrew/bin/netlistsvg`. If
+a user previously ran `npm install -g netlistsvg` (which also creates
+a symlink at the same path pointing into `lib/node_modules/`), brew's
+symlink step fails with "Could not symlink bin/netlistsvg — target
+already exists". `brew install` exits 0 anyway (the formula is in
+the Cellar), the script continues, but `which netlistsvg` will still
+resolve to the npm symlink. Recovery on a machine in this state:
+`npm uninstall -g netlistsvg && brew link --overwrite netlistsvg`.
+On a truly fresh Mac with no prior npm install this conflict can't
+happen.
+
+### which-key v3: `cond` not `ft` on spec entries
+
+Lazy.nvim's `keys = {...}` table and which-key's `opts.spec = {...}`
+table are two **different** APIs that happen to both declare keymaps.
+The confusion is that lazy supports an `ft` field on each key entry
+(gating buffer-local activation to a filetype) but which-key v3's
+spec schema does NOT — it only has `cond` (a zero-arg function
+returning a boolean) for dynamic gating. Pass `ft = "..."` on a
+which-key spec entry and the file emits a "WARNING Invalid field
+ft:" in `:checkhealth which-key`.
+
+When you write a filetype-gated keymap group you need BOTH:
+
+- **Lazy `keys = {...}` block** with per-key `ft = { "foo", "bar" }`
+  — this gates when the real `vim.keymap.set` fires (only in `foo`
+  or `bar` buffers).
+- **which-key `opts.spec = {...}` block** with per-entry
+  `cond = function() return vim.tbl_contains({ "foo", "bar" },
+  vim.bo.filetype) end` — this gates when the label + icon appear
+  in the which-key popup tree.
+
+The canonical example is the `<leader>R*` run.sh keymap group in
+`lang.lua`. The file defines `local sv_filetypes = { "systemverilog",
+"verilog" }` and `local function sv_cond() return
+vim.tbl_contains(sv_filetypes, vim.bo.filetype) end` at the top,
+uses `ft = sv_filetypes` on every lazy-key entry, and `cond = sv_cond`
+on every which-key spec entry. Both filters have to match or you get
+half-broken UX: labels visible in non-SV buffers (if you forget
+`cond`) or keymaps that fire without icons in the popup (if you forget
+`ft`).
+
+If you introduce another filetype-gated key group in the future,
+extract a `{filetypes_list, cond_function}` pair at the top of the
+file and reuse it on both sides rather than inlining the list twice.
+
 ### `lang.lua` is for language plugins that aren't LSP/formatter/linter
 
 Four plugins live here, each lazy-loaded by filetype so they cost
-nothing at startup:
+nothing at startup, plus the SystemVerilog / Verilog `run.sh` keymap
+layer (see the "Hardware / HDL stack" section below for the full
+story):
 
 - **`render-markdown.nvim`** — inline markdown rendering. Snacks toggle
   on `<leader>um`. The toggle hook reaches into `render-markdown.state`
@@ -919,6 +1132,19 @@ nothing at startup:
   separately, so DAP itself stays unconfigured (consistent with the
   `project_deferred_dap` plan). When DAP eventually gets adopted, the
   binaries are already cloned.
+
+The file also contributes a **snacks.nvim `keys = {}` block** that
+defines nine `<leader>R*` filetype-gated keymaps for the SystemVerilog
+/ Verilog `run.sh` workflow (lint / fmt / sim / sim:all / wave / synth /
+schematic / check / clean). The keys hitch onto snacks.nvim (already
+loaded at startup with priority 1000) so they register immediately;
+per-key `ft = { "systemverilog", "verilog" }` filters scope the
+activation to SV buffers. The file-local helpers `find_run_sh`,
+`run_script`, and `run_pick` at the top of the file walk up from the
+current buffer to locate `run.sh`, spawn it in a `Snacks.terminal`
+float, and (for `sim`/`wave`/`synth`/`schematic`) present a
+`vim.ui.select` picker populated via `globpath` over the conventional
+SV layout (`tb/**/tb_*.sv`, `build/*.vcd`, `rtl/**/*.sv`).
 
 ### outline.nvim trims trailing spaces from `M.kinds`
 

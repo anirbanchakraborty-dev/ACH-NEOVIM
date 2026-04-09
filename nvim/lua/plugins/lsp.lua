@@ -655,6 +655,104 @@ local servers = {
     mason = "tinymist",
     filetypes = { "typst" },
   },
+
+  -- ── Hardware / HDL ──────────────────────────────────────────────────
+  --
+  -- Two LSPs attach to every SystemVerilog / Verilog buffer:
+  --
+  --   * verible        -- diagnostics (verible-verilog-lint with project
+  --                       `.rules.verible_lint` auto-pickup), document
+  --                       symbols (outline), and semantic tokens.
+  --   * svlangserver   -- cross-file goto-definition, references,
+  --                       hover, completion, workspace symbols, and
+  --                       project-wide indexing via includeIndexing
+  --                       globs.
+  --
+  -- Why both: verible-verilog-ls advertises definitionProvider but its
+  -- cross-file symbol resolution is broken in v0.0-3946-g851d3ff4
+  -- (current Homebrew stable, verified empirically -- even with a
+  -- minimal 2-file pkg/module project and an absolute --file_list_path,
+  -- both `textDocument/definition` and `workspace/symbol` return empty).
+  -- svlangserver fills the navigation gap. Verible still owns lint +
+  -- formatting (the latter via conform.nvim, separate path).
+  --
+  -- The LspAttach handler below disables verible's
+  -- definitionProvider / referencesProvider / renameProvider once it
+  -- attaches so svlangserver wins those requests cleanly.
+  --
+  -- ── verible (lint + outline + format binary) ────────────────────────
+  --
+  -- `--rules_config_search` makes verible walk upward from each analyzed
+  -- file looking for `.rules.verible_lint`, picking up project-level rule
+  -- overrides automatically (Yantra-CPU style).
+  verible = {
+    system = true,
+    filetypes = { "systemverilog", "verilog" },
+    config = {
+      cmd = { "verible-verilog-ls", "--rules_config_search" },
+      root_markers = {
+        "verible.filelist",
+        ".rules.verible_lint",
+        "run.sh",
+        ".git",
+      },
+    },
+  },
+
+  -- ── svlangserver (navigation: gd / gr / K / completion) ─────────────
+  --
+  -- Mason-installed via npm (`@imc-trading/svlangserver`). The on-demand
+  -- installer below pulls it on first SV file open.
+  --
+  -- includeIndexing tells svlangserver which files to read into its
+  -- symbol table at workspace startup. The default LazyVim/lspconfig
+  -- glob of `**/*.{v,vh,sv,svh}` covers any layout (flat, distributed,
+  -- or Yantra-style rtl/tb subfolders). excludeIndexing skips the
+  -- `build/` output directory so verilator's intermediate `.sv` files
+  -- don't pollute the symbol table.
+  --
+  -- linter = "none" disables svlangserver's bundled verilator runner --
+  -- nvim-lint already runs verilator with project-aware args (see
+  -- linting.lua's filelist resolver), and double-linting would surface
+  -- every diagnostic twice. The `formatCommand` setting is left at its
+  -- default because conform.nvim handles all SV formatting via the
+  -- standalone `verible-verilog-format` binary, bypassing the LSP
+  -- formatting path entirely.
+  svlangserver = {
+    mason = "svlangserver",
+    filetypes = { "systemverilog", "verilog" },
+    config = {
+      root_markers = { ".svlangserver", "run.sh", ".git" },
+      settings = {
+        systemverilog = {
+          includeIndexing = { "**/*.{v,vh,sv,svh}" },
+          excludeIndexing = { "build/**" },
+          linter = "none",
+        },
+      },
+      -- svlangserver does NOT auto-index the workspace on startup --
+      -- it only builds its symbol table when the
+      -- `systemverilog.build_index` workspace command is invoked.
+      -- Without this hook, every cross-file `gd` / `gr` / `K` request
+      -- silently returns empty until the user manually runs
+      -- `:LspSvlangserverBuildIndex` (the user command the lspconfig
+      -- default registers in on_attach). Firing it from on_attach
+      -- (gated to once per client.id since LspAttach runs per buffer)
+      -- triggers indexing the moment the LSP attaches to the first SV
+      -- buffer in a project.
+      on_attach = function(client, _)
+        if not client._sv_indexed then
+          client._sv_indexed = true
+          pcall(function()
+            client:exec_cmd({
+              title = "Build Index",
+              command = "systemverilog.build_index",
+            })
+          end)
+        end
+      end,
+    },
+  },
 }
 
 return {
@@ -904,6 +1002,23 @@ return {
           -- diagnostics + the formatter via conform.
           if client.name == "ruff" then
             client.server_capabilities.hoverProvider = false
+          end
+
+          -- Verible LSP advertises definitionProvider/referencesProvider/
+          -- renameProvider but its cross-file symbol resolution is broken
+          -- in v0.0-3946-g851d3ff4 (verified empirically -- even with a
+          -- minimal 2-file pkg/module project and an absolute
+          -- --file_list_path, both `textDocument/definition` and
+          -- `workspace/symbol` return empty). Disable those capabilities
+          -- on the verible client so the same requests fall through to
+          -- svlangserver, which handles cross-file SV navigation
+          -- correctly. Verible keeps providing diagnostics (lint),
+          -- document symbols (outline), and is invoked by conform.nvim
+          -- as the formatter via a separate non-LSP path.
+          if client.name == "verible" then
+            client.server_capabilities.definitionProvider = false
+            client.server_capabilities.referencesProvider = false
+            client.server_capabilities.renameProvider = false
           end
 
           -- ts_ls TS-specific code action shortcuts. Borrowed from
