@@ -42,7 +42,7 @@ Options:
   --with-hdl   Also install the SystemVerilog/Verilog toolchain via brew:
                verible, verilator, icarus-verilog, yosys, surfer, netlistsvg.
                Adds the system binaries that the SV LSP, formatter, linter,
-               and run.sh-based workflow need. Skip this flag on machines
+               and HDL workflow need. Skip this flag on machines
                that aren't doing hardware design.
   -h, --help   Show this help.
 EOF
@@ -219,8 +219,6 @@ fi
 #   nvim/lua/plugins/formatting.lua   (verible-verilog-format via conform)
 #   nvim/lua/plugins/linting.lua      (verilator via nvim-lint, with
 #                                      project-aware -f filelist resolver)
-#   nvim/lua/plugins/lang.lua         (<leader>R* run.sh keymaps)
-#   nvim/lua/plugins/util.lua         (overseer run.sh template)
 if $INSTALL_HDL; then
   info "Installing SystemVerilog/Verilog toolchain via Homebrew..."
   brew install verible verilator icarus-verilog yosys surfer netlistsvg

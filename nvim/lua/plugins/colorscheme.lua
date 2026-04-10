@@ -311,7 +311,7 @@ return {
         -- Labels (the <<<<<<<, =======, >>>>>>> markers) get a stronger tint
         -- and bold colored text so they're scannable at a glance.
         -- ----------------------------------------------------------------
-        hl.GitConflictCurrent = { bg = "#0a1a0a" } -- ours: green tint
+        hl.GitConflictCurrent = { bg = "#0a1a0a" }  -- ours: green tint
         hl.GitConflictCurrentLabel = { bg = "#0a2a0a", fg = c.green, bold = true }
         hl.GitConflictIncoming = { bg = "#0a0a1a" } -- theirs: blue tint
         hl.GitConflictIncomingLabel = { bg = "#0a0a2a", fg = c.blue, bold = true }

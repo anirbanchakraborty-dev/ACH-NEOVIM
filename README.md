@@ -295,27 +295,6 @@ filelist's `-I` directives without enumerating every `.sv` file in
 the linter config. Buffers that aren't inside a project with a `*.f`
 filelist silently fall back to single-file lint mode.
 
-**`run.sh` integration.** The config detects a `run.sh` script at the
-project root (any shell script with that name wrapping the common HDL
-workflow commands — lint / fmt / sim / wave / synth / schematic / clean)
-and exposes its subcommands two ways:
-
-- **Direct keymaps** under `<leader>R*`, filetype-gated to
-  systemverilog/verilog: `Rl` lint, `Rf` fmt, `Rs` simulate (picker),
-  `Ra` sim:all, `Rw` open waveform (picker), `Ry` synthesize (picker),
-  `RS` schematic (picker), `Rc` check tools, `Rk` clean. Each runs
-  `./run.sh <sub>` in a snacks float terminal rooted at the script's
-  directory.
-- **Overseer template** that surfaces every run.sh subcommand under
-  `<leader>oo` with an enum picker. Gated by both filetype and run.sh
-  presence so it doesn't pollute non-SV projects.
-
-The pickers for `Rs` / `Rw` / `Ry` / `RS` glob the conventional SV
-project layout (`tb/**/tb_*.sv` for testbenches, `build/*.vcd` for
-waveforms, `rtl/**/*.sv` for modules). Projects that diverge from this
-layout can still use the Overseer template (which takes a free-form
-target string) or plain `:term ./run.sh <cmd>`.
-
 **What gets installed by `--with-hdl`:**
 
 | Tool             | Brew formula     | Role                                          |
@@ -323,9 +302,9 @@ target string) or plain `:term ./run.sh <cmd>`.
 | `verible`        | verible          | LSP + formatter + lint engine                 |
 | `verilator`      | verilator        | Linter + simulator                            |
 | `iverilog`/`vvp` | icarus-verilog   | Behavioral simulator                          |
-| `yosys`          | yosys            | Synthesis (used by `<leader>Ry`)              |
-| `surfer`         | surfer           | Waveform viewer (used by `<leader>Rw`)        |
-| `netlistsvg`     | netlistsvg       | Schematic renderer (used by `<leader>RS`)     |
+| `yosys`          | yosys            | Synthesis                                     |
+| `surfer`         | surfer           | Waveform viewer (.vcd files)                  |
+| `netlistsvg`     | netlistsvg       | Schematic renderer (yosys JSON to SVG)        |
 
 `netlistsvg` pulls in `node` + `npm` transitively, which mason then
 uses to install `svlangserver` (`@imc-trading/svlangserver`) on the

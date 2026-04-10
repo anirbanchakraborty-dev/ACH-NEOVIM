@@ -12,10 +12,10 @@ local icons = require("config.icons")
 -- ── Verilator filelist resolver (SystemVerilog / Verilog) ───────────
 --
 -- Walks up from the current buffer's directory looking for the project
--- root (run.sh / .rules.verible_lint / .git), then globs for a `*.f`
+-- root (.rules.verible_lint / .git), then globs for a `*.f`
 -- file at that root and returns its absolute path. Used by the
 -- verilator linter override below to emit `-f <filelist>` so verilator
--- can resolve cross-folder `import yantra_pkg::*;` style references
+-- can resolve cross-folder `import pkg::*;` style references
 -- via the filelist's `-I` directives.
 --
 -- Cached per-buffer-dir with a 5s TTL so the existing 100ms lint
@@ -35,7 +35,7 @@ local function verilator_resolve()
   verilator_cache.ts = now
   verilator_cache.filelist = nil
 
-  local marker = vim.fs.find({ "run.sh", ".rules.verible_lint", ".git" }, {
+  local marker = vim.fs.find({ ".rules.verible_lint", ".git" }, {
     upward = true,
     path = bufdir,
   })[1]
@@ -153,17 +153,21 @@ return {
         -- doesn't choke on $display / $monitor / `uvm_*.
         --
         -- The trailing two functional entries probe the project for a
-        -- `*.f` filelist (yantra-cpu.f style) and emit `-f <path>` if
+        -- `*.f` filelist and emit `-f <path>` if
         -- found. nvim-lint at lint.lua:386 evaluates each arg via
         -- `vim.tbl_map(eval, ...)`, treats `nil` as "skip this arg",
         -- so on projects without a filelist both entries silently
         -- disappear and verilator runs in single-file baseline mode.
         --
-        -- Verilator's `-I` directive in the filelist does double duty
-        -- (include search path AND library lookup directory), so passing
-        -- `-f <filelist>` alone is enough to resolve cross-folder
-        -- `import yantra_pkg::*;` style references without enumerating
-        -- every .sv file or scanning the project for `-y` directories.
+        -- Filelists should explicitly list package files before any
+        -- module that imports them — verilator's `-I` is an include
+        -- search path, not a library directory, so it does NOT resolve
+        -- `import pkg::*;` on its own. When nvim-lint lints a package
+        -- file that is also listed in the filelist, verilator sees
+        -- the same compilation unit twice and emits MODDUP. This is a
+        -- false positive unique to per-file linting (the project build
+        -- system lints all files at once and still catches real
+        -- duplicates), so we suppress it here with `-Wno-MODDUP`.
         verilator = {
           args = {
             "-sv",
@@ -171,6 +175,7 @@ return {
             "--language",
             "1800-2017",
             "-Wno-MULTITOP",
+            "-Wno-MODDUP",
             "--bbox-sys",
             "--bbox-unsup",
             "--lint-only",

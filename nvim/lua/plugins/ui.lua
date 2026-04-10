@@ -673,6 +673,34 @@ Powered by ]]
 
       return opts
     end,
+    config = function(_, opts)
+      require("edgy").setup(opts)
+
+      -- Workaround for an unfixed edgy.nvim bug: edgy's `check_main`
+      -- runs synchronously inside a `WinClosed` autocmd and, when it
+      -- decides there is no non-floating "main" window left, calls
+      -- `botright sb <buf>` to splice a new one in. If the event fires
+      -- mid-cascade -- most commonly when a noice popup unmounts via
+      -- `nui.popup:unmount()` -> `nvim_buf_delete` -> `WinClosed` --
+      -- the layout still has every vertical slot occupied by edgy
+      -- panes, so `sbuffer` errors with `E36: Not enough room` and
+      -- the traceback surfaces through noice's msg_show.lua_error.
+      --
+      -- Defer the check via `vim.schedule` so the cascade completes
+      -- first (by then either a real main window is back and
+      -- check_main is a no-op, or the layout has settled enough for
+      -- the synthetic split to succeed), and pcall the original as a
+      -- final safety net. check_main is only called from the single
+      -- WinClosed site in `edgy/editor.lua`, so this is the only hook
+      -- we need. Revert if upstream ships a proper fix.
+      local editor = require("edgy.editor")
+      local original_check_main = editor.check_main
+      editor.check_main = function()
+        vim.schedule(function()
+          pcall(original_check_main)
+        end)
+      end
+    end,
   },
 
   -- which-key: icons for the edgy toggles.

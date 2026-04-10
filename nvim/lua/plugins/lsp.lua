@@ -684,7 +684,7 @@ local servers = {
   --
   -- `--rules_config_search` makes verible walk upward from each analyzed
   -- file looking for `.rules.verible_lint`, picking up project-level rule
-  -- overrides automatically (Yantra-CPU style).
+  -- overrides automatically.
   verible = {
     system = true,
     filetypes = { "systemverilog", "verilog" },
@@ -693,7 +693,6 @@ local servers = {
       root_markers = {
         "verible.filelist",
         ".rules.verible_lint",
-        "run.sh",
         ".git",
       },
     },
@@ -707,7 +706,7 @@ local servers = {
   -- includeIndexing tells svlangserver which files to read into its
   -- symbol table at workspace startup. The default LazyVim/lspconfig
   -- glob of `**/*.{v,vh,sv,svh}` covers any layout (flat, distributed,
-  -- or Yantra-style rtl/tb subfolders). excludeIndexing skips the
+  -- or rtl/tb subfolders). excludeIndexing skips the
   -- `build/` output directory so verilator's intermediate `.sv` files
   -- don't pollute the symbol table.
   --
@@ -722,7 +721,7 @@ local servers = {
     mason = "svlangserver",
     filetypes = { "systemverilog", "verilog" },
     config = {
-      root_markers = { ".svlangserver", "run.sh", ".git" },
+      root_markers = { ".svlangserver", ".git" },
       settings = {
         systemverilog = {
           includeIndexing = { "**/*.{v,vh,sv,svh}" },

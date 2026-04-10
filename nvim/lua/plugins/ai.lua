@@ -44,9 +44,9 @@ return {
         -- pick snacks here, but pinning makes the choice explicit.
         terminal = {
           provider = "snacks",
-          split_side = "right",
-          split_width_percentage = 0.42,
           snacks_win_opts = {
+            position = "bottom",
+            height = 0.4,
             -- Visual separation from the editor pane: remap the panel's
             -- Normal/EndOfBuffer to NormalFloat so it picks up tokyonight's
             -- bg_dark (#011423) instead of bg (#011628). Without this the
