@@ -81,13 +81,13 @@ ACH-NEOVIM/
         │   ├── lazy.lua             bootstraps lazy.nvim, imports lua/plugins/*
         │   ├── options.lua          vim.opt defaults (leader, folds, splits, ...)
         │   ├── keymaps.lua          non-plugin keymaps (motions, windows, buffers)
-        │   ├── autocmds.lua         augroups (yank flash, big-file, prose mode, ...)
+        │   ├── autocmds.lua         augroups (yank flash, big-file, prose mode, explorer auto-open, ...)
         │   └── tailwind_colors.lua  Tailwind v3 palette data module (mini.hipatterns)
         └── plugins/
             ├── ai.lua          coder/claudecode.nvim integration
             ├── coding.lua      blink.cmp, mini.pairs/surround/ai, lazydev, ts-comments, ts-autotag
             ├── colorscheme.lua tokyonight + deep-ocean palette + every highlight override
-            ├── editor.lua      which-key, fzf-lua, flash, todo-comments, trouble, grug-far
+            ├── editor.lua      which-key, fzf-lua, flash, todo-comments, trouble, grug-far, harpoon, outline
             ├── formatting.lua  conform.nvim + on-demand mason installer + verible formatter
             ├── git.lua         gitsigns, diffview, git-conflict, snacks lazygit/gitbrowse
             ├── lang.lua        render-markdown, markdown-preview, vimtex, venv-selector
@@ -300,6 +300,15 @@ the global `foldmethod = "indent"` set in `options.lua`.
 `autocmds.lua`'s `BigFile` group disables syntax, treesitter, undofile,
 and swapfile for buffers > 1.5 MiB. This is a hard limit; tune it there
 if files near that boundary become a problem.
+
+### Explorer auto-opens when a file or directory is passed
+
+`autocmds.lua`'s `ExplorerAutoOpen` group fires on `VimEnter` and opens
+the snacks explorer sidebar when `vim.fn.argc() > 0` (i.e., nvim was
+launched with a file or directory argument). Bare `nvim` (no args) skips
+the explorer so the dashboard renders cleanly. The explorer opens at the
+project root (`.git` marker) or cwd as fallback, matching the
+`<leader>e` keymap behavior in `util.lua`.
 
 ### Bufferline owns buffer cycling
 

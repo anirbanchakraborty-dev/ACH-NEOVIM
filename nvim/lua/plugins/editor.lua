@@ -518,21 +518,27 @@ return {
     end,
   },
 
-  -- which-key: extend spec with harpoon + outline keys (the harpoon mark
-  -- jumps <leader>1-9 are deliberately omitted from the spec -- they're
-  -- a numeric shortcut series and listing nine entries would clutter the
-  -- which-key popup; their descs are inlined on the keymaps themselves
-  -- so they still surface in :WhichKey listings).
+  -- which-key: extend spec with harpoon + outline icons.
   {
     "folke/which-key.nvim",
     optional = true,
     opts_extend = { "spec" },
     opts = {
-      spec = {
-        { "<leader>H", desc = "Harpoon File", icon = { icon = icons.ui.pin, color = "yellow" } },
-        { "<leader>h", desc = "Harpoon Quick Menu", icon = { icon = icons.ui.menu, color = "yellow" } },
-        { "<leader>cs", desc = "Toggle Outline", icon = { icon = icons.find.lsp_symbols, color = "green" } },
-      },
+      spec = (function()
+        local spec = {
+          { "<leader>H", desc = "Harpoon File", icon = { icon = icons.ui.pin, color = "yellow" } },
+          { "<leader>h", desc = "Harpoon Quick Menu", icon = { icon = icons.ui.menu, color = "yellow" } },
+          { "<leader>cs", desc = "Toggle Outline", icon = { icon = icons.find.lsp_symbols, color = "green" } },
+        }
+        for i = 1, 9 do
+          spec[#spec + 1] = {
+            "<leader>" .. i,
+            desc = "Harpoon to File " .. i,
+            icon = { icon = icons.ui.pin, color = "yellow" },
+          }
+        end
+        return spec
+      end)(),
     },
   },
 }

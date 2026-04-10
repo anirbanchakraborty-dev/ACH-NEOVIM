@@ -62,8 +62,9 @@ setup. Run one script and the editor is ready.
 - **Polished UI.** snacks.dashboard on startup, snacks.notifier for toasts,
   snacks.indent rainbow guides, bufferline tabs with diagnostics, lualine
   with a custom ocean theme, noice floating cmdline, rainbow-delimiters,
-  inline color preview, snacks.explorer file tree, and a flash-style
-  2-character jump motion.
+  inline color preview, snacks.explorer file tree (auto-opens when nvim
+  is launched with a file or directory), and a flash-style 2-character
+  jump motion.
 - **Productivity tools.** Yank ring with history cycling (`yanky.nvim`),
   per-project file marks (`harpoon2`), live in-buffer LSP rename preview
   (`inc-rename.nvim`), treesitter docstring generator (`neogen`), real

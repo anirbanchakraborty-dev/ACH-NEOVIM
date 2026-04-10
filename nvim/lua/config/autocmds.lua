@@ -20,6 +20,25 @@ end
 pcall(vim.treesitter.language.register, "systemverilog", "verilog")
 
 -- ---------------------------------------------------------------------------
+-- Auto-open explorer sidebar
+-- ---------------------------------------------------------------------------
+
+-- Open the snacks explorer on startup when nvim was invoked with a file or
+-- directory argument. Bare `nvim` (no args) shows the dashboard instead, so
+-- we skip in that case to avoid the explorer covering the dashboard.
+vim.api.nvim_create_autocmd("VimEnter", {
+  group = augroup("ExplorerAutoOpen"),
+  callback = function()
+    if vim.fn.argc() > 0 then
+      vim.schedule(function()
+        local root = vim.fs.root(0, { ".git" }) or vim.uv.cwd()
+        Snacks.explorer({ cwd = root })
+      end)
+    end
+  end,
+})
+
+-- ---------------------------------------------------------------------------
 -- Visual feedback
 -- ---------------------------------------------------------------------------
 
