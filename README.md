@@ -46,7 +46,10 @@ setup. Run one script and the editor is ready.
   has the final word on cosmetic formatting. Markdown
   picks up two **conditional** formatters: `markdown-toc` only fires on
   buffers with a `<!-- toc -->` marker, `markdownlint-cli2` only fires
-  when there are existing markdownlint diagnostics.
+  when there are existing markdownlint diagnostics. The markdownlint
+  linter is also launched with `--disable MD013` baked into its args,
+  so line-length warnings stay suppressed everywhere — not just inside
+  this repo where the `.markdownlint.json` is discoverable.
 - **Claude Code integration.** `coder/claudecode.nvim` ships claude inside
   Neovim as a snacks-themed split with native diff review and selection
   tracking. The CLI is installed automatically by `install.sh`.
@@ -63,8 +66,9 @@ setup. Run one script and the editor is ready.
   snacks.indent rainbow guides, bufferline tabs with diagnostics, lualine
   with a custom ocean theme, noice floating cmdline, rainbow-delimiters,
   inline color preview, snacks.explorer file tree (auto-opens when nvim
-  is launched with a file or directory), and a flash-style 2-character
-  jump motion.
+  is launched with a file or directory, auto-closes nvim when the
+  explorer is the only pane left so a lingering sidebar never looks
+  broken), and a flash-style 2-character jump motion.
 - **Productivity tools.** Yank ring with history cycling (`yanky.nvim`),
   per-project file marks (`harpoon2`), live in-buffer LSP rename preview
   (`inc-rename.nvim`), treesitter docstring generator (`neogen`), real

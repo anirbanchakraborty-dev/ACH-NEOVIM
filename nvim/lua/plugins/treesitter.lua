@@ -61,6 +61,48 @@ return {
       require("nvim-treesitter").setup({})
 
       -- ----------------------------------------------------------------
+      -- Defensive wrapper around vim.treesitter.start().
+      --
+      -- Neovim's runtime ftplugin/markdown.lua (and a few others) calls
+      -- `vim.treesitter.start()` unconditionally on its very first line,
+      -- with no pcall and no "does the parser exist" guard. On a fresh
+      -- install, when the user opens their first markdown file before
+      -- the on-demand parser installer below has had time to compile
+      -- `markdown.so`, this raises:
+      --
+      --     E5113: Parser could not be created for buffer N and language "markdown"
+      --
+      -- from assert(get_parser(...)) at runtime/lua/vim/treesitter.lua.
+      -- The error fires twice in the first-open window: once when
+      -- ftplugin/markdown.lua runs for real, and once when the LSP
+      -- on-demand installer in lsp.lua re-fires FileType after mason
+      -- finishes installing marksman.
+      --
+      -- This wrapper swallows ONLY the specific "Parser could not be
+      -- created" message, which is the benign "async install hasn't
+      -- finished yet" case. Any other error (bad query, wrong ABI,
+      -- corrupted parser, etc.) still propagates. When the install
+      -- autocmd below finishes and re-fires FileType, vim.treesitter.start
+      -- is called again on the now-ready parser and highlighting kicks
+      -- in normally.
+      --
+      -- This is a config-side workaround, not a monkey-patch of the
+      -- runtime file -- remove the wrapper when upstream fixes the
+      -- runtime ftplugin to guard its own start() call.
+      do
+        local original_start = vim.treesitter.start
+        vim.treesitter.start = function(bufnr, lang)
+          local ok, err = pcall(original_start, bufnr, lang)
+          if not ok then
+            local msg = tostring(err or "")
+            if not msg:find("Parser could not be created", 1, true) then
+              error(err, 2)
+            end
+          end
+        end
+      end
+
+      -- ----------------------------------------------------------------
       -- On-demand parser install.
       --
       -- Master branch had `auto_install = true`. On main we wire the

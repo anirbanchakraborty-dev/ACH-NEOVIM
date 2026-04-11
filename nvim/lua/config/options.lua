@@ -97,7 +97,7 @@ opt.spelllang = { "en" }
 
 -- Misc
 opt.autowrite = true
-opt.wrap = false
+opt.wrap = true
 opt.mouse = "a"
 opt.showmode = false
 opt.confirm = true

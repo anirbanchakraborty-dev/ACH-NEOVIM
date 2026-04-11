@@ -208,6 +208,25 @@ formatter via conform in `formatting.lua`); the former only reads
 `.markdownlint.{json,yaml,yml}`, the latter falls back to it. A single
 `.markdownlint.json` covers both tools.
 
+**MD013 is ALSO disabled at the nvim-lint level** via a
+`markdownlint` override in `linting.lua`'s `opts.linters` table:
+`prepend_args = { "--disable", "MD013" }`. This layers `--disable
+MD013` on top of nvim-lint's default `{"--stdin"}`, so every markdown
+buffer opened in Neovim runs as `markdownlint --stdin --disable MD013`
+regardless of whether a project-local `.markdownlint.json` is
+reachable from the buffer's parent chain. The repo's own
+`.markdownlint.json` only gets discovered when editing **inside** this
+repo — personal notes under `~/org/`, random READMEs in other projects,
+etc. would otherwise re-surface the line-length warning. Baking the
+disable into the linter args makes the setting travel with the Neovim
+config instead of depending on a dotfile in every project root. If
+you want MD013 to come back for a specific project, drop a
+project-local `.markdownlint.json` with `"MD013": true` — it won't
+override the `--disable MD013` CLI flag (CLI flags always win), so
+the pattern is one-way: disabled globally, no per-project re-enable.
+Use the per-file `<!-- markdownlint-disable MD013 -->` / `<!--
+markdownlint-enable MD013 -->` markers if you need selective control.
+
 If you ever need to override either config for a specific file (e.g.,
 allow inline HTML in a single doc), use the per-file syntax that each
 tool supports (`<!-- markdownlint-disable MD033 -->` for markdown,
@@ -325,6 +344,33 @@ launched with a file or directory argument). Bare `nvim` (no args) skips
 the explorer so the dashboard renders cleanly. The explorer opens at the
 project root (`.git` marker) or cwd as fallback, matching the
 `<leader>e` keymap behavior in `util.lua`.
+
+### Explorer auto-closes when it's the only pane left
+
+Symmetric to `ExplorerAutoOpen`: the `ExplorerAutoClose` group in
+`autocmds.lua` fires on `BufEnter` and issues `:qa` when the only
+remaining non-floating windows are snacks explorer panes. Without this,
+closing the last real file window (via `:q` or `:close`) leaves the
+explorer lingering on its own with nothing to explore, which looks
+broken.
+
+The detection walks `nvim_list_wins()`, skips floats via `cfg.relative
+~= ""` (noice, notifier, which-key popups don't count), and classifies
+every remaining window as "explorer" vs "real" based on a filetype
+allowlist: `snacks_picker_list`, `snacks_picker_input`,
+`snacks_picker_preview`, `snacks_layout_box`. Other sidebars
+(trouble, outline, toggleterm, qf, edgy-corralled snacks terminals)
+are "real" and keep nvim alive on their own — only the **explorer-
+alone** state triggers the quit. `nested = true` on the autocmd so the
+`:qa` command still fires `QuitPre` / `VimLeavePre` hooks cleanly
+during the exit (persistence session save, etc.).
+
+If you add another sidebar plugin that you want to treat as a "soft"
+pane (close nvim when only it remains), extend the `explorer_ft`
+allowlist with its filetype. The current set covers every filetype the
+snacks explorer opens — if a future snacks release renames any of
+them, the autocmd silently stops firing and nvim will no longer auto-
+quit in the one-pane state.
 
 ### Bufferline owns buffer cycling
 
@@ -780,6 +826,34 @@ main's queries are written for the 0.12+ array contract directly, so
 there's nothing to patch. If you ever see a `attempt to call a method
 'range' (a nil value)` toast again, it means a query file regressed
 upstream — file an issue, do NOT re-add the override.
+
+**Defensive wrapper around `vim.treesitter.start`**. Right after
+`require("nvim-treesitter").setup({})` in `treesitter.lua`'s config
+function, there's a small `do...end` block that monkey-patches
+`vim.treesitter.start` with a `pcall`'d wrapper. It exists to swallow
+**one specific error** — the `E5113: Parser could not be created for
+buffer N and language "X"` that Neovim's runtime `ftplugin/markdown.lua`
+(and a few others) raises on its very first line, unconditionally, with
+no "does the parser exist" guard. On a fresh install, when the user
+opens their first markdown file before the on-demand installer has
+finished compiling `markdown.so`, this fires twice in the first-open
+window: once when `ftplugin/markdown.lua` runs for real, and once when
+the LSP on-demand installer in `lsp.lua` re-fires `FileType` after
+mason finishes installing marksman.
+
+The wrapper swallows **only** the substring `"Parser could not be
+created"` — every other error (bad query, wrong ABI, corrupted parser,
+etc.) still propagates via `error(err, 2)` so real regressions aren't
+hidden. When the install autocmd below finishes and re-fires
+`FileType`, `vim.treesitter.start` is called again on the now-ready
+parser and highlighting kicks in normally.
+
+This is a **config-side workaround, not a runtime patch** — remove
+the wrapper when upstream `ftplugin/markdown.lua` learns to guard its
+own `start()` call. If you add a new language whose ftplugin hits the
+same issue, the wrapper already covers it (the substring match is
+language-agnostic). Don't broaden the swallow list without a strong
+reason; the narrow substring check is what keeps it safe.
 
 If you need to roll back to master for any reason, change `branch =
 "main"` to `branch = "master"` on both spec entries, set `lazy = true`

@@ -183,6 +183,30 @@ return {
             verilator_filelist_path,
           },
         },
+
+        -- markdownlint override.
+        --
+        -- Disables MD013 (line-length) globally for every markdown buffer
+        -- opened in Neovim, regardless of whether a project-local
+        -- `.markdownlint.json` is reachable from the file's parent chain.
+        -- The repo's own `.markdownlint.json` already turns MD013 off, but
+        -- that file is only discovered when editing inside this repo --
+        -- personal notes under ~/org, random READMEs in other projects,
+        -- etc. would otherwise re-surface the warning. Baking the disable
+        -- into the linter args here makes the setting travel with the
+        -- Neovim config instead of depending on a dotfile in every project
+        -- root.
+        --
+        -- `prepend_args` (which actually appends -- see the config-fn
+        -- comment below) layers these flags on top of nvim-lint's default
+        -- `{"--stdin"}`, giving a final command of:
+        --   markdownlint --stdin --disable MD013
+        -- commander.js parses `--disable` as variadic but correctly stops
+        -- at end-of-args, so no trailing `--` terminator is needed with a
+        -- single rule and no positional file args.
+        markdownlint = {
+          prepend_args = { "--disable", "MD013" },
+        },
       },
     },
     config = function(_, opts)

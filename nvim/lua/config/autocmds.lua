@@ -38,6 +38,50 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
+-- Auto-close nvim when the only remaining non-floating windows belong to
+-- the snacks explorer. Without this, closing the last real file window
+-- (via `:q` or `:close`) leaves the explorer lingering on its own, which
+-- looks broken -- there's nothing to explore once every file pane is gone.
+--
+-- The detection walks every window, classifies it as "explorer" (any of
+-- the snacks picker filetypes the explorer uses) vs "real" (anything
+-- else), and issues `:qa` only when every non-floating window is an
+-- explorer window. Floating windows (noice, notifier, which-key popups)
+-- are ignored via cfg.relative. Other sidebars like trouble, outline, or
+-- toggleterm count as "real" and keep nvim alive on their own -- only
+-- the explorer-alone state triggers the quit.
+--
+-- nested = true so that the qa command can fire QuitPre / VimLeavePre
+-- hooks (persistence session save, etc.) cleanly during the exit.
+vim.api.nvim_create_autocmd("BufEnter", {
+  group = augroup("ExplorerAutoClose"),
+  nested = true,
+  callback = function()
+    local explorer_ft = {
+      snacks_picker_list = true,
+      snacks_picker_input = true,
+      snacks_picker_preview = true,
+      snacks_layout_box = true,
+    }
+    local has_real = false
+    local has_explorer = false
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      local cfg = vim.api.nvim_win_get_config(win)
+      if cfg.relative == "" then -- skip floats
+        local ft = vim.bo[vim.api.nvim_win_get_buf(win)].filetype
+        if explorer_ft[ft] then
+          has_explorer = true
+        else
+          has_real = true
+        end
+      end
+    end
+    if has_explorer and not has_real then
+      vim.cmd("qa")
+    end
+  end,
+})
+
 -- ---------------------------------------------------------------------------
 -- Visual feedback
 -- ---------------------------------------------------------------------------

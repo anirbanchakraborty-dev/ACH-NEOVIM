@@ -579,7 +579,6 @@ M.devtools = {
   pip = "", -- nf-seti-python
   cargo = "", -- nf-dev-rust
   gem = "", -- nf-seti-ruby
-  brew = "🍺",
   pacman = "󰣇", -- nf-md-arch
 
   -- Runtimes / Platforms
