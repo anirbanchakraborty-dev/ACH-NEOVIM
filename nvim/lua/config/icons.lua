@@ -646,6 +646,16 @@ M.ai = {
   diff = "", -- nf-cod-diff
 }
 
+-- ── Org mode
+M.org = {
+  org = "󰅌", -- nf-md-clipboard_text
+  agenda = "󰃭", -- nf-md-calendar
+  capture = "󰄀", -- nf-md-camera
+  note = "󰎞", -- nf-md-note_text
+  roam = "󰌹", -- nf-md-link
+  journal = "󰛓", -- nf-md-notebook
+}
+
 -- ── Neovim Plugin Ecosystem
 M.plugins = {
   lazy = "󰏖", -- nf-md-package_variant

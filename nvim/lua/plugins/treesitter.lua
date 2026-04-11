@@ -194,10 +194,21 @@ return {
       -- plus anything `argv` brought in). Otherwise the very first
       -- buffer of the session is the one that misses out on the
       -- on-demand install path.
+      --
+      -- Only re-fire for filetypes that have a parser recipe in
+      -- nvim-treesitter. Plugins that manage their own treesitter
+      -- parser (e.g. orgmode) handle the first-load path themselves;
+      -- re-firing during their async grammar install creates a race
+      -- where ftplugin calls vim.treesitter.start() before the parser
+      -- exists.
       vim.schedule(function()
         for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
           if vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].filetype ~= "" then
-            vim.api.nvim_exec_autocmds("FileType", { buffer = bufnr })
+            local ft = vim.bo[bufnr].filetype
+            local lang = vim.treesitter.language.get_lang(ft) or ft
+            if available[lang] then
+              vim.api.nvim_exec_autocmds("FileType", { buffer = bufnr })
+            end
           end
         end
       end)

@@ -94,6 +94,7 @@ ACH-NEOVIM/
             ├── linting.lua     nvim-lint + on-demand mason installer + debounced dispatcher + verilator filelist resolver
             ├── lsp.lua         mason + nvim-lspconfig + on-demand vim.lsp.enable + SchemaStore + clangd_extensions + verible/svlangserver
             ├── lualine.lua     lualine with custom ocean theme
+            ├── org.lua         orgmode + org-bullets + org-roam (Notes/Org under <leader>n)
             ├── terminal.lua    toggleterm + named language REPLs
             ├── treesitter.lua  nvim-treesitter (main branch) + textobjects (main) + treesitter-context
             ├── ui.lua          snacks (dashboard/notifier/lazygit/indent/...), noice, bufferline, mini.icons, rainbow-delimiters, colorizer
@@ -264,6 +265,21 @@ use `bg_dark`, accent backgrounds use `bg_search` or `bg_hl`, borders use
 - The snacks split is themed via `snacks_win_opts.wo.winhighlight` to remap
   `Normal` → `NormalFloat` so the panel's `bg_dark` separates visually
   from the editor's `bg`.
+- **`relative = "editor"` + edgy filter exclusion.** The claudecode
+  split sets `snacks_win_opts.relative = "editor"` so the panel spans
+  the full editor width at the bottom instead of only the current
+  split's width. This brings it inside the filetype pattern edgy
+  matches on (`ft = "snacks_terminal"`, `relative == "editor"`), which
+  would otherwise tile it alongside trouble / qf / noice in the bottom
+  edge group and shrink both. The edgy spec in `ui.lua` therefore adds
+  a **`filter(buf, win)`** callback that inspects `vim.b[buf]
+  .snacks_terminal.cmd` and returns `false` whenever the command
+  starts with `claude`, keeping the Claude panel as a free-floating
+  full-width split while every other snacks terminal still lands in
+  the edgy group. If you ever rename the binary or run Claude under a
+  wrapper (`env FOO=1 claude`, `bun run claude`, etc.), update the
+  `cmd:find("claude", 1, true)` substring check in `ui.lua`
+  accordingly.
 
 ### `winhighlight` for snacks splits
 
@@ -718,6 +734,21 @@ method takes a plain callback and **does not** require an async
 coroutine context — that's the entry point we use; **do not** wrap it
 in `task:wait()` because that blocks the editor.
 
+**Re-fire guard for plugin-owned parsers.** The install autocmd's
+post-install step walks every loaded buffer and re-fires `FileType` so
+the buffer that triggered the install actually gets treesitter
+attached. That walk is **gated** on `available[lang]` — i.e. only
+filetypes whose parser recipes live in nvim-treesitter's own parsers
+table are re-fired. Filetypes whose parsers are managed by a **third-
+party plugin** (orgmode ships its own tree-sitter-org grammar and
+installs it asynchronously on first `.org` open) must NOT be re-fired,
+because the re-fire would trigger the plugin's ftplugin calling
+`vim.treesitter.start()` while the parser file is still being written
+to disk. The `get_lang(ft) or ft` lookup normalizes filetype aliases
+(e.g. `verilog` → `systemverilog`) before the availability check. If
+you add another plugin that manages its own grammar, no code change is
+needed here — the `available` table already excludes it.
+
 The textobjects plugin is also on its own `main` branch with a brand-
 new API: instead of declaring `textobjects.select.keymaps` in opts you
 call `require("nvim-treesitter-textobjects.select").select_textobject(
@@ -1102,6 +1133,63 @@ nothing at startup:
   separately, so DAP itself stays unconfigured (consistent with the
   `project_deferred_dap` plan). When DAP eventually gets adopted, the
   binaries are already cloned.
+
+### `org.lua` — Org mode stack under `<leader>n`
+
+Three plugins + a which-key spec, all `ft = "org"` lazy-loaded so they
+cost nothing at startup unless an `.org` file is opened or a
+`<leader>n*` binding is pressed:
+
+- **`nvim-orgmode/orgmode`** — core Emacs Org mode reimplementation:
+  agenda, capture, TODO cycling, date stamps, clock, refile, tags,
+  properties, export. Default global prefix is `<leader>o`, which
+  **collides with overseer** in this config — it is remapped to
+  `<leader>n` via `opts.mappings.global`. The agenda / capture command
+  keys (`<leader>na` / `<leader>nc`) are declared in `keys = {}` so they
+  trigger plugin load from any buffer, not just from inside `.org`.
+  Capture templates default to `~/org/` (`todos.org`, `notes.org`,
+  `journal.org` with datetree), and `org_agenda_files = "~/org/**/*"`.
+- **`nvim-orgmode/org-bullets.nvim`** — pure cosmetics: conceals the
+  heading stars with unicode bullets. Declared as a nested dependency
+  of orgmode so it loads at the same time. The checkbox symbols are
+  sourced from `icons.ui.checkbox` / `icons.ui.checkbox_blank` rather
+  than being hardcoded (central-icons rule).
+- **`chipsenkbeil/org-roam.nvim`** — bidirectional linking / knowledge
+  graph on top of orgmode. Stores roam-specific notes (with `:ID:`
+  properties) under `~/org/roam`. The opts table sets `bindings.prefix
+  = false` to disable the plugin's default `<leader>n*` keymap tree so
+  it doesn't collide with orgmode's `<leader>nc` capture — we declare
+  the three roam bindings (`<leader>nr` find-node, `<leader>ni` insert-
+  link, `<leader>nl` toggle-buffer) via `keys = {}` instead. `find_node`
+  also creates new nodes on the fly when the search comes up empty, so
+  a separate roam-capture binding is unnecessary.
+- **fzf-lua scoped search** (not a plugin, two keymap bindings):
+  `<leader>nf` and `<leader>ns` shell out to `fzf-lua.files` /
+  `fzf-lua.live_grep` with `cwd = ~/org` so file-find and grep can be
+  narrowed to the org tree without a dedicated plugin. This reuses the
+  fzf-lua infra already in `editor.lua`.
+- **blink.cmp source** — the orgmode blink source is registered in
+  `coding.lua` (not here) under `completion.sources.per_filetype.org`
+  with the `orgmode.org.autocompletion.blink` module. Lives in
+  `coding.lua` because every other blink source also lives there;
+  don't move it.
+
+**Treesitter parser note.** orgmode ships its own `tree-sitter-org`
+grammar via the main orgmode plugin — it is NOT installed via
+nvim-treesitter's on-demand installer because nvim-treesitter's
+parsers table doesn't carry a recipe for it. Combined with the
+**re-fire guard** in `treesitter.lua` (documented in the
+"nvim-treesitter `main` branch" section above), this means opening
+a stale `.org` buffer cold will not race the orgmode grammar install.
+If you add another plugin with its own managed grammar, the re-fire
+guard already handles it automatically — no code change needed.
+
+**Author's convention for `~/org/`.** The capture templates assume
+three files at `~/org/`: `todos.org`, `notes.org`, and `journal.org`
+(with datetree). If those don't exist yet, the first capture will
+create them. The roam directory is `~/org/roam/`. Both paths are
+hardcoded as string literals in the opts blocks — if you move the
+org tree, update both files.
 
 ### outline.nvim trims trailing spaces from `M.kinds`
 

@@ -118,6 +118,17 @@ setup. Run one script and the editor is ready.
   reserves a "Sidebar" offset so the bufferline tabs stay visible
   when an explorer or outline pane is open. Toggle with `<leader>ue`,
   pick a window with `<leader>uE`.
+- **Org mode knowledge base.** Full Emacs Org mode stack under the
+  `<leader>n` ("Notes / Org") prefix: `nvim-orgmode` for agenda,
+  capture, TODO cycling, clock, refile and export; `org-bullets.nvim`
+  for concealed heading stars; `org-roam.nvim` for bidirectional
+  linking and knowledge graph. `<leader>na` opens the agenda,
+  `<leader>nc` captures, `<leader>nr` / `<leader>ni` / `<leader>nl`
+  drive roam (find node, insert link, toggle buffer), and
+  `<leader>nf` / `<leader>ns` narrow fzf-lua file-find and live-grep
+  to `~/org`. blink.cmp gets an orgmode completion source registered
+  for `org` buffers. Everything lazy-loads on the `org` filetype, so
+  it costs zero at startup unless you actually open an `.org` file.
 
 ---
 
@@ -353,6 +364,7 @@ ACH-NEOVIM/
             ├── linting.lua           nvim-lint + on-demand mason installer
             ├── lsp.lua               mason + native vim.lsp client + SchemaStore + neoconf + clangd_extensions
             ├── lualine.lua           statusline (custom ocean theme)
+            ├── org.lua               orgmode + org-bullets + org-roam (Notes/Org under <leader>n)
             ├── terminal.lua          toggleterm + language REPLs
             ├── treesitter.lua        nvim-treesitter (main branch, on-demand install) + textobjects + context
             ├── ui.lua                snacks, noice, bufferline, mini.icons, rainbow, colorizer
@@ -379,6 +391,7 @@ labelled and iconned. The headline groups:
 | `<leader>h`             | Harpoon Quick Menu       |
 | `<leader>l`             | Lazy                     |
 | `<leader>m`             | Mason                    |
+| `<leader>n`             | Notes / Org              |
 | `<leader>o`             | Overseer (Tasks)         |
 | `<leader>p`             | Yank History             |
 | `<leader>q`             | Session                  |

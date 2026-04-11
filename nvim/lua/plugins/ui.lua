@@ -656,13 +656,23 @@ Powered by ]]
       -- Snacks terminal (the non-toggleterm one snacks ships) in any
       -- of the four positions, with the terminal title formatted to
       -- show the snacks term ID + the underlying shell title.
+      -- Claude Code's terminal is excluded: it manages its own full-width
+      -- bottom split via `relative = "editor"` in ai.lua and must not be
+      -- captured by edgy (which would tile it alongside trouble).
       for _, pos in ipairs({ "top", "bottom", "left", "right" }) do
         opts[pos] = opts[pos] or {}
         table.insert(opts[pos], {
           ft = "snacks_terminal",
           size = { height = 0.4 },
           title = "%{b:snacks_terminal.id}: %{b:term_title}",
-          filter = function(_, win)
+          filter = function(buf, win)
+            local st = vim.b[buf].snacks_terminal
+            if st then
+              local cmd = type(st.cmd) == "table" and st.cmd[1] or st.cmd
+              if type(cmd) == "string" and cmd:find("claude", 1, true) then
+                return false
+              end
+            end
             return vim.w[win].snacks_win
               and vim.w[win].snacks_win.position == pos
               and vim.w[win].snacks_win.relative == "editor"

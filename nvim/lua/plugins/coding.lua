@@ -59,6 +59,7 @@ return {
         -- needlessly on every keystroke).
         per_filetype = {
           lua = { inherit_defaults = true, "lazydev" },
+          org = { inherit_defaults = true, "orgmode" },
         },
         providers = {
           -- lazydev.nvim feeds Neovim runtime / plugin globals into completion
@@ -67,6 +68,11 @@ return {
           lazydev = {
             name = "LazyDev",
             module = "lazydev.integrations.blink",
+            score_offset = 100,
+          },
+          orgmode = {
+            name = "Orgmode",
+            module = "orgmode.org.autocompletion.blink",
             score_offset = 100,
           },
         },

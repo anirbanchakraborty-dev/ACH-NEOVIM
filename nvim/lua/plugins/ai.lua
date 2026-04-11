@@ -46,6 +46,7 @@ return {
           provider = "snacks",
           snacks_win_opts = {
             position = "bottom",
+            relative = "editor",
             height = 0.4,
             -- Visual separation from the editor pane: remap the panel's
             -- Normal/EndOfBuffer to NormalFloat so it picks up tokyonight's
