@@ -124,6 +124,46 @@ Powered by ]]
       explorer = {
         enabled = true,
       },
+      -- Override the picker's explorer source to drop the preview slot
+      -- from the sidebar layout. The default sidebar layout declares
+      -- `preview = "main"` plus a preview child with `height = 0.4`,
+      -- which reserves the bottom 40% of the sidebar for a mirrored view
+      -- of the main editor buffer. When a visual selection in the main
+      -- editor extends past the top portion of the screen, the selection
+      -- is rendered in both the real editor AND the preview mirror -- it
+      -- reads as the selection "bleeding into the explorer sidebar", but
+      -- it's actually just the same buffer displayed twice. Since we
+      -- never use the preview-inside-sidebar feature anyway, dropping the
+      -- `preview` child from the layout and removing `preview = "main"`
+      -- gives us a clean list-only sidebar with no mirrored view. The
+      -- layout values (width, position, box, input, list) mirror the
+      -- upstream `M.sidebar` preset in snacks/picker/config/layouts.lua
+      -- minus the preview block.
+      picker = {
+        sources = {
+          explorer = {
+            layout = {
+              layout = {
+                backdrop = false,
+                width = 40,
+                min_width = 40,
+                height = 0,
+                position = "left",
+                border = "none",
+                box = "vertical",
+                {
+                  win = "input",
+                  height = 1,
+                  border = true,
+                  title = "{title} {live} {flags}",
+                  title_pos = "center",
+                },
+                { win = "list", border = "none" },
+              },
+            },
+          },
+        },
+      },
       -- Defers some buffer setup operations on file open so the buffer
       -- renders faster. Pure speedup, no behavior change.
       quickfile = {

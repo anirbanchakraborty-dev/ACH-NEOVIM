@@ -27,9 +27,15 @@ return {
     ft = { "markdown", "markdown.mdx", "norg", "rmd", "org" },
     opts = {
       code = {
+        -- width = "full" fills the code block bg across the whole editor
+        -- window width (not just to the end of the longest code line).
+        -- `block` width created visually distracting color transitions
+        -- where the code bg ended mid-line and merged visually with the
+        -- adjacent sidebar's background -- it looked like a selection
+        -- bleed. `full` gives a uniform bg that reads as a code block
+        -- unambiguously.
         sign = false,
-        width = "block",
-        right_pad = 1,
+        width = "full",
       },
       heading = {
         sign = false,

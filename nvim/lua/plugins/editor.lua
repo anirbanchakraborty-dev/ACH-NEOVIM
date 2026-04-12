@@ -27,7 +27,11 @@ return {
       },
     },
     opts = {
-      preset = "modern",
+      -- LazyVim-style bottom-right vertical stack. The `helix` preset pins
+      -- the popup to col=-1/row=-1 (bottom-right corner) with a 30-60 col
+      -- width and 4-line to 75%-height range, so bindings render as a
+      -- narrow vertical list instead of `modern`'s centered grid.
+      preset = "helix",
       delay = 300,
       icons = {
         mappings = true,
@@ -519,6 +523,12 @@ return {
   },
 
   -- which-key: extend spec with harpoon + outline icons.
+  --
+  -- The `<leader>1`..`<leader>9` harpoon jump keymaps are registered as
+  -- `hidden = true` so they stay functional but don't flood the
+  -- which-key popup with nine near-identical "Harpoon to File N" rows.
+  -- Only the two essential harpoon entries (H = add, h = menu) remain
+  -- visible.
   {
     "folke/which-key.nvim",
     optional = true,
@@ -533,8 +543,7 @@ return {
         for i = 1, 9 do
           spec[#spec + 1] = {
             "<leader>" .. i,
-            desc = "Harpoon to File " .. i,
-            icon = { icon = icons.ui.pin, color = "yellow" },
+            hidden = true,
           }
         end
         return spec

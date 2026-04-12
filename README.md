@@ -53,10 +53,25 @@ setup. Run one script and the editor is ready.
 - **Claude Code integration.** `coder/claudecode.nvim` ships claude inside
   Neovim as a snacks-themed split with native diff review and selection
   tracking. The CLI is installed automatically by `install.sh`.
-- **Deep ocean palette.** A custom tokyonight override (`#011628` background,
-  `#011423` floats, `#0A64AC` search) themed across every plugin's UI:
-  fzf-lua, lazy, mason, which-key, snacks, noice, trouble, diffview, and
-  git-conflict.
+- **Deep ocean palette + 75 NvChad dark themes.** The default is a
+  custom tokyonight override (`#011628` background, `#011423` floats,
+  `#0A64AC` search) themed across every plugin's UI: fzf-lua, lazy,
+  mason, which-key, snacks, noice, trouble, diffview, git-conflict.
+  The full NvChad/base46 dark theme catalog (75 palettes) is vendored
+  as pure data and driven through a custom adapter that maps each
+  palette onto tokyonight's color slots, so all the hand-tuned plugin
+  UI overrides auto-apply to every theme. Live switcher with preview
+  at `<leader>uC`, cycle with `<leader>uN` / `<leader>uP`. See
+  [Themes](#themes) for details.
+- **NvChad-style statusline.** lualine reconfigured to mirror NvChad
+  UI's default aesthetic: colored mode badge with Powerline round
+  separators, git branch + diff on a raised band, filename with
+  state-aware color, LSP progress spinner in the center, per-severity
+  diagnostic badges, attached LSP clients, filetype, cursor position,
+  and a blue cwd badge on the far right. Every section links to a
+  palette-driven highlight group so the whole bar recolors
+  automatically when you switch themes — no lualine rerun, no
+  ColorScheme autocmd.
 - **Central icon table.** Every Nerd Font glyph used in the config lives in
   `nvim/lua/config/icons.lua`. Plugin files reference them by name —
   there's exactly one place to swap a glyph.
@@ -356,24 +371,73 @@ ACH-NEOVIM/
         │   ├── lazy.lua              lazy.nvim bootstrap
         │   ├── options.lua           vim.opt defaults
         │   ├── keymaps.lua           non-plugin keymaps
-        │   └── autocmds.lua          augroups (yank flash, big-file, prose mode, ...)
+        │   ├── autocmds.lua          augroups (yank flash, big-file, prose mode, ...)
+        │   └── tailwind_colors.lua   Tailwind palette data module (mini.hipatterns)
+        ├── themes/
+        │   ├── init.lua              loader + base46->tokyonight adapter + persistence
+        │   ├── base46_shim.lua       no-op override_theme stub for verbatim vendoring
+        │   └── nvchad/               75 dark palettes (74 vendored + deep-ocean.lua)
         └── plugins/
             ├── ai.lua                Claude Code (coder/claudecode.nvim)
             ├── coding.lua            blink.cmp, mini.pairs/surround/ai, lazydev, ts-comments
-            ├── colorscheme.lua       tokyonight + deep ocean palette
-            ├── editor.lua            which-key, fzf-lua, flash, todo-comments, trouble, grug-far
+            ├── colorscheme.lua       tokyonight driven by the theme loader + palette-driven highlights + picker
+            ├── editor.lua            which-key (helix preset), fzf-lua, flash, todo-comments, trouble, grug-far
             ├── formatting.lua        conform.nvim + on-demand mason installer
             ├── git.lua               gitsigns, diffview, git-conflict, lazygit
             ├── lang.lua              render-markdown, markdown-preview, vimtex, venv-selector
             ├── linting.lua           nvim-lint + on-demand mason installer
             ├── lsp.lua               mason + native vim.lsp client + SchemaStore + neoconf + clangd_extensions
-            ├── lualine.lua           statusline (custom ocean theme)
+            ├── lualine.lua           NvChad-inspired statusline, palette-driven via hi! link
             ├── org.lua               orgmode + org-bullets + org-roam (Notes/Org under <leader>n)
             ├── terminal.lua          toggleterm + language REPLs
             ├── treesitter.lua        nvim-treesitter (main branch, on-demand install) + textobjects + context
             ├── ui.lua                snacks, noice, bufferline, mini.icons, rainbow, colorizer
             └── util.lua              persistence sessions, vim-sleuth, scratch
 ```
+
+---
+
+## Themes
+
+The theme system layers on top of `folke/tokyonight.nvim` using the
+NvChad/base46 dark palette catalog. The approach in one line: vendor
+every dark NvChad palette file as pure data, then adapt each one onto
+tokyonight's `on_colors` slots at switch time so the repo's 80+
+hand-tuned plugin UI overrides auto-apply to every theme.
+
+### What ships
+
+- **75 dark palettes.** 74 vendored from
+  [NvChad/base46](https://github.com/NvChad/base46) plus the repo's own
+  `deep-ocean.lua` (ACH-NEOVIM's signature palette, authored in the
+  same base46 file format so the loader treats it uniformly alongside
+  the vendored themes). The default is deep-ocean. Light themes were
+  deliberately excluded.
+- **Live preview picker.** `<leader>uC` opens a snacks.picker with the
+  theme list; moving the cursor live-previews the theme and pressing
+  `<CR>` commits it. `<Esc>` cancels and restores the theme you started
+  with.
+- **Cycle bindings.** `<leader>uN` / `<leader>uP` step forward /
+  backward through the sorted theme list.
+- **Persistence.** Your selection is saved to
+  `~/.local/state/nvim/ach-theme.json` and restored on the next
+  Neovim launch.
+
+### Adding your own palette
+
+Drop a new file at `nvim/lua/themes/nvchad/<name>.lua` in the same
+format as the existing entries (`base_30`, `base_16`, `type = "dark"`,
+and a closing `require("base46").override_theme(M, "<name>")` line —
+the shim intercepts the require so you don't need base46 installed).
+Restart Neovim and it'll appear in the picker.
+
+### Palette attribution
+
+The palette files are vendored verbatim from NvChad/base46 and
+redistributed under the upstream MIT-style license. See
+`nvim/lua/themes/nvchad/CREDITS.md` for the full attribution,
+`nvim/lua/themes/nvchad/LICENSE` for the license text, and each
+theme file's header comment for the original theme author.
 
 ---
 
@@ -406,7 +470,11 @@ labelled and iconned. The headline groups:
 | `<leader>u`             | UI toggles               |
 | `<leader>w`             | Window                   |
 | `<leader>x`             | Diagnostics / Trouble    |
-| `<leader>1`–`<leader>9` | Harpoon jump to file 1–9 |
+
+`<leader>1` through `<leader>9` jump to the corresponding harpoon
+slot. They're hidden from the which-key popup to keep it clean, but
+the keymaps are live — list the marked files with `<leader>h`
+(harpoon quick menu) and add the current file with `<leader>H`.
 
 A few standalone bindings worth knowing:
 
@@ -442,6 +510,8 @@ A few standalone bindings worth knowing:
 - `<leader>um` — toggle inline markdown rendering (render-markdown)
 - `<leader>ut` — toggle sticky scope header (treesitter-context)
 - `<leader>ue` / `<leader>uE` — edgy toggle / select window
+- `<leader>uC` — colorscheme picker with live preview (75 dark themes)
+- `<leader>uN` / `<leader>uP` — cycle next / previous theme
 - `<leader>gi` / `<leader>gI` — list / search GitHub issues (octo)
 - `<leader>gp` / `<leader>gP` — list / search GitHub PRs (octo)
 - `<leader>gr` — list GitHub repos (octo)
@@ -458,9 +528,21 @@ A few standalone bindings worth knowing:
   follow the pattern in `terminal.lua`: define `keys = {}` on the plugin
   spec, then add a parallel `which-key.nvim` spec block in the same file
   with icons sourced from `config/icons.lua`.
-- **Change the palette.** Edit `colorscheme.lua`. The `on_colors` callback
-  defines the deep-ocean colors; `on_highlights` overrides every plugin's
-  themed groups.
+- **Switch themes at runtime.** Press `<leader>uC` for the picker (75
+  dark palettes with live preview), or cycle with `<leader>uN` /
+  `<leader>uP`. Selection persists across restarts.
+- **Tweak the deep-ocean palette.** Edit
+  `nvim/lua/themes/nvchad/deep-ocean.lua` — it's in the base46 format
+  (`base_30` UI slots + `base_16` syntax slots + `type = "dark"`). The
+  loader reads it on startup and feeds it through
+  `themes.to_tokyonight()` which maps base46 slots onto tokyonight's
+  `colors.*` table. All ~80 plugin UI overrides in `colorscheme.lua`'s
+  `on_highlights` reference `c.*` (tokyonight's colors), so they
+  auto-adapt when you change the palette — no per-highlight edits
+  needed.
+- **Add a new theme.** Drop a new `base_30` + `base_16` + `type =
+  "dark"` Lua file into `nvim/lua/themes/nvchad/` following the
+  existing format. Restart Neovim and it appears in the picker.
 - **Add an LSP / formatter / linter.** Add an entry to the `servers` table
   in `lsp.lua` (or `formatter_to_mason` / `linter_to_mason` in
   `formatting.lua` / `linting.lua`). The on-demand installer will pick it
@@ -483,6 +565,27 @@ project's hard rules.
 Removes the symlink at `~/.config/nvim` and Neovim's data / state / cache
 directories. Your repo clone stays intact. Re-run `install.sh` to set
 everything back up.
+
+---
+
+## Credits
+
+Theme palettes (every file in `nvim/lua/themes/nvchad/` except
+`deep-ocean.lua`) are vendored verbatim from
+[NvChad/base46](https://github.com/NvChad/base46) and redistributed
+under the upstream MIT-style license. NvChad is maintained by
+[@siduck](https://github.com/siduck) and
+[contributors](https://github.com/NvChad/NvChad/graphs/contributors).
+
+Many individual theme files credit their original scheme's author in a
+header comment (e.g. `onedark.lua` credits
+<https://github.com/one-dark>, `tokyonight.lua` credits
+<https://github.com/tiagovla/tokyonight.nvim>). Those headers are
+preserved verbatim and remain the authoritative attribution for each
+palette.
+
+See `nvim/lua/themes/nvchad/CREDITS.md` and
+`nvim/lua/themes/nvchad/LICENSE` for the full details.
 
 ---
 

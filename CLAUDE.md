@@ -83,17 +83,26 @@ ACH-NEOVIM/
         │   ├── keymaps.lua          non-plugin keymaps (motions, windows, buffers)
         │   ├── autocmds.lua         augroups (yank flash, big-file, prose mode, explorer auto-open, ...)
         │   └── tailwind_colors.lua  Tailwind v3 palette data module (mini.hipatterns)
+        ├── themes/
+        │   ├── init.lua             theme loader + base46->tokyonight adapter + persistence
+        │   ├── base46_shim.lua      no-op `override_theme` stub so vendored theme files load verbatim
+        │   └── nvchad/              75 vendored NvChad/base46 dark palettes + deep-ocean.lua (signature)
+        │       ├── deep-ocean.lua   ACH-NEOVIM signature palette (authored in base46 format)
+        │       ├── <name>.lua x74   vendored verbatim from NvChad/base46
+        │       ├── LICENSE          upstream MIT-style license
+        │       ├── base16-LICENSE   upstream base16 spec license
+        │       └── CREDITS.md       attribution
         └── plugins/
             ├── ai.lua          coder/claudecode.nvim integration
             ├── coding.lua      blink.cmp, mini.pairs/surround/ai, lazydev, ts-comments, ts-autotag
-            ├── colorscheme.lua tokyonight + deep-ocean palette + every highlight override
-            ├── editor.lua      which-key, fzf-lua, flash, todo-comments, trouble, grug-far, harpoon, outline
+            ├── colorscheme.lua tokyonight driven by the theme loader + palette-driven highlight overrides + picker
+            ├── editor.lua      which-key (helix preset), fzf-lua, flash, todo-comments, trouble, grug-far, harpoon, outline
             ├── formatting.lua  conform.nvim + on-demand mason installer + verible formatter
             ├── git.lua         gitsigns, diffview, git-conflict, snacks lazygit/gitbrowse
             ├── lang.lua        render-markdown, markdown-preview, vimtex, venv-selector
             ├── linting.lua     nvim-lint + on-demand mason installer + debounced dispatcher + verilator filelist resolver
             ├── lsp.lua         mason + nvim-lspconfig + on-demand vim.lsp.enable + SchemaStore + clangd_extensions + verible/svlangserver
-            ├── lualine.lua     lualine with custom ocean theme
+            ├── lualine.lua     NvChad-inspired statusline, palette-driven via hi! link chain
             ├── org.lua         orgmode + org-bullets + org-roam (Notes/Org under <leader>n)
             ├── terminal.lua    toggleterm + named language REPLs
             ├── treesitter.lua  nvim-treesitter (main branch) + textobjects (main) + treesitter-context
@@ -235,34 +244,136 @@ top-level config file.
 
 ---
 
-## Custom colorscheme — deep ocean palette
+## Theme system — loader, adapter, persistence
 
-`colorscheme.lua` runs tokyonight in `night` style with the following
-overrides via `on_colors`:
+The entire colorscheme stack is **palette-driven**. `colorscheme.lua`
+runs tokyonight as a skin, but the actual palette values come from the
+theme loader at `nvim/lua/themes/init.lua`, which reads vendored
+NvChad/base46 palette files and adapts them onto tokyonight's
+`colors.*` slots at theme-switch time.
+
+### Data flow
+
+1. **Startup:** `colorscheme.lua` requires `themes` and calls
+   `themes.setup()` before tokyonight's own `setup()` runs. `setup()`
+   reads the persisted theme name (JSON at
+   `stdpath('state') .. '/ach-theme.json'`, field `manual`), falls
+   back to `deep-ocean`, and populates `M.current_palette` with the
+   raw palette table (`base_30` + `base_16` + `type`).
+2. **First tokyonight setup:** its `on_colors` hook calls
+   `themes.to_tokyonight(colors, M.current_palette)`, which
+   overwrites tokyonight's `bg` / `bg_dark` / `bg_highlight` /
+   `bg_search` / `bg_visual` / `fg` / `fg_dark` / `fg_gutter` /
+   `border` / accent slots from the palette's `base_30` + `base_16`
+   fields via a `pick(...)` fallback chain.
+3. **`on_highlights`** then overrides ~80+ highlight groups. Every
+   override references `c.*` (tokyonight's colors table,
+   post-`on_colors`) rather than hardcoded hex, so all plugin UI
+   tints auto-adapt to whatever theme is active. The dim `#627E97`
+   references from the old deep-ocean-only build are now `c.fg_gutter`.
+4. **Switch:** `themes.apply(name)` mutates `M.current_palette`,
+   then fires `vim.cmd.colorscheme("tokyonight")`. Tokyonight's load
+   path re-invokes `on_colors` (which reads the freshly-mutated
+   palette) and re-applies `on_highlights`. All 80+ custom tints
+   recolor with zero per-theme tuning.
+
+### Palette source: `nvim/lua/themes/nvchad/`
+
+- **75 dark palettes** — 74 vendored **verbatim** from
+  [NvChad/base46](https://github.com/NvChad/base46) plus the repo's
+  own `deep-ocean.lua` authored in the same file format.
+- **Dark-only by design.** Light themes were deliberately excluded.
+  The loader has zero light/dark detection, no `vim.o.background`
+  flipping, no auto-mode timer. Re-adding light support means
+  restoring `M.is_system_dark`, `M.toggle_auto`, the state fields
+  `dark`/`light`/`mode`, and the `vim.o.background` flip in
+  `M.apply` — git history has the full removed code.
+- **Verbatim vendoring** is important for future drop-in updates
+  from upstream. Each theme file ends with
+  `require("base46").override_theme(M, "<name>")`, which would fail
+  without base46 installed. The loader registers a
+  `package.preload["base46"]` shim pointing at
+  `themes/base46_shim.lua` (a no-op `override_theme` that returns
+  the table unchanged).
+- **Two themes (`eldritch.lua`, `poimandres.lua`) also
+  `require("nvconfig")`** for NvChad UI conditionals (telescope
+  style, cmp style, statusline theme). The loader registers a
+  second `package.preload["nvconfig"]` shim returning a stub table
+  with empty strings / false, so those conditionals fall through
+  without side effects. If a future upstream theme adds a new
+  `nvconfig.*` path, extend the stub.
+
+### Deep-ocean palette values (defined in `themes/nvchad/deep-ocean.lua`)
 
 ```text
-bg            #011628   deep navy editor background
-bg_dark       #011423   floats / sidebars / popups / statusline
-bg_highlight  #143652   cursorline, pmenu selection, visual highlight
-bg_search     #0A64AC   search match background
-bg_visual     #275378   visual selection background
-fg            #CBE0F0   primary text
-fg_dark       #B4D0E9   sidebar text
-fg_gutter     #627E97   line numbers / dim text
-border        #547998   window separators / float borders
+bg            #011628   deep navy editor background           (base_30.black)
+bg_dark       #011423   floats / sidebars / popups            (base_30.darker_black)
+bg_highlight  #143652   cursorline, pmenu sel, bg_visual      (base_30.one_bg2)
+bg_search     #FFCB6B   search match bg (base16 convention)   (base_16.base0A)
+fg            #CBE0F0   primary text                          (base_16.base05)
+fg_gutter     #627E97   line numbers / dim text / comments    (base_30.grey_fg2)
+border        #3d5b7a   window separators / float borders     (base_30.grey)
+blue          #82AAFF   functions, headings, accents          (base_16.base0D)
+red           #FF5370   variables, errors                     (base_16.base08)
+green         #C3E88D   strings, diff inserted                (base_16.base0B)
+yellow        #FFCB6B   classes, search bg                    (base_16.base0A)
+purple        #C792EA   keywords, storage                     (base_16.base0E)
+orange        #F78C6C   integers, constants                   (base_16.base09)
+cyan          #89DDFF   support, regex escapes                (base_16.base0C)
 ```
 
-`on_highlights` then overrides ~80+ highlight groups: floats, fzf-lua,
-pmenu, search, telescope (fallback), lazy/mason UI, which-key (with custom
-icon color classes mapped to `WhichKeyIconAzure/Blue/Cyan/Green/...`),
-diagnostic virtual text (RGB-tinted backgrounds), gitsigns, lualine
-statuslines, snacks dashboard / notifier / indent, noice, trouble, diffview
-(every panel and status indicator), and git-conflict (RGB-tinted regions).
+When you add a new plugin that has its own UI (floats, panels,
+headers), add matching highlight overrides in `on_highlights`
+referencing `c.*` slots — not hardcoded hex. The convention is:
+backgrounds use `bg_dark`, accent backgrounds use `bg_search` or
+`bg_hl`, borders use `border`, dim text uses `dim` (a local alias
+for `c.fg_gutter` declared at the top of the block).
 
-When you add a new plugin that has its own UI (floats, panels, headers),
-add the matching highlight overrides here. The convention is: backgrounds
-use `bg_dark`, accent backgrounds use `bg_search` or `bg_hl`, borders use
-`border`, dim text uses `#627E97`.
+### Hardcoded RGB tints — intentional exceptions
+
+Two blocks in `on_highlights` still use hardcoded RGB hex values
+with `-- TODO: per-palette tuning` comments:
+
+- **Diagnostic virtual-text backgrounds**
+  (`DiagnosticVirtualText{Error,Warn,Info,Hint}` — hand-picked RGB
+  tints like `#1a0a1a`, `#1a1a0a`, etc. originally tuned for
+  deep-ocean's dark navy.
+- **git-conflict regions** (`GitConflictCurrent`, `GitConflictIncoming`,
+  `GitConflictAncestor` + `*Label` variants — tinted backgrounds for
+  the three conflict regions).
+- **`SnacksIndent = { fg = "#0d1f33" }`** — a very dark blend of
+  `bg_dark` for the dim indent guides.
+
+These are deliberately left hardcoded because palette-derived tints
+at quality require per-theme tuning (blending accent colors with the
+theme's bg at a controlled alpha). When switching to a theme that
+clashes with these tints, either hand-tune them in `on_highlights`
+or derive them programmatically from the palette.
+
+### Snacks picker preview must use the preview helpers
+
+`colorscheme.lua`'s theme picker renders a summary panel in the
+preview window via the `ctx.preview:reset()`, `ctx.preview:set_lines()`,
+and `ctx.preview:highlight()` wrapper methods. **Do not** call
+`vim.api.nvim_buf_set_lines(ctx.buf, ...)` directly — snacks creates
+the preview buffer with `modifiable = false`, and only the wrapper
+methods know to flip the flag around the write. Hitting `ctx.buf`
+directly errors with `Buffer is not 'modifiable'` and the picker
+falls back to dumping the raw item table. Pattern mirrors
+`snacks/picker/preview.lua:M.preview`.
+
+### `themes.apply()` must NOT call `tokyonight.setup()`
+
+Tokyonight's `config.setup()` does
+`M.options = tbl_deep_extend("force", {}, defaults, opts)` — it
+**replaces** the stored opts, it does not merge. If `apply()` ever
+calls `tn.setup({style = ...})` (or anything else), that single-key
+opts table wipes the `on_colors` / `on_highlights` closures
+`colorscheme.lua`'s initial setup installed, and subsequent applies
+revert to tokyonight's plain defaults (every theme switch produces
+the same `#e1e2e7` bg). The only safe runtime path is mutating
+`themes.current_palette` and re-firing `:colorscheme tokyonight`.
+Git history has the bug and the fix commit for the full write-up.
 
 ---
 
@@ -1154,6 +1265,69 @@ resolve to the npm symlink. Recovery on a machine in this state:
 `npm uninstall -g netlistsvg && brew link --overwrite netlistsvg`.
 On a truly fresh Mac with no prior npm install this conflict can't
 happen.
+
+### Lualine palette linking — strings, not tables
+
+`lualine.lua` doesn't hardcode colors. The theme table references
+palette-driven highlight groups by name (`LualineModeNormal`,
+`LualineB`, `LualineC`, `LualineZ`, `LualineModeInsert`, etc.) which
+are defined in `colorscheme.lua`'s `on_highlights` block. When a
+theme switch fires `:colorscheme tokyonight`, those target groups
+re-stamp with the new palette's `c.*` colors, and lualine's
+`hi! link lualine_a_normal LualineModeNormal` flows the colors
+through automatically — no `lualine.setup()` rerun, no `ColorScheme`
+autocmd in the lualine file.
+
+**Critical subtlety:** the theme table entries must be **plain
+strings**, not `{ link = "..." }` tables. Lualine's
+`create_component_highlight_group` at
+`lualine/highlight.lua:318` only takes the fast link-setup path
+when `type(color) == 'string'`. Passing
+`{ link = "LualineModeNormal" }` looks like it should work, but
+line 332 checks `(color.bg and color.fg)` and falls through to a
+per-mode loop that creates empty `lualine_a_normal_normal`,
+`lualine_a_normal_insert`, etc. sub-groups instead of the real
+`lualine_a_normal`. Result: `lualine_a_normal` stays empty, the bar
+renders with no mode badge bg. There is a block comment in
+`lualine.lua` at the `ocean_theme` definition explaining this; do
+not "clean it up" to use the table form.
+
+Component colors (inside `sections`, like
+`branch = { color = { link = "LualineBranch" } }`) DO accept the
+`{ link = "..." }` form because they flow through a different
+code path (line 362-363) that converts string `cl` into
+`{ link = cl }`. Don't confuse the two — strings are safe
+everywhere, `{ link = ... }` tables only work for per-component
+colors, not the top-level theme table.
+
+### which-key v3: `helix` preset + `hidden = true` for noise control
+
+The which-key popup is configured with `preset = "helix"` in
+`editor.lua`, which pins the popup to `col = -1, row = -1`
+(bottom-right corner of the editor) with `width = { min = 30, max
+= 60 }` — a narrow vertical stack à la LazyVim, NOT the centered
+grid of the `modern` preset. Presets are defined in
+`which-key.nvim/lua/which-key/presets.lua`; the three options are
+`classic` (full-width bottom, no border), `modern` (centered
+bottom), and `helix` (bottom-right vertical). This repo uses
+`helix`.
+
+**Noise control via `hidden = true`.** Harpoon registers nine
+identical `<leader>1`..`<leader>9` jump keymaps. Without
+suppression, they flood the which-key popup with nine rows of
+"Harpoon to File N" entries that dominate a whole column. The fix
+is to register each with `hidden = true` in the which-key spec
+entry (see the `for i = 1, 9 do` loop at the bottom of
+`editor.lua`). The `hidden` field is a documented spec attribute
+(`which-key/types.lua:57`) and `which-key/tree.lua:63` filters
+`node.hidden` entries out of the popup render pass. The keymaps
+themselves still fire — this only suppresses the visual entry.
+
+If another plugin registers a similar glob of near-identical
+keymaps (e.g. numbered yank slots, numbered tabs), apply the same
+`hidden = true` pattern rather than letting them pollute the
+popup. The which-key popup is for discovery, not for every bound
+key.
 
 ### which-key v3: `cond` not `ft` on spec entries
 

@@ -645,6 +645,13 @@ M.ai = {
   diff = "", -- nf-cod-diff
 }
 
+-- ── Theme switcher (NvChad palettes)
+M.theme = {
+  picker = "󰏘", -- nf-md-palette
+  next = "", -- nf-cod-chevron_right
+  prev = "", -- nf-cod-chevron_left
+}
+
 -- ── Org mode
 M.org = {
   org = "󰅌", -- nf-md-clipboard_text

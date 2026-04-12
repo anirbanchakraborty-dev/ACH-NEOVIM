@@ -218,6 +218,29 @@ return {
       -- own filetype isn't a treesitter language.
       vim.treesitter.language.register("markdown", "octo")
 
+      -- Upstream bug workaround: the fzf-lua repo previewer creates an
+      -- OctoBuffer with only `bufnr` set (no kind, no node), which makes
+      -- the OctoBuffer constructor's else branch hard-assign
+      -- `kind = "reviewthread"`. Later the graphql callback assigns
+      -- `buffer.node = resp.data.repository` but NOT `buffer.kind`, so
+      -- when `render_repo()` calls `self:repository()` it trips the
+      -- `assert(self:isRepo(), "Not a repo buffer")` added in
+      -- pwntester/octo.nvim@c0c98e4 (Jul 2025). Fires on every repo
+      -- hover in `Octo repo list` / `<leader>gr`. Patch `render_repo`
+      -- to coerce `self.kind = "repo"` when a repository-shaped node
+      -- has been assigned. Remove this block once upstream fixes it.
+      local ok, model = pcall(require, "octo.model.octo-buffer")
+      if ok and model.OctoBuffer and not model.OctoBuffer._ach_render_repo_patched then
+        local orig_render_repo = model.OctoBuffer.render_repo
+        function model.OctoBuffer:render_repo()
+          if self.kind ~= "repo" and self.node and self.node.nameWithOwner then
+            self.kind = "repo"
+          end
+          return orig_render_repo(self)
+        end
+        model.OctoBuffer._ach_render_repo_patched = true
+      end
+
       -- Keep octo windows around when nvim exits so persistence.nvim
       -- can restore them. Borrowed from LazyVim's extras/util/octo.lua.
       vim.api.nvim_create_autocmd("ExitPre", {
