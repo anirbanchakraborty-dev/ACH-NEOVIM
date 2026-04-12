@@ -38,7 +38,9 @@ setup. Run one script and the editor is ready.
   the LSP formatter on filetypes it can't parse. `nvim-lint` runs
   external linters (shellcheck, markdownlint, hadolint, yamllint,
   golangci-lint, ansible-lint, tflint, sqlfluff, solhint, cmakelint) via a
-  debounced dispatcher and feeds results into `vim.diagnostic`. ESLint
+  debounced dispatcher and feeds results into `vim.diagnostic`. Linters
+  whose binary isn't installed yet are silently skipped until the on-demand
+  mason installer finishes, so cold starts never produce ENOENT errors. ESLint
   diagnostics + auto-fix-on-save come from the **eslint LSP** (real-time,
   with code actions) rather than the standalone `eslint_d` linter; the
   LSP's `source.fixAll.eslint` is invoked from conform's `format_on_save`

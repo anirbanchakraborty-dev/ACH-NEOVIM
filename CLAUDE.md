@@ -159,9 +159,21 @@ and `linting.lua`. It looks like:
    and re-checks `pkg:is_installed()` to decide success vs failure.
    See lsp.lua's installer for the canonical comment block; formatting.lua
    and linting.lua both reference it.
-5. After install, the module's "enable" hook (e.g. `vim.lsp.enable(name)` for
+5. **Executable guard in `try_lint()`.** The lint dispatcher checks
+   `vim.fn.executable(linter.cmd)` before attempting to spawn each linter.
+   If the binary isn't on PATH yet (mason install still in flight), the
+   linter is silently skipped. Without this guard, the `BufReadPost` event
+   (debounced 100ms) races the async mason install and fires `try_lint()`
+   before the binary lands on disk, producing an `ENOENT: no such file or
+   directory` toast on cold starts. The on-demand installer's `on_done`
+   callback re-runs `lint.try_lint()` after installation completes, so no
+   coverage is lost. This guard lives only in `linting.lua` because LSPs
+   and formatters don't have the same race — `vim.lsp.enable` is a no-op
+   until the server binary exists, and conform checks `vim.fn.executable`
+   internally.
+6. After install, the module's "enable" hook (e.g. `vim.lsp.enable(name)` for
    LSPs, or just re-running `lint.try_lint()` for linters) wires the tool up.
-6. **Crucially**, after wiring up, the module re-fires `FileType` for any
+7. **Crucially**, after wiring up, the module re-fires `FileType` for any
    already-loaded buffers whose filetype matches, so the buffer that triggered
    the install actually gets the tool attached without needing a manual
    reload.
@@ -170,7 +182,9 @@ If you add a new LSP / formatter / linter, follow this pattern. Don't add an
 `ensure_installed` table. The race guard in step 4 must be preserved on every
 new installer site — it's the difference between a clean cold-start and a
 toast spam of `Package is already installing.` errors the first time the
-user opens a file in a new language.
+user opens a file in a new language. The executable guard in step 5 must
+stay in `linting.lua`'s `try_lint()` — removing it re-introduces the
+cold-start ENOENT.
 
 Treesitter on the `main` branch uses a different installer because the new
 install API (`require("nvim-treesitter").install({lang})`) returns an

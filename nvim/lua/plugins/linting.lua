@@ -271,8 +271,14 @@ return {
           local linter = lint.linters[name]
           if not linter then
             vim.notify("Linter not found: " .. name, vim.log.levels.WARN, { title = "nvim-lint" })
+            return false
           end
-          return linter and not (type(linter) == "table" and linter.condition and not linter.condition(ctx))
+          -- Skip linters whose binary isn't available yet — the on-demand
+          -- installer will re-trigger lint after installation completes.
+          if type(linter) == "table" and linter.cmd and vim.fn.executable(linter.cmd) ~= 1 then
+            return false
+          end
+          return not (type(linter) == "table" and linter.condition and not linter.condition(ctx))
         end, names)
 
         if #names > 0 then

@@ -464,7 +464,6 @@ return {
         hl.GitConflictIncomingLabel = { bg = "#0a0a2a", fg = c.blue, bold = true }
         hl.GitConflictAncestor = { bg = "#1a0a1a" } -- common ancestor: purple tint
         hl.GitConflictAncestorLabel = { bg = "#2a0a2a", fg = c.purple, bold = true }
-
       end,
     },
     config = function(_, opts)
@@ -504,8 +503,8 @@ return {
     opts = {
       spec = {
         { "<leader>uC", desc = "Colorscheme Picker", icon = { icon = icons.theme.picker, color = "blue" } },
-        { "<leader>uN", desc = "Next Theme", icon = { icon = icons.theme.next, color = "cyan" } },
-        { "<leader>uP", desc = "Previous Theme", icon = { icon = icons.theme.prev, color = "cyan" } },
+        { "<leader>uN", desc = "Next Theme",         icon = { icon = icons.theme.next, color = "cyan" } },
+        { "<leader>uP", desc = "Previous Theme",     icon = { icon = icons.theme.prev, color = "cyan" } },
       },
     },
   },
