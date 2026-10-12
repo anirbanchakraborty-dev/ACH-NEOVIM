@@ -246,7 +246,12 @@ function M.claude()
 end
 
 -- The formatter that will run on save and the linters watching this buffer.
+-- Like the code-structure name, it needs a wide window: in 80 columns the
+-- tiles beside it already fill the bar.
 function M.tools()
+  if vim.o.columns < 120 then
+    return ""
+  end
   local buf = vim.api.nvim_get_current_buf()
   local parts = {}
   local conform = package.loaded["conform"]

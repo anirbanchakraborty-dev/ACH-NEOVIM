@@ -191,6 +191,14 @@ return {
     t.ok(not res.str:find("<", 1, true), "Neovim's truncation mark appeared: " .. res.str)
   end,
 
+  ["names the linters only in a window wide enough for them"] = function(t)
+    sample(t, "alpha.lua", { "return 1" })
+    with_stubs(function()
+      t.ok(draw(200).str:find("selene", 1, true), "the linter at 200 columns")
+      t.ok(not draw(80).str:find("selene", 1, true), "the linter at 80 columns")
+    end)
+  end,
+
   ["mini.icons draws the icon database's file-type icons"] = function(t)
     local I, mini = require("ach.icons"), require("mini.icons")
     local wrong = {}
