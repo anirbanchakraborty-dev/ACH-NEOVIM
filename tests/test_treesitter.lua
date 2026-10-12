@@ -192,6 +192,37 @@ return {
     end
   end,
 
+  ["a parser whose queries are there but whose library is gone is installed again"] = function(t)
+    local install = require("ach.install")
+    local ts = require("nvim-treesitter")
+    local saved = { install.dry, install.available_parsers, install.installed_parsers, ts.install }
+    local built, heard = {}, false
+    install.reset()
+    install.dry = false
+    install.available_parsers = function() return { ach_fake = true } end
+    install.installed_parsers = function() return { ach_fake = built.ach_fake } end
+    -- nvim-treesitter counts a language as installed when its queries folder
+    -- is there, and skips it unless the install is forced.
+    ts.install = function(names, opts)
+      if opts and opts.force then
+        for _, name in ipairs(names) do
+          built[name] = true
+        end
+      end
+      return { await = function(_, cb) cb(nil, true) end }
+    end
+    local ok, err = pcall(function()
+      install.ensure_parsers({ "ach_fake" }, function() heard = true end)
+      t.ok(vim.wait(1000, function() return heard end), "the caller heard back")
+      t.eq(built, { ach_fake = true }, "parsers built")
+    end)
+    install.dry, install.available_parsers, install.installed_parsers, ts.install = unpack(saved)
+    install.reset()
+    if not ok then
+      error(err, 0)
+    end
+  end,
+
   ["every move has an icon"] = function(t)
     local icons = require("ach.icons")
     local missing = {}

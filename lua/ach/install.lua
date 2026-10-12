@@ -111,7 +111,10 @@ function M.ensure_parsers(names, done)
   if #new == 0 then
     return
   end
-  require("nvim-treesitter").install(new, { summary = false }):await(function()
+  -- Forced, since nvim-treesitter counts a language as installed while its
+  -- queries folder is there, even after its library is gone. Only parsers
+  -- with no library reach this point.
+  require("nvim-treesitter").install(new, { summary = false, force = true }):await(function()
     vim.schedule(function()
       local now = M.installed_parsers()
       for _, name in ipairs(new) do
