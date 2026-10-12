@@ -203,6 +203,28 @@ return {
     end)
   end,
 
+  ["Homebrew's .NET is named in DOTNET_ROOT when it is unset"] = function(t)
+    local runtimes = require("ach.runtimes")
+    local root = t.tmpdir() .. "/dotnet/libexec"
+    vim.fn.mkdir(root, "p")
+    vim.fn.writefile({}, root .. "/dotnet")
+    local saved = vim.env.DOTNET_ROOT
+    local ok, err = pcall(function()
+      vim.env.DOTNET_ROOT = nil
+      runtimes.setup({ java = {}, first = {}, last = {}, dotnet = root .. "/missing" })
+      t.eq(vim.env.DOTNET_ROOT, nil, "DOTNET_ROOT before .NET is installed")
+      runtimes.setup({ java = {}, first = {}, last = {}, dotnet = root })
+      t.eq(vim.env.DOTNET_ROOT, root, "DOTNET_ROOT once .NET is installed")
+      vim.env.DOTNET_ROOT = "/elsewhere"
+      runtimes.setup({ java = {}, first = {}, last = {}, dotnet = root })
+      t.eq(vim.env.DOTNET_ROOT, "/elsewhere", "DOTNET_ROOT the owner set")
+    end)
+    vim.env.DOTNET_ROOT = saved
+    if not ok then
+      error(err, 0)
+    end
+  end,
+
   ["Homebrew's Java goes on the path when JAVA_HOME is unset"] = function(t)
     local runtimes = require("ach.runtimes")
     local dir = t.tmpdir()

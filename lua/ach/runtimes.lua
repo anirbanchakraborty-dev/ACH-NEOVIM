@@ -1,7 +1,8 @@
 -- Language runtimes Mason cannot install. setup() puts Homebrew's Java on
 -- the path, because macOS ships /usr/bin/java as a stub that only offers to
 -- install Java, and Java, Kotlin, Groovy and Scala tools all look for a real
--- one. It also adds the folders a shell profile would, so Neovim started from
+-- one. It names Homebrew's .NET in DOTNET_ROOT, which csharp-ls and CSharpier
+-- need to find the runtime they were built for. It also adds the folders a shell profile would, so Neovim started from
 -- the Dock finds the same programs as Neovim started from a terminal. check()
 -- says whether a runtime works, asking once per session.
 local M = {}
@@ -55,6 +56,16 @@ local function add(dirs, front)
   end
 end
 
+-- Homebrew's .NET sits in libexec, where the dotnet program does not look on
+-- its own.
+M.dotnet = "/opt/homebrew/opt/dotnet/libexec"
+
+local function dotnet(dir)
+  if (vim.env.DOTNET_ROOT or "") == "" and vim.uv.fs_stat(dir .. "/dotnet") then
+    vim.env.DOTNET_ROOT = dir
+  end
+end
+
 local function java(kegs)
   if vim.env.JAVA_HOME and vim.env.JAVA_HOME ~= "" then
     return nil
@@ -70,12 +81,13 @@ local function java(kegs)
   return nil
 end
 
--- opts: { java = kegs, first = folders, last = folders }, each defaulting to
--- the lists above. Returns the JDK's home when it set one.
+-- opts: { java = kegs, first = folders, last = folders, dotnet = folder },
+-- each defaulting to the values above. Returns the JDK's home when it set one.
 function M.setup(opts)
   opts = opts or {}
   add(opts.first or M.first, true)
   add(opts.last or M.last, false)
+  dotnet(opts.dotnet or M.dotnet)
   return java(opts.java or M.kegs)
 end
 

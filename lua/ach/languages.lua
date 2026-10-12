@@ -77,7 +77,8 @@ M.languages = {
     ts = { "fish" },
     lsp = { "fish_lsp" },
     fmt = { "fish_indent" },
-    system = { fish = { name = "fish", brew = { "fish" }, size = "about 20 MB" } },
+    -- fish_indent ships with the shell, and fish-lsp runs it.
+    runtime = { name = "fish", check = { "fish", "--version" }, brew = { "fish" }, size = "about 20 MB" },
   },
   nushell = {
     ft = { "nu" },
@@ -175,9 +176,10 @@ M.languages = {
     ft = { "cmake" },
     ts = { "cmake" },
     lsp = { "neocmake" },
-    fmt = { "cmake_format" },
+    -- cmake-format, from cmakelang, no longer runs on current Python.
+    fmt = { "gersemi" },
     lint = { "cmakelint" },
-    mason = { "cmakelang", "cmakelint" },
+    mason = { "gersemi", "cmakelint" },
     harper = true,
   },
   make = { ft = { "make", "automake" }, ts = { "make" }, lsp = { "autotools_ls" } },
@@ -326,7 +328,15 @@ M.languages = {
     lsp = { "nil_ls" },
     fmt = { "nixfmt" },
     lint = { "statix" },
-    mason = { "nixfmt", "statix" },
+    mason = { "statix" },
+    -- nil asks Nix for its builtins as it builds, and Homebrew does not carry Nix.
+    runtime = {
+      name = "Nix",
+      check = { "nix", "--version" },
+      command = "curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh",
+    },
+    -- Mason's nixfmt is built for Linux only.
+    system = { nixfmt = { name = "nixfmt", brew = { "nixfmt" }, size = "about 30 MB" } },
     harper = true,
   },
 

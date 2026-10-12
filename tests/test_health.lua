@@ -224,8 +224,8 @@ return {
     local r = section(report({ found = { dart = true }, parsers = { "gleam" } }), "Programs Mason does not carry")
     t.eq(find(r, "warn", "gleam").advice, "brew install gleam", "gleam, with Gleam in use")
     t.ok(
-      find(r, "info", "fish is not installed").msg:find("brew install fish", 1, true) ~= nil,
-      "fish, with no fish file opened"
+      find(r, "info", "nu is not installed").msg:find("brew install nushell", 1, true) ~= nil,
+      "nushell, with no Nushell file opened"
     )
     t.eq(find(r, "ok", "dart").msg, "Installed: dart", "what is there, on one line")
     local xcode = find(r, "info", "sourcekit-lsp is not installed").msg

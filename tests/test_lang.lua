@@ -207,6 +207,34 @@ return {
     t.eq(lang.steps(xcode), {}, "so the editor runs nothing for them")
   end,
 
+  ["fish's tools wait on the fish shell, which fish_indent ships in and fish-lsp runs"] = function(t)
+    local lang = require("ach.lang")
+    local fish = lang.get("fish").runtime
+    t.eq(fish and fish.check, { "fish", "--version" }, "the check for fish")
+    t.eq(fish and lang.command(fish), "brew install fish", "fish's command")
+  end,
+
+  ["Nix's formatter comes from Homebrew, and its server waits on Nix"] = function(t)
+    local lang = require("ach.lang")
+    local nix = lang.get("nix")
+    -- Mason's nixfmt is built for Linux only, and nil's build asks nix for its builtins.
+    t.eq(lang.system_for_ft("nix").nixfmt, "brew install nixfmt", "nixfmt's command")
+    t.ok(not vim.list_contains(nix.mason or {}, "nixfmt"), "Mason is not asked for nixfmt")
+    t.eq(nix.runtime and nix.runtime.check, { "nix", "--version" }, "the check for Nix")
+    t.eq(
+      nix.runtime and lang.command(nix.runtime),
+      "curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh",
+      "Nix's own installer, which Homebrew does not carry"
+    )
+  end,
+
+  ["CMake formats with gersemi, since cmake-format no longer runs on current Python"] = function(t)
+    local cmake = require("ach.lang").get("cmake")
+    t.eq(cmake.fmt, { "gersemi" }, "the formatter")
+    t.ok(vim.list_contains(cmake.mason, "gersemi"), "Mason installs gersemi")
+    t.ok(not vim.list_contains(cmake.mason, "cmakelang"), "Mason is not asked for cmakelang")
+  end,
+
   ["a managed language names a known plugin and enables no server itself"] = function(t)
     local bad = {}
     for name, e in pairs(require("ach.languages").languages) do
@@ -446,6 +474,7 @@ return {
       "go",
       "julia",
       "llvm",
+      "nixfmt",
       "nushell",
       "opam",
       "openjdk@21",
