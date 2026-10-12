@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Run ACH-NEOVIM's headless test suite against the real configuration.
+#   scripts/check              fast mode, about a minute
+#   scripts/check --full       also installs every language's tools and tests them
+#   scripts/check --only TEXT  run only tests whose "file :: name" label contains TEXT
+# Exit 0 when everything passes, 1 on a failure, 2 when a person must act.
+set -euo pipefail
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
+full=0
+only=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --full) full=1 ;;
+        --only) shift; only=${1:-} ;;
+        -h | --help) sed -n '2,/^# Exit/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) echo "unknown option: $1" >&2; exit 1 ;;
+    esac
+    shift
+done
+
+if ! command -v nvim >/dev/null 2>&1; then
+    echo "Neovim is not installed. Install it with: brew install neovim" >&2
+    exit 2
+fi
+
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/ach-check.XXXXXX")
+trap 'rm -rf "$scratch"' EXIT
+mkdir -p "$scratch/state" "$scratch/claude"
+
+# State and Claude Code's lock folder go to a throwaway folder, so a test run
+# never touches real history, sessions or ~/.claude/ide.
+export ACH_TEST=1 ACH_FULL=$full ACH_ONLY=$only
+export XDG_STATE_HOME="$scratch/state" CLAUDE_CONFIG_DIR="$scratch/claude"
+
+status=0
+nvim --headless -u "$root/init.lua" "+luafile $root/tests/run.lua" || status=$?
+exit "$status"
