@@ -182,6 +182,22 @@ M.settings = {
     bundle_path = mason .. "/powershell-editor-services",
   },
 
+  -- astro-ls will not start without a path to TypeScript's library. A project
+  -- with TypeScript installed gives its own; a file outside one, or a project
+  -- whose packages are not installed yet, gets the copy Mason installed with
+  -- the server.
+  astro = {
+    before_init = function(_, config)
+      local tsdk = require("lspconfig.util").get_typescript_server_path(config.root_dir)
+      if tsdk == "" then
+        tsdk = mason .. "/astro-language-server/node_modules/typescript/lib"
+      end
+      config.init_options = config.init_options or {}
+      config.init_options.typescript = config.init_options.typescript or {}
+      config.init_options.typescript.tsdk = tsdk
+    end,
+  },
+
   -- Mason's julia-lsp takes the Julia environment to load as its one
   -- argument; nvim-lspconfig's command runs julia directly instead.
   julials = {

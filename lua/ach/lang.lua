@@ -147,6 +147,18 @@ function M.runtime_for_ft(ft)
   return e and e.runtime or nil
 end
 
+-- An argument a shell would split or read as syntax goes in quotes: double
+-- quotes where nothing inside them is special, single quotes otherwise.
+local function quote(arg)
+  if arg:match("^[%w@%%+=:,./_-]+$") then
+    return arg
+  end
+  if not arg:find('[\\"$`!]') then
+    return '"' .. arg .. '"'
+  end
+  return vim.fn.shellescape(arg)
+end
+
 -- The one line that installs a requirement, as the owner would type it.
 function M.command(req)
   if req.command then
@@ -154,7 +166,7 @@ function M.command(req)
   end
   local parts = { "brew install " .. table.concat(req.brew, " ") }
   for _, argv in ipairs(req.after or {}) do
-    parts[#parts + 1] = table.concat(argv, " ")
+    parts[#parts + 1] = table.concat(vim.tbl_map(quote, argv), " ")
   end
   return table.concat(parts, " && ")
 end

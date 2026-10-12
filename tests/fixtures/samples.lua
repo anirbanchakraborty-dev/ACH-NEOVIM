@@ -5,6 +5,11 @@
 -- a linter, one warning is planted. The comment above each sample names both.
 local M = {}
 
+-- Tailwind's server starts only in a folder its configuration marks, and
+-- ESLint's only where a configuration of its own is found.
+local tailwind = { ["tailwind.config.js"] = "module.exports = { content: ['./**/*'] };\n" }
+local eslint = { ["eslint.config.mjs"] = "export default [];\n" }
+
 M.samples = {
   -- Editor and shell -------------------------------------------------------
   -- stylua: the spacing around "=".
@@ -128,10 +133,15 @@ config SAMPLE
   systemverilog = { open = "sample.sv", text = [[
 module sample(input logic a,output logic y);assign y=a;endmodule
 ]] },
-  vhdl = { open = "sample.vhd", text = [[
+  -- vhdl_ls starts only beside a vhdl_ls.toml naming the files.
+  vhdl = {
+    open = "sample.vhd",
+    text = [[
 entity sample is
 end entity sample;
-]] },
+]],
+    extra = { ["vhdl_ls.toml"] = '[libraries]\nsample.files = ["sample.vhd"]\n' },
+  },
   veryl = { open = "sample.veryl", text = [[
 module Sample {
     var a: logic;
@@ -290,19 +300,31 @@ let a = 1; in { a = a; }
 
   -- Web --------------------------------------------------------------------------
   -- prettier: the object's spacing and the missing semicolons.
-  typescript = { open = "sample.ts", text = [[
+  typescript = {
+    open = "sample.ts",
+    text = [[
 const x = {a:1}
 export default x
-]] },
+]],
+    extra = vim.tbl_extend("error", tailwind, eslint),
+  },
   -- prettier: the spaces between the attributes.
-  html = { open = "sample.html", text = [[
+  html = {
+    open = "sample.html",
+    text = [[
 <!doctype html>
 <p   class="a">hello</p>
-]] },
+]],
+    extra = tailwind,
+  },
   -- prettier: the rule on one line.
-  css = { open = "sample.css", text = [[
+  css = {
+    open = "sample.css",
+    text = [[
 a{color:red}
-]] },
+]],
+    extra = tailwind,
+  },
   -- prettier: the single quotes and the missing semicolon.
   vue = {
     open = "Sample.vue",
@@ -312,24 +334,37 @@ a{color:red}
 const msg = 'hello'
 </script>
 ]],
+    extra = tailwind,
   },
-  svelte = { open = "Sample.svelte", text = [[
+  svelte = {
+    open = "Sample.svelte",
+    text = [[
 <script>
   let name = "world";
 </script>
 <p>Hello {name}</p>
-]] },
-  astro = { open = "sample.astro", text = [[
+]],
+    extra = tailwind,
+  },
+  astro = {
+    open = "sample.astro",
+    text = [[
 ---
 const name = "world";
 ---
 <p>Hello {name}</p>
-]] },
+]],
+    extra = tailwind,
+  },
   -- The *ngIf is what tells Neovim this is an Angular template. prettier: the
   -- spaces between the attributes.
-  angular = { open = "app.component.html", text = [[
+  angular = {
+    open = "app.component.html",
+    text = [[
 <div   *ngIf="shown"   class="a">hello</div>
-]] },
+]],
+    extra = tailwind,
+  },
   -- prettier: the spaces between the attributes.
   ember = { open = "sample.hbs", text = [[
 <p   class="a">{{this.message}}</p>
@@ -344,9 +379,14 @@ type Query{hello:String}
 
 function  f( $x ){return $x;}
 ]] },
-  twig = { open = "sample.html.twig", text = [[
+  -- twiggy fails to start with no workspace folder, which composer.json marks.
+  twig = {
+    open = "sample.html.twig",
+    text = [[
 <p>{{ name }}</p>
-]] },
+]],
+    extra = { ["composer.json"] = "{}\n" },
+  },
   -- rubocop: the spacing and the hash-rocket in the hash.
   ruby = { open = "sample.rb", text = [[
 x = {  :a=>1 }

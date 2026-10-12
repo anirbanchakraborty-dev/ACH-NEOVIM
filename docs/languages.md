@@ -6,16 +6,16 @@ Measured on 2026-10-12 with Neovim 0.12.6.
 
 | Language | Tree-sitter | Server | Formatter | Linter | Grammar |
 | --- | --- | --- | --- | --- | --- |
-| angular | angular | angularls; not working: tailwindcss | prettier | none | none |
+| angular | angular | angularls, tailwindcss | prettier | none | none |
 | ansible | yaml | ansiblels | none | none | none |
 | asm | asm | asm_lsp | none | none | none |
-| astro | astro | not working: astro, tailwindcss | none | none | none |
+| astro | astro | astro, tailwindcss | none | none | none |
 | awk | awk | awk_ls | none | none | none |
 | bsv | bsv | none | none | none | none |
 | c | c | clangd | clang_format | none | harper_ls |
 | clojure | clojure | clojure_lsp | none | none | harper_ls |
 | cmake | cmake | neocmake | gersemi | cmakelint | harper_ls |
-| css | css | cssls; not working: tailwindcss | prettier | none | none |
+| css | css | cssls, tailwindcss | prettier | none | none |
 | csv | csv | none | none | none | none |
 | dart | dart | waiting: dartls | waiting: dart_format | none | harper_ls |
 | devicetree | devicetree | none | none | none | none |
@@ -34,19 +34,19 @@ Measured on 2026-10-12 with Neovim 0.12.6.
 | glsl | glsl | glsl_analyzer | none | none | none |
 | go | go | gopls | goimports, gofumpt | golangcilint | harper_ls |
 | graphql | graphql | graphql | prettier | none | none |
-| groovy | groovy | not working: groovyls | none | none | harper_ls |
+| groovy | groovy | waiting: groovyls | none | none | waiting: harper_ls |
 | haskell | haskell | waiting: haskell-tools.nvim | waiting: fourmolu | waiting: hlint | waiting: harper_ls |
 | helm | helm | helm_ls | none | none | none |
 | hlsl | hlsl | slangd | none | none | none |
-| html | html | html, emmet_language_server; not working: tailwindcss | prettier | none | harper_ls |
+| html | html | html, emmet_language_server, tailwindcss | prettier | none | harper_ls |
 | ini | ini | none | none | none | none |
-| java | java | jdtls | none | none | harper_ls |
+| java | java | waiting: jdtls | none | none | waiting: harper_ls |
 | jq | jq | none | none | none | none |
 | json | json | jsonls | prettier | none | none |
 | julia | julia | waiting: julials | none | none | none |
 | just | just | just | none | none | none |
 | kconfig | kconfig | none | none | none | none |
-| kotlin | kotlin | not working: kotlin_language_server | ktlint | ktlint | harper_ls |
+| kotlin | kotlin | waiting: kotlin_language_server | ktlint | ktlint | waiting: harper_ls |
 | lean | none | waiting: leanls | none | none | none |
 | linker | linkerscript | none | none | none | none |
 | llvm | llvm | none | none | none | none |
@@ -65,7 +65,7 @@ Measured on 2026-10-12 with Neovim 0.12.6.
 | prisma | prisma | prismals | none | none | none |
 | proto | proto | buf_ls | buf | none | none |
 | python | python | basedpyright, ruff | ruff_format | none | harper_ls |
-| r | r | not working: r_language_server | none | none | none |
+| r | r | waiting: r_language_server | none | none | none |
 | rego | rego | regols, regal | none | none | none |
 | ruby | ruby | ruby_lsp, rubocop | rubocop | none | harper_ls |
 | rust | rust | rust-analyzer | none | none | harper_ls |
@@ -74,7 +74,7 @@ Measured on 2026-10-12 with Neovim 0.12.6.
 | solidity | solidity | solidity_ls | none | none | harper_ls |
 | sql | sql | none | sqlfluff | sqlfluff | none |
 | starlark | starlark | starpls | buildifier | none | none |
-| svelte | svelte | svelte; not working: tailwindcss | none | none | none |
+| svelte | svelte | svelte, tailwindcss | none | none | none |
 | swift | swift | sourcekit | none | none | harper_ls |
 | systemverilog | systemverilog | verible | verible | none | none |
 | tablegen | tablegen | tblgen_lsp_server | none | none | none |
@@ -84,13 +84,13 @@ Measured on 2026-10-12 with Neovim 0.12.6.
 | text | none | none | none | none | harper_ls |
 | thrift | thrift | thriftls | none | none | none |
 | toml | toml | taplo | taplo | none | harper_ls |
-| twig | twig | not working: twiggy_language_server | none | none | none |
-| typescript | typescript | vtsls; not working: eslint, tailwindcss | prettier | none | harper_ls |
+| twig | twig | twiggy_language_server | none | none | none |
+| typescript | typescript | vtsls, eslint, tailwindcss | prettier | none | harper_ls |
 | typst | typst | tinymist | typstyle | none | harper_ls |
 | veryl | veryl | veryl_ls | none | none | none |
-| vhdl | vhdl | not working: vhdl_ls | none | none | none |
+| vhdl | vhdl | vhdl_ls | none | none | none |
 | vim | vim | vimls | none | none | none |
-| vue | vue | vue_ls, vtsls; not working: tailwindcss | prettier | none | none |
+| vue | vue | vue_ls, vtsls, tailwindcss | prettier | none | none |
 | wgsl | wgsl | wgsl_analyzer | none | none | none |
 | xml | xml | lemminx | none | none | none |
 | yaml | yaml | yamlls | prettier | none | none |
@@ -110,7 +110,9 @@ The full run never installs from Homebrew or Xcode, so each command below stays 
 - `brew install nixfmt`, for nix
 - `brew install nushell`, for nushell
 - `brew install opam && opam init -n -y`, for ocaml
+- `brew install openjdk@21`, for groovy, java, kotlin
 - `brew install php`, for php
 - `brew install powershell`, for powershell
+- `brew install r && Rscript -e "install.packages('languageserver', repos = 'https://cloud.r-project.org')"`, for r
 - `brew install zig`, for zig
 - `curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh`, for nix

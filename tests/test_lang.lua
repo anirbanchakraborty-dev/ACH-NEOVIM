@@ -214,6 +214,21 @@ return {
     t.eq(fish and lang.command(fish), "brew install fish", "fish's command")
   end,
 
+  ["R's server waits on R's languageserver package, which installs after R"] = function(t)
+    local lang = require("ach.lang")
+    local r = lang.get("r").runtime
+    t.eq(r.check, { "Rscript", "-e", "library(languageserver)" }, "the check for R")
+    t.eq(lang.steps(r), {
+      { "brew", "install", "r" },
+      { "Rscript", "-e", "install.packages('languageserver', repos = 'https://cloud.r-project.org')" },
+    }, "R's steps, Homebrew first")
+    t.eq(
+      lang.command(r),
+      [[brew install r && Rscript -e "install.packages('languageserver', repos = 'https://cloud.r-project.org')"]],
+      "R's command, with the R code quoted so a shell runs it as typed"
+    )
+  end,
+
   ["Nix's formatter comes from Homebrew, and its server waits on Nix"] = function(t)
     local lang = require("ach.lang")
     local nix = lang.get("nix")

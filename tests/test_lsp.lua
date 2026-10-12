@@ -256,6 +256,20 @@ return {
     t.eq(vim.lsp.config.yamlls.settings.yaml.schemaStore.enable, false, "yamlls' own download of the catalogue")
   end,
 
+  ["Astro's server finds TypeScript in the project, or else the copy Mason installed with it"] = function(t)
+    local project = t.tmpdir()
+    vim.fn.mkdir(project .. "/node_modules/typescript/lib", "p")
+    local config = vim.deepcopy(vim.lsp.config.astro)
+    config.root_dir = project
+    config.before_init({}, config)
+    t.eq(config.init_options.typescript.tsdk, project .. "/node_modules/typescript/lib", "the project's own TypeScript")
+    local bare = vim.deepcopy(vim.lsp.config.astro)
+    bare.root_dir = t.tmpdir()
+    bare.before_init({}, bare)
+    local mason = vim.fn.stdpath("data") .. "/mason/packages/astro-language-server/node_modules/typescript/lib"
+    t.eq(bare.init_options.typescript.tsdk, mason, "Mason's copy, outside a project with TypeScript")
+  end,
+
   ["each server's own settings reach its configuration"] = function(t)
     local client = { server_capabilities = { hoverProvider = true } }
     vim.lsp.config.ruff.on_init(client)

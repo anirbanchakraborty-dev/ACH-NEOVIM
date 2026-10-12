@@ -66,15 +66,24 @@ local function dotnet(dir)
   end
 end
 
+-- A JAVA_HOME the owner set is left alone. One this function set is chosen
+-- again each time, so Java 21 installed during a session takes the place of
+-- the newer Java found before it.
 local function java(kegs)
-  if vim.env.JAVA_HOME and vim.env.JAVA_HOME ~= "" then
+  local homes = {}
+  for i, keg in ipairs(kegs) do
+    homes[i] = keg .. "/libexec/openjdk.jdk/Contents/Home"
+  end
+  local current = vim.env.JAVA_HOME or ""
+  if current ~= "" and not vim.list_contains(homes, current) then
     return nil
   end
-  for _, keg in ipairs(kegs) do
-    local home = keg .. "/libexec/openjdk.jdk/Contents/Home"
+  for _, home in ipairs(homes) do
     if vim.uv.fs_stat(home .. "/bin/java") then
-      vim.env.JAVA_HOME = home
-      vim.env.PATH = home .. "/bin:" .. vim.env.PATH
+      if home ~= current then
+        vim.env.JAVA_HOME = home
+        vim.env.PATH = home .. "/bin:" .. vim.env.PATH
+      end
       return home
     end
   end

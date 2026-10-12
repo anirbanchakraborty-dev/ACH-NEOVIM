@@ -49,7 +49,18 @@ M.grammar = { server = "harper_ls", program = "harper-ls", package = "harper-ls"
 
 -- Requirements several entries share. Every size is a rough figure, rounded
 -- up, there only so the owner knows what a yes costs.
-local java = { name = "Java 21", check = { "java", "-version" }, brew = { "openjdk@21" }, size = "about 350 MB" }
+-- Java 21 and no other: Kotlin's server cannot parse a newer version number,
+-- and Groovy's builds with a Gradle that cannot read newer class files.
+local java = {
+  name = "Java 21",
+  check = {
+    "sh",
+    "-c",
+    [[case "$(java -version 2>&1)" in *'version "21"'* | *'version "21.'*) exit 0 ;; esac; exit 1]],
+  },
+  brew = { "openjdk@21" },
+  size = "about 350 MB",
+}
 local llvm = { name = "LLVM", brew = { "llvm" }, size = "about 2 GB" }
 local xcode = { name = "the Command Line Tools", command = "xcode-select --install" }
 
@@ -320,7 +331,14 @@ M.languages = {
     ts = { "r", "rnoweb", "markdown" },
     lsp = { "r_language_server" },
     harper = { "quarto" },
-    runtime = { name = "R", check = { "R", "--version" }, brew = { "r" }, size = "about 1.5 GB" },
+    -- The server is an R package, which R builds from source on install.
+    runtime = {
+      name = "R",
+      check = { "Rscript", "-e", "library(languageserver)" },
+      brew = { "r" },
+      after = { { "Rscript", "-e", "install.packages('languageserver', repos = 'https://cloud.r-project.org')" } },
+      size = "about 1.5 GB",
+    },
   },
   nix = {
     ft = { "nix" },

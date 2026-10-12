@@ -249,6 +249,65 @@ return {
     end
   end,
 
+  -- Kotlin's and Groovy's servers fail on a Java newer than 21, so the newest
+  -- Homebrew Java must give way once Java 21 is installed beside it.
+  ["Java 21 takes the newest Java's place once Homebrew installs it"] = function(t)
+    local runtimes = require("ach.runtimes")
+    local dir = t.tmpdir()
+    local function jdk(keg)
+      local home = dir .. "/" .. keg .. "/libexec/openjdk.jdk/Contents/Home"
+      vim.fn.mkdir(home .. "/bin", "p")
+      vim.fn.writefile({}, home .. "/bin/java")
+      return home
+    end
+    local saved_home, saved_path = vim.env.JAVA_HOME, vim.env.PATH
+    local ok, err = pcall(function()
+      vim.env.JAVA_HOME = nil
+      local kegs = { dir .. "/openjdk@21", dir .. "/openjdk" }
+      local newest = jdk("openjdk")
+      t.eq(runtimes.setup({ java = kegs, first = {}, last = {} }), newest, "the only JDK there")
+      local java21 = jdk("openjdk@21")
+      t.eq(runtimes.setup({ java = kegs, first = {}, last = {} }), java21, "the JDK chosen once Java 21 is there")
+      t.eq(vim.env.JAVA_HOME, java21, "JAVA_HOME")
+      t.eq(vim.split(vim.env.PATH, ":")[1], java21 .. "/bin", "the first folder on PATH")
+      local path = vim.env.PATH
+      runtimes.setup({ java = kegs, first = {}, last = {} })
+      t.eq(vim.env.PATH, path, "PATH when setup runs again")
+    end)
+    vim.env.JAVA_HOME, vim.env.PATH = saved_home, saved_path
+    if not ok then
+      error(err, 0)
+    end
+  end,
+
+  ["the Java check accepts Java 21 and no other"] = function(t)
+    local runtimes = require("ach.runtimes")
+    local check = require("ach.lang").get("kotlin").runtime.check
+    local dir = t.tmpdir()
+    local saved_path = vim.env.PATH
+    local function answer(version)
+      local line = ("echo 'openjdk version \"%s\" 2025-09-16' >&2"):format(version)
+      vim.fn.writefile({ "#!/bin/sh", line }, dir .. "/java")
+      vim.fn.setfperm(dir .. "/java", "rwxr-xr-x")
+      local result
+      runtimes.probe(check, function(ok) result = ok end)
+      vim.wait(10000, function() return result ~= nil end)
+      return result
+    end
+    local ok, err = pcall(function()
+      vim.env.PATH = dir .. ":" .. saved_path
+      t.eq(answer("21.0.8"), true, "Java 21 with an update number")
+      t.eq(answer("21"), true, "Java 21 as first released")
+      t.eq(answer("27"), false, "Java 27")
+      t.eq(answer("17.0.16"), false, "Java 17")
+      t.eq(answer("210"), false, "a version that only starts with 21")
+    end)
+    vim.env.PATH = saved_path
+    if not ok then
+      error(err, 0)
+    end
+  end,
+
   ["Ruby goes first on the path and the toolchain folders last, once"] = function(t)
     local runtimes = require("ach.runtimes")
     local dir = t.tmpdir()
