@@ -1590,6 +1590,8 @@ M.keys = {
   ["Around Section"] = { "textobj.paragraph", "blue" },
   ["Inside Item"] = { "ui.list", "azure" },
   ["Around Item"] = { "ui.list", "azure" },
+  -- Markdown
+  ["Markdown Preview"] = { "ui.preview", "cyan" },
   -- Keys added by later tasks go above this line.
 }
 
@@ -1643,6 +1645,7 @@ M.toggles = {
   profiler_highlights = "ui.profiler_highlights",
   git_signs = "git.hunk",
   git_blame_line = "git.blame",
+  render_markdown = "lang.markdown",
   -- Toggles added by later tasks go above this line.
 }
 

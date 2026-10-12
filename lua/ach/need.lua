@@ -36,6 +36,24 @@ M.programs = {
     brew = "brew install --cask skim",
     purpose = "showing LaTeX PDFs and jumping between them and the source",
   },
+  {
+    name = "magick",
+    label = "ImageMagick",
+    brew = "brew install imagemagick",
+    purpose = "turning pictures and formulas into images the terminal can show",
+  },
+  {
+    name = "pdflatex",
+    label = "MacTeX",
+    brew = "brew install --cask mactex",
+    purpose = "typesetting the formulas in Markdown files",
+  },
+  {
+    name = "gs",
+    label = "Ghostscript",
+    brew = "brew install ghostscript",
+    purpose = "letting ImageMagick read the PDF a formula is typeset into",
+  },
   -- Programs added by later tasks go above this line.
 }
 
