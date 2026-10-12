@@ -457,10 +457,11 @@ function M.ensure_tools(buf, ft)
   end)
 end
 
--- Called once a buffer's packages are installed, or have failed. The
--- language-server task fills this in; until then a buffer gets Tree-sitter
--- and nothing more.
-function M.ready(buf, ft, entry) end
+-- Called once a buffer's packages are installed, or have failed: enables the
+-- file type's servers whose programs are now on the path. The
+-- managed-languages task adds the languages whose own plugin starts the
+-- server.
+function M.ready(buf, ft, entry) require("ach.lsp").enable_for(ft) end
 
 -- The hook ------------------------------------------------------------------------
 

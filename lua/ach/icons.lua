@@ -477,6 +477,11 @@ M.code = {
   test = "\u{F0668}", -- md-test_tube
   coverage = "\u{F07AF}", -- md-chart_donut
   benchmark = "\u{F051B}", -- md-timer_outline
+  calls_in = "\u{F00FA}", -- md-call_received
+  calls_out = "\u{F00F7}", -- md-call_made
+  source_action = "\u{F1801}", -- md-lightbulb_auto_outline
+  organize_imports = "\u{F05BD}", -- md-sort_alphabetical_ascending
+  rename_file = "\u{F1031}", -- md-file_move_outline
 }
 
 -- Pickers and searches.
@@ -1402,6 +1407,28 @@ M.keys = {
   ["Prev Parameter Start"] = { "kinds.Parameter", "cyan" },
   ["Prev Parameter End"] = { "kinds.Parameter", "cyan" },
   ["Mason"] = { "mason.mason", "green" },
+  ["Lsp Info"] = { "code.lsp", "purple" },
+  ["Goto Definition"] = { "code.definition", "purple" },
+  ["Goto Declaration"] = { "code.declaration", "purple" },
+  ["References"] = { "code.references", "purple" },
+  ["Goto Implementation"] = { "code.implementation", "purple" },
+  ["Goto Type Definition"] = { "code.type_definition", "purple" },
+  ["Incoming Calls"] = { "code.calls_in", "purple" },
+  ["Outgoing Calls"] = { "code.calls_out", "purple" },
+  ["Hover"] = { "code.hover", "purple" },
+  ["Signature Help"] = { "code.signature", "purple" },
+  ["Code Action"] = { "code.action", "purple" },
+  ["Source Action"] = { "code.source_action", "purple" },
+  ["Organize Imports"] = { "code.organize_imports", "purple" },
+  ["Run Codelens"] = { "code.codelens", "purple" },
+  ["Toggle Codelens"] = { "code.codelens", "purple" },
+  ["Rename"] = { "code.rename", "purple" },
+  ["Rename File"] = { "code.rename_file", "purple" },
+  ["Next Reference"] = { "code.words", "purple" },
+  ["Prev Reference"] = { "code.words", "purple" },
+  ["LSP Symbols"] = { "code.symbols", "purple" },
+  ["LSP Workspace Symbols"] = { "code.symbols", "purple" },
+  ["vim.lsp.buf.hover()"] = { "code.hover", "purple" },
   -- Keys added by later tasks go above this line.
 }
 
