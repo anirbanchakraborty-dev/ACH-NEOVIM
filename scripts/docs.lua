@@ -568,7 +568,11 @@ local function tools(value)
   for _, ft in ipairs(sorted(value)) do
     parts[#parts + 1] = ("%s for %s"):format(codes(value[ft]), M.code(ft))
   end
-  return table.concat(parts, "; ")
+  -- A part can hold commas of its own, so the series ends in "and".
+  if #parts < 2 then
+    return parts[1] or ""
+  end
+  return table.concat(parts, ", ", 1, #parts - 1) .. " and " .. parts[#parts]
 end
 
 function M.languages_section(root, docs)
@@ -600,11 +604,12 @@ function M.languages_section(root, docs)
     local e = data[name]
     local started = codes(e.lsp)
     if e.managed then
-      started = (started ~= "" and started .. "; " or "") .. "started by " .. M.code(e.managed)
+      local by = "started by " .. M.code(e.managed)
+      started = started ~= "" and ("%s, and others %s"):format(started, by) or by
     end
     local formatters = tools(e.fmt)
     if e.manual and formatters ~= "" then
-      formatters = formatters .. "; never on save, only on `Space c f`"
+      formatters = formatters .. " (never on save, only on `Space c f`)"
     end
     local grammar = ""
     if e.harper == true then

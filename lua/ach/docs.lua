@@ -94,7 +94,7 @@ M.plugins = {
   },
   ["plenary.nvim"] = {
     category = "Util",
-    desc = "A library of Lua functions other plugins build on; octo.nvim needs it.",
+    desc = "A library of Lua functions other plugins build on, among them octo.nvim.",
   },
   ["persistence.nvim"] = {
     category = "Util",
@@ -127,10 +127,10 @@ M.plugins = {
     category = "Editor",
     desc = "Jumps anywhere on the screen: `s`, then the first letters of the place, then the label shown there.",
   },
-  ["grug-far.nvim"] = { category = "Editor", desc = "Search and replace across files, with a preview; `Space s r`." },
+  ["grug-far.nvim"] = { category = "Editor", desc = "Search and replace across files, with a preview (`Space s r`)." },
   ["trouble.nvim"] = {
     category = "Editor",
-    desc = "Lists of problems, references and symbols to move through; `Space x x`.",
+    desc = "Lists of problems, references and symbols to move through (`Space x x`).",
   },
   ["todo-comments.nvim"] = {
     category = "Editor",
@@ -138,11 +138,11 @@ M.plugins = {
   },
   ["oil.nvim"] = {
     category = "Editor",
-    desc = "Shows a folder as a text buffer, where renaming a line renames the file; `Space f o`.",
+    desc = "Shows a folder as a text buffer, where renaming a line renames the file (`Space f o`).",
   },
   ["multicursor.nvim"] = {
     category = "Editor",
-    desc = "Several cursors that edit together; `Alt-Down` adds one on the line below.",
+    desc = "Several cursors that edit together. `Alt-Down` adds one on the line below.",
   },
   ["lualine.nvim"] = { category = "UI", desc = "The status bar along the bottom of the screen." },
   ["mini.icons"] = { category = "UI", desc = "An icon for each file type, folder and plugin." },
@@ -172,7 +172,7 @@ M.plugins = {
   ["mason.nvim"] = {
     category = "LSP",
     desc = "Downloads language servers, formatters, linters and debuggers into Neovim's own folder, at the versions"
-      .. " `mason-lock.json` names; `Space c m`.",
+      .. " `mason-lock.json` names (`Space c m`).",
   },
   ["SchemaStore.nvim"] = {
     category = "LSP",
@@ -188,7 +188,7 @@ M.plugins = {
     desc = "Text objects and moves by syntax: functions, classes and parameters.",
   },
   ["nvim-dap"] = { category = "Debugging", desc = "The debugger client: breakpoints, stepping and inspecting." },
-  ["nvim-dap-ui"] = { category = "Debugging", desc = "The debugger's panels; `Space d u`." },
+  ["nvim-dap-ui"] = { category = "Debugging", desc = "The debugger's panels (`Space d u`)." },
   ["nvim-nio"] = { category = "Debugging", desc = "A library for running Lua side by side, which nvim-dap-ui needs." },
   ["nvim-dap-virtual-text"] = {
     category = "Debugging",
@@ -221,24 +221,24 @@ M.plugins = {
   },
   ["gitsigns.nvim"] = {
     category = "Git",
-    desc = "Change bars in the margin, and keys to move between changes and stage them; `] h` moves to the next.",
+    desc = "Change bars in the margin, and keys to move between changes and stage them. `] h` moves to the next.",
   },
   ["neogit"] = {
     category = "Git",
-    desc = "git's status page inside Neovim, where changes are staged and committed; `Space g n`.",
+    desc = "git's status page inside Neovim, where changes are staged and committed (`Space g n`).",
   },
   ["diffview.nvim"] = {
     category = "Git",
-    desc = "Every uncommitted change side by side, and a file's history; `Space g D`.",
+    desc = "Every uncommitted change side by side, and a file's history (`Space g D`).",
   },
   ["octo.nvim"] = {
     category = "Git",
-    desc = "GitHub's issues and pull requests, through `gh`; `Space g i` and `Space g p`.",
+    desc = "GitHub's issues and pull requests, through `gh`, on `Space g i` and `Space g p`.",
   },
   ["claudecode.nvim"] = {
     category = "Claude Code",
     desc = "Claude Code in a panel beside the code. It sees the open file and the selection, and shows each change"
-      .. " it proposes side by side; `Space a c`.",
+      .. " it proposes side by side (`Space a c`).",
   },
   ["vimtex"] = {
     category = "LaTeX",
@@ -250,7 +250,7 @@ M.plugins = {
   },
   ["live-preview.nvim"] = {
     category = "Markdown",
-    desc = "A preview in the browser that keeps up with the file as it changes; `Space c p`.",
+    desc = "A preview in the browser that keeps up with the file as it changes (`Space c p`).",
   },
 }
 

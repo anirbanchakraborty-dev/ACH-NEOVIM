@@ -393,6 +393,16 @@ return {
     t.eq(shared, {}, "lines whose headings the website would give the same id")
   end,
 
+  ["outside code, the post's sentences carry no semicolon"] = function(t)
+    local bad = {}
+    for _, p in ipairs(prose(post(t))) do
+      if p[2]:find(";", 1, true) then
+        bad[#bad + 1] = p[1] .. ": " .. p[2]
+      end
+    end
+    t.eq(bad, {}, "lines of the post with a semicolon outside code")
+  end,
+
   ["a heading that repeats an earlier one's id is named for its section"] = function(t)
     local docs_file = FILES["lua/ach/docs.lua"]:gsub('"Util"', '"Demo"')
     local lines = lines_of(generate(t, fixture(t, nil, { ["lua/ach/docs.lua"] = docs_file })))
