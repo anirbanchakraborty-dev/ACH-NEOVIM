@@ -34,19 +34,19 @@ Measured on 2026-10-12 with Neovim 0.12.6.
 | glsl | glsl | glsl_analyzer | none | none | none |
 | go | go | gopls | goimports, gofumpt | golangcilint | harper_ls |
 | graphql | graphql | graphql | prettier | none | none |
-| groovy | groovy | waiting: groovyls | none | none | waiting: harper_ls |
+| groovy | groovy | groovyls | none | none | harper_ls |
 | haskell | haskell | waiting: haskell-tools.nvim | waiting: fourmolu | waiting: hlint | waiting: harper_ls |
 | helm | helm | helm_ls | none | none | none |
 | hlsl | hlsl | slangd | none | none | none |
 | html | html | html, emmet_language_server, tailwindcss | prettier | none | harper_ls |
 | ini | ini | none | none | none | none |
-| java | java | waiting: jdtls | none | none | waiting: harper_ls |
+| java | java | jdtls | none | none | harper_ls |
 | jq | jq | none | none | none | none |
 | json | json | jsonls | prettier | none | none |
 | julia | julia | waiting: julials | none | none | none |
 | just | just | just | none | none | none |
 | kconfig | kconfig | none | none | none | none |
-| kotlin | kotlin | waiting: kotlin_language_server | ktlint | ktlint | waiting: harper_ls |
+| kotlin | kotlin | kotlin_language_server | ktlint | ktlint | harper_ls |
 | lean | none | waiting: leanls | none | none | none |
 | linker | linkerscript | none | none | none | none |
 | llvm | llvm | none | none | none | none |
@@ -65,11 +65,11 @@ Measured on 2026-10-12 with Neovim 0.12.6.
 | prisma | prisma | prismals | none | none | none |
 | proto | proto | buf_ls | buf | none | none |
 | python | python | basedpyright, ruff | ruff_format | none | harper_ls |
-| r | r | waiting: r_language_server | none | none | none |
+| r | r | r_language_server | none | none | none |
 | rego | rego | regols, regal | none | none | none |
 | ruby | ruby | ruby_lsp, rubocop | rubocop | none | harper_ls |
 | rust | rust | rust-analyzer | none | none | harper_ls |
-| scala | scala | waiting: metals | none | none | waiting: harper_ls |
+| scala | scala | metals | none | none | harper_ls |
 | sh | bash | bashls | shfmt | none | harper_ls |
 | solidity | solidity | solidity_ls | none | none | harper_ls |
 | sql | sql | none | sqlfluff | sqlfluff | none |
@@ -100,7 +100,6 @@ Measured on 2026-10-12 with Neovim 0.12.6.
 
 The full run never installs from Homebrew or Xcode, so each command below stays waiting until it is run by hand, or, for a Homebrew command, until a file of one of its languages is opened in Neovim and the offer to install it is accepted. A tool waiting on one of them is not a failure.
 
-- `brew install coursier openjdk@21`, for scala
 - `brew install dart-sdk`, for dart
 - `brew install elan-init && elan default stable`, for lean
 - `brew install fish`, for fish
@@ -110,9 +109,7 @@ The full run never installs from Homebrew or Xcode, so each command below stays 
 - `brew install nixfmt`, for nix
 - `brew install nushell`, for nushell
 - `brew install opam && opam init -n -y`, for ocaml
-- `brew install openjdk@21`, for groovy, java, kotlin
 - `brew install php`, for php
 - `brew install powershell`, for powershell
-- `brew install r && Rscript -e "install.packages('languageserver', repos = 'https://cloud.r-project.org')"`, for r
 - `brew install zig`, for zig
 - `curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh`, for nix
