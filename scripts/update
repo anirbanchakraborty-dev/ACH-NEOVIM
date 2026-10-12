@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Update ACH-NEOVIM's plugins and Mason packages, and keep the update only if the full check passes.
+#   scripts/update            update, run scripts/check --full, then commit or put everything back
+#   scripts/update --list     name what an update would move, with each plugin's commits, installing nothing
+#   scripts/update --restore  put every plugin and Mason package back at the version the lock files pin
+# Exit 0 on success, 1 on a failure, 2 when a person must act.
+set -euo pipefail
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
+action=update
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --list) action=list ;;
+        --restore) action=restore ;;
+        -h | --help) sed -n '2,/^# Exit/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) echo "unknown option: $1" >&2; exit 1 ;;
+    esac
+    shift
+done
+
+if ! command -v nvim >/dev/null 2>&1; then
+    echo "Neovim is not installed. Install it with: brew install neovim" >&2
+    exit 2
+fi
+
+# An update runs from outside the editor, because it starts one Neovim to
+# update, runs the full check, and may start another to undo. The list and
+# the restore each run inside a single headless Neovim.
+if [ "$action" = update ]; then
+    exec nvim -l "$root/lua/ach/update.lua" "$root"
+fi
+exec nvim --headless -u "$root/init.lua" -c "lua require('ach.update').child('$action')"
