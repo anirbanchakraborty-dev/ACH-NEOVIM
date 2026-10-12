@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Print every Homebrew formula the editor may offer to install, one per line,
+# sorted, each once. Reads lua/ach/languages.lua; starts no configuration.
+set -euo pipefail
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
+exec nvim --clean -l "$root/scripts/on_demand.lua" "$root"
