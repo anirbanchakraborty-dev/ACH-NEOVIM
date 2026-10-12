@@ -1592,6 +1592,9 @@ M.keys = {
   ["Around Item"] = { "ui.list", "azure" },
   -- Markdown
   ["Markdown Preview"] = { "ui.preview", "cyan" },
+  -- Intel's manual and the news reader
+  ["x86 Manual"] = { "hardware.cpu", "blue" },
+  ["News"] = { "ui.news", "orange" },
   -- Keys added by later tasks go above this line.
 }
 

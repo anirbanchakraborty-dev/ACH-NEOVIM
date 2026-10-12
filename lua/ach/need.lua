@@ -54,6 +54,17 @@ M.programs = {
     brew = "brew install ghostscript",
     purpose = "letting ImageMagick read the PDF a formula is typeset into",
   },
+  {
+    name = "pdftotext",
+    label = "Poppler",
+    brew = "brew install poppler",
+    purpose = "reading Intel's manual to find each instruction's page",
+  },
+  {
+    name = "newsboat",
+    brew = "brew install newsboat",
+    purpose = "the feed reader on Space N",
+  },
   -- Programs added by later tasks go above this line.
 }
 
