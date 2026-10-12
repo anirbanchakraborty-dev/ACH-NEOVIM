@@ -32,6 +32,7 @@ mkdir -p "$scratch/state" "$scratch/claude"
 # never touches real history, sessions or ~/.claude/ide.
 export ACH_TEST=1 ACH_FULL=$full ACH_ONLY=$only
 export XDG_STATE_HOME="$scratch/state" CLAUDE_CONFIG_DIR="$scratch/claude"
+if [ "$full" = 0 ]; then export ACH_DRY_INSTALL=1; fi
 
 status=0
 nvim --headless -u "$root/init.lua" "+luafile $root/tests/run.lua" || status=$?

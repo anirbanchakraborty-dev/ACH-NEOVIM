@@ -1388,6 +1388,19 @@ M.keys = {
   ["full scope"] = { "textobj.scope", "cyan" },
   ["jump to top edge of scope"] = { "textobj.scope_top", "cyan" },
   ["jump to bottom edge of scope"] = { "textobj.scope_bottom", "cyan" },
+  -- Tree-sitter moves
+  ["Next Function Start"] = { "kinds.Function", "purple" },
+  ["Next Function End"] = { "kinds.Function", "purple" },
+  ["Prev Function Start"] = { "kinds.Function", "purple" },
+  ["Prev Function End"] = { "kinds.Function", "purple" },
+  ["Next Class Start"] = { "kinds.Class", "yellow" },
+  ["Next Class End"] = { "kinds.Class", "yellow" },
+  ["Prev Class Start"] = { "kinds.Class", "yellow" },
+  ["Prev Class End"] = { "kinds.Class", "yellow" },
+  ["Next Parameter Start"] = { "kinds.Parameter", "cyan" },
+  ["Next Parameter End"] = { "kinds.Parameter", "cyan" },
+  ["Prev Parameter Start"] = { "kinds.Parameter", "cyan" },
+  ["Prev Parameter End"] = { "kinds.Parameter", "cyan" },
   -- Keys added by later tasks go above this line.
 }
 
