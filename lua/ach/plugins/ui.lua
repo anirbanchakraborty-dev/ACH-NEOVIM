@@ -22,6 +22,10 @@ return {
           },
         },
         right = {
+          -- The Claude Code panel's view comes first, so it claims the panel
+          -- before the generic terminal view the loop below appends, which
+          -- names no width and would leave the panel 30 columns wide.
+          require("ach.claude").view(),
           { title = "Grug Far", ft = "grug-far", size = { width = 0.4 } },
         },
         -- Inside a docked pane, Ctrl and the arrows resize the pane.

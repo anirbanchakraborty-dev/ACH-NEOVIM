@@ -18,6 +18,12 @@ M.programs = {
     brew = "brew install gh, then run: gh auth login",
     purpose = "GitHub issues and pull requests on Space g i and Space g p",
   },
+  {
+    name = "claude",
+    label = "Claude Code",
+    brew = "brew install --cask claude-code",
+    purpose = "the Claude Code panel on Space a",
+  },
   -- Programs added by later tasks go above this line.
 }
 

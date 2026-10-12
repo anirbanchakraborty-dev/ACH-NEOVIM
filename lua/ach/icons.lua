@@ -1501,6 +1501,17 @@ M.keys = {
   ["Git Browse (copy link)"] = { "actions.link", "orange" },
   ["GitHub Issues"] = { "git.issue", "orange" },
   ["GitHub Pull Requests"] = { "git.pull_request", "orange" },
+  -- Claude Code
+  ["Toggle Claude"] = { "claude.claude", "orange" },
+  ["Focus Claude"] = { "claude.focus", "orange" },
+  ["Resume Claude"] = { "claude.resume", "orange" },
+  ["Continue Claude"] = { "claude.continue", "orange" },
+  ["Select Claude Model"] = { "claude.model", "orange" },
+  ["Add Buffer to Claude"] = { "claude.add_buffer", "orange" },
+  ["Send to Claude"] = { "claude.send", "orange" },
+  ["Add File to Claude"] = { "claude.add_file", "orange" },
+  ["Accept Diff"] = { "claude.accept", "green" },
+  ["Deny Diff"] = { "claude.deny", "red" },
   -- Keys added by later tasks go above this line.
 }
 
