@@ -1,0 +1,2 @@
+-- Core keys. Every key carries a description, which which-key shows and
+-- tests/test_keys.lua checks.
