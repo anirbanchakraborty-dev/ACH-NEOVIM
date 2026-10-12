@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Regenerate lua/ach/glyphs_forbidden.lua and lua/ach/glyphs_known.lua from the
+# Nerd Fonts glyph names. Change the version below only together with the font,
+# and rerun the tests, since the counts in tests/test_glyphs.lua belong to it.
+set -euo pipefail
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
+version=v3.5.1
+work=$(mktemp -d "${TMPDIR:-/tmp}/ach-glyphs.XXXXXX")
+trap 'rm -rf "$work"' EXIT
+
+curl -fsSL "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/$version/glyphnames.json" -o "$work/glyphnames.json"
+nvim -l "$root/scripts/gen_glyphs.lua" "$work/glyphnames.json" "$root/lua/ach/glyphs_forbidden.lua" \
+  "$root/lua/ach/glyphs_known.lua"
