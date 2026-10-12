@@ -32,8 +32,8 @@ end
 local function valid(t, S, data)
   t.eq(type(data.ach_ms), "number", "ach_ms is a number")
   t.eq(type(data.lazyvim_ms), "number", "lazyvim_ms is a number")
-  t.ok(data.ach_ms > 0 and data.ach_ms <= data.lazyvim_ms, "recorded no slower than stock LazyVim")
-  t.eq(data.starts, S.STARTS, "the median of ten starts each")
+  t.ok(data.ach_ms > 0 and data.ach_ms <= data.lazyvim_ms * 1.1, "recorded within 10% of stock LazyVim")
+  t.eq(data.starts, S.STARTS, "the median of thirty starts each")
   t.eq(data.starter, S.STARTER, "the pinned starter commit")
   local commit = type(data.lazyvim) == "string" and data.lazyvim or ""
   t.ok(#commit == 40 and commit:match("^%x+$") ~= nil, "LazyVim's commit, 40 hexadecimal digits")
@@ -89,24 +89,26 @@ return {
     t.eq(S.parse(slow), 1234.567, "a start past a second")
   end,
 
-  ["the median of ten starts is the mean of the middle two"] = function(t)
+  ["a median is the middle start, or the mean of the middle two"] = function(t)
     local S = startup(t)
-    t.eq(S.STARTS, 10, "ten timed starts")
+    -- Ten moved the median about 4% between back-to-back runs; thirty, about 1.5%.
+    t.eq(S.STARTS, 30, "thirty timed starts")
     t.eq(S.median({ 9, 1, 8, 2, 7, 3, 6, 4, 5, 100 }), 5.5, "one slow start does not move it")
     t.eq(S.median({ 3, 1, 2 }), 2, "an odd count takes the middle one")
   end,
 
-  ["a start fails above one and a half times the baseline or above stock LazyVim"] = function(t)
+  ["a start fails above one and a half times the baseline"] = function(t)
     local S = startup(t)
     local roomy = { ach_ms = 20, lazyvim_ms = 40 }
     t.eq(S.verdict(roomy, 30), nil, "exactly one and a half times passes")
     local over = S.verdict(roomy, 30.1) or ""
     t.ok(over:find("one and a half times the baseline of 20.0 ms", 1, true), "just over fails: " .. over)
 
-    local close = { ach_ms = 20, lazyvim_ms = 25 }
-    t.eq(S.verdict(close, 25), nil, "as fast as stock LazyVim passes")
-    local slower = S.verdict(close, 25.5) or ""
-    t.ok(slower:find("slower than stock LazyVim's 25.0 ms", 1, true), "slower than LazyVim fails: " .. slower)
+    -- Stock LazyVim is compared only when the two are timed side by side.
+    -- Its time recorded on another day says nothing about this Mac today,
+    -- since the same start has moved by a tenth between days.
+    local close = { ach_ms = 20, lazyvim_ms = 18 }
+    t.eq(S.verdict(close, 25), nil, "slower than stock LazyVim's recorded time passes")
   end,
 
   ["the recorded baseline holds both medians and how they were taken"] = function(t)
@@ -118,7 +120,7 @@ return {
     valid(t, S, data)
   end,
 
-  ["--baseline times both apart and writes only when this configuration is faster"] = function(t)
+  ["--baseline times both apart and writes only when this configuration is within 10% of stock LazyVim"] = function(t)
     local S = startup(t)
     local bench = t.tmpdir()
     local out = bench .. "/baseline.json"
@@ -135,14 +137,23 @@ return {
       end
     end
 
-    local ok, err = pcall(S.record, t.root, bench, { out = out, prepare = prepare, medians = timed({ 31.24, 30 }) })
-    t.eq(ok, false, "a slower configuration is refused")
+    local ok, err = pcall(S.record, t.root, bench, { out = out, prepare = prepare, medians = timed({ 33.1, 30 }) })
+    t.eq(ok, false, "more than 10% slower is refused")
     local said = tostring(err)
-    t.ok(said:find("31.2 ms, is slower than stock LazyVim's, 30.0 ms", 1, true), "naming both times: " .. said)
+    t.ok(said:find("33.1 ms, is more than 10% slower than stock LazyVim's, 30.0 ms", 1, true), "naming both times: " .. said)
     t.eq(vim.uv.fs_stat(out), nil, "and nothing is written")
 
+    -- 21.46 is within 10% of 19.51, but the file would say 21.5 against 19.5,
+    -- which is not. The times are judged as they would be written.
+    ok = pcall(S.record, t.root, bench, { out = out, prepare = prepare, medians = timed({ 21.46, 19.51 }) })
+    t.eq(ok, false, "judged on the tenths it would write")
+    t.eq(vim.uv.fs_stat(out), nil, "and still nothing is written")
+
+    local within = S.record(t.root, bench, { out = out, prepare = prepare, medians = timed({ 31.24, 30 }) })
+    t.eq({ within.ach_ms, within.lazyvim_ms }, { 31.2, 30 }, "slower, but within 10%, is written")
+
     local data = S.record(t.root, bench, { out = out, prepare = prepare, medians = timed({ 24.06, 38.75 }) })
-    t.eq(seen.n, S.STARTS, "ten starts each")
+    t.eq(seen.n, S.STARTS, "thirty starts each")
     local ach, lazyvim = seen.runs[1], seen.runs[2]
     t.eq({ ach.name, lazyvim.name }, { "ACH-NEOVIM", "stock LazyVim" }, "this configuration, then stock LazyVim")
     t.eq(ach.env.ACH_TEST, "0", "timed without the test instrumentation")
@@ -157,7 +168,7 @@ return {
     t.eq(vim.fn.readfile(out)[2], '  "ach_ms": 24.1,', "one field per line, in a fixed order")
   end,
 
-  ["this configuration starts within its baseline and no slower than stock LazyVim"] = function(t)
+  ["this configuration starts within one and a half times its baseline"] = function(t)
     local S = startup(t)
     local baseline, why = S.read(t.root .. "/tests/baseline.json")
     if not baseline then

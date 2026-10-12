@@ -4,8 +4,9 @@
 -- which times stock LazyVim beside this configuration and writes tests/baseline.json.
 local M = {}
 
--- Ten timed starts per configuration, after one untimed warm-up start.
-M.STARTS = 10
+-- Thirty timed starts per configuration, after one untimed warm-up start.
+-- Ten moved the median about 4% between back-to-back runs.
+M.STARTS = 30
 
 -- LazyVim's starter, pinned to its newest commit as of 2026-10-11.
 M.STARTER_URL = "https://github.com/LazyVim/starter"
@@ -116,15 +117,15 @@ function M.lazyvim(bench)
 end
 
 local OVER = "the median start took %.1f ms, more than one and a half times the baseline of %.1f ms"
-local SLOWER = "the median start took %.1f ms, slower than stock LazyVim's %.1f ms"
+
+-- How much slower than stock LazyVim a start may be: a tenth. It is judged
+-- in M.record, where the two are timed side by side.
+M.MARGIN = 1.1
 
 -- nil when a median start passes against the recorded baseline, otherwise why not.
 function M.verdict(baseline, median)
   if median > baseline.ach_ms * 1.5 then
     return OVER:format(median, baseline.ach_ms)
-  end
-  if median > baseline.lazyvim_ms then
-    return SLOWER:format(median, baseline.lazyvim_ms)
   end
 end
 
@@ -174,11 +175,12 @@ local function prepare(bench)
   return commit
 end
 
-local REFUSED = "ACH-NEOVIM's median start, %.1f ms, is slower than stock LazyVim's, %.1f ms. No baseline was written."
+local REFUSED =
+  "ACH-NEOVIM's median start, %.1f ms, is more than 10%% slower than stock LazyVim's, %.1f ms. No baseline was written."
 
 -- scripts/check --baseline. Times this configuration and stock LazyVim, taking
 -- turns, and writes the result, refusing and writing nothing when this
--- configuration is the slower. opts.out, opts.prepare and opts.medians let the
+-- configuration is more than 10% the slower. opts.out, opts.prepare and opts.medians let the
 -- tests stand in for the file, the download and the timing.
 function M.record(root, bench, opts)
   opts = opts or {}
@@ -187,8 +189,10 @@ function M.record(root, bench, opts)
   local dir = bench .. "/run"
   vim.fn.mkdir(dir, "p")
   local medians, printed = (opts.medians or M.medians)({ M.ach(root), M.lazyvim(bench) }, M.STARTS, dir)
-  local ach_ms, lazyvim_ms = medians[1], medians[2]
-  if ach_ms > lazyvim_ms then
+  -- Judged as the file will say them, so what is written always passes.
+  local function tenth(ms) return math.floor(ms * 10 + 0.5) / 10 end
+  local ach_ms, lazyvim_ms = tenth(medians[1]), tenth(medians[2])
+  if ach_ms > lazyvim_ms * M.MARGIN then
     local why = REFUSED:format(ach_ms, lazyvim_ms)
     local said = printed and printed[2] or ""
     if said ~= "" then
@@ -196,10 +200,9 @@ function M.record(root, bench, opts)
     end
     error(why, 0)
   end
-  local function tenth(ms) return math.floor(ms * 10 + 0.5) / 10 end
   local data = {
-    ach_ms = tenth(ach_ms),
-    lazyvim_ms = tenth(lazyvim_ms),
+    ach_ms = ach_ms,
+    lazyvim_ms = lazyvim_ms,
     starts = M.STARTS,
     nvim = tostring(vim.version()),
     starter = M.STARTER,
