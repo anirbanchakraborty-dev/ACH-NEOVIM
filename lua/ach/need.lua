@@ -12,6 +12,12 @@ local M = {}
 
 ---@type ach.Program[]
 M.programs = {
+  { name = "lazygit", brew = "brew install lazygit", purpose = "Lazygit on Space g g and Space g G" },
+  {
+    name = "gh",
+    brew = "brew install gh, then run: gh auth login",
+    purpose = "GitHub issues and pull requests on Space g i and Space g p",
+  },
   -- Programs added by later tasks go above this line.
 }
 

@@ -1468,6 +1468,39 @@ M.keys = {
   ["Debug Interface"] = { "dap.ui", "purple" },
   ["Debug Nearest Test"] = { "dap.debug", "red" },
   ["Debug Test Class"] = { "dap.debug", "red" },
+  -- Git: gitsigns' keys for one change at a time
+  ["Next Hunk"] = { "git.hunk", "orange" },
+  ["Prev Hunk"] = { "git.hunk", "orange" },
+  ["Last Hunk"] = { "git.hunk", "orange" },
+  ["First Hunk"] = { "git.hunk", "orange" },
+  ["Stage or Unstage Hunk"] = { "git.hunk_stage", "orange" },
+  ["Reset Hunk"] = { "git.hunk_reset", "orange" },
+  ["Stage Buffer"] = { "git.staged", "orange" },
+  ["Reset Buffer"] = { "git.hunk_reset", "orange" },
+  ["Preview Hunk Inline"] = { "git.diff", "orange" },
+  ["Blame Line"] = { "git.blame", "orange" },
+  ["Blame Buffer"] = { "git.blame", "orange" },
+  ["Diff This"] = { "git.diff", "orange" },
+  ["Diff This ~"] = { "git.diff", "orange" },
+  ["Select Hunk"] = { "textobj.inside", "cyan" },
+  -- Git: lazygit, Neogit, diffview, octo and the snacks pickers
+  ["Lazygit (Root Dir)"] = { "git.lazygit", "orange" },
+  ["Lazygit (cwd)"] = { "git.lazygit", "orange" },
+  ["Neogit (Root Dir)"] = { "git.git", "orange" },
+  ["Diff View (Root Dir)"] = { "git.diff", "orange" },
+  ["File History (Diff View)"] = { "git.log", "orange" },
+  ["Git Status"] = { "git.modified", "orange" },
+  ["Git Stash"] = { "git.stash", "orange" },
+  ["Git Diff (hunks)"] = { "git.hunk", "orange" },
+  ["Git Log (Root Dir)"] = { "git.log", "orange" },
+  ["Git Log (cwd)"] = { "git.log", "orange" },
+  ["Git File History"] = { "git.commit", "orange" },
+  ["Git Line History"] = { "git.log", "orange" },
+  ["Git Branches"] = { "git.branch", "orange" },
+  ["Git Browse (open)"] = { "actions.open_external", "orange" },
+  ["Git Browse (copy link)"] = { "actions.link", "orange" },
+  ["GitHub Issues"] = { "git.issue", "orange" },
+  ["GitHub Pull Requests"] = { "git.pull_request", "orange" },
   -- Keys added by later tasks go above this line.
 }
 
@@ -1518,6 +1551,8 @@ M.toggles = {
   animate = "ui.animate",
   profiler = "ui.profiler",
   profiler_highlights = "ui.profiler_highlights",
+  git_signs = "git.hunk",
+  git_blame_line = "git.blame",
   -- Toggles added by later tasks go above this line.
 }
 
