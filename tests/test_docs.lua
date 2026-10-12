@@ -203,6 +203,12 @@ local function prose(lines)
   return out
 end
 
+-- A ### heading's name, without the " (Section)" a repeated name is given.
+local function unqualified(h3, section)
+  local suffix = " (" .. section .. ")"
+  return h3:sub(-#suffix) == suffix and h3:sub(1, -#suffix - 1) or h3
+end
+
 -- The ### headings inside one ## section of the post, in order.
 local function headings(lines, section)
   local out, inside = {}, false
@@ -213,17 +219,26 @@ local function headings(lines, section)
     end
     local h3 = inside and p[2]:match("^### (.+)$")
     if h3 then
-      out[#out + 1] = (h3:gsub("\\(.)", "%1"))
+      out[#out + 1] = (unqualified(h3, section):gsub("\\(.)", "%1"))
     end
   end
   return out
 end
 
+-- The id the website gives a heading: its visible text, lower case, with each
+-- run of other characters made one hyphen. The same rule as slugify() in the
+-- website's src/lib/utils.ts.
+local function id(heading)
+  local text = heading:gsub("%[(.-)%]%b()", "%1"):gsub("`", ""):gsub("\\(.)", "%1")
+  return (text:lower():gsub("[^a-z0-9]+", "-"):gsub("^%-", ""):gsub("%-$", ""))
+end
+
 -- A repository in a temporary folder with this repository's scripts/docs and
--- the files above, committed once on 4 March 2026.
-local function fixture(t, lock)
+-- the files above, committed once on 4 March 2026. files, when given, replaces
+-- some of them.
+local function fixture(t, lock, files)
   local dir = t.tmpdir() .. "/repo"
-  for path, text in pairs(FILES) do
+  for path, text in pairs(vim.tbl_extend("force", FILES, files or {})) do
     write(dir .. "/" .. path, text)
   end
   write(dir .. "/lazy-lock.json", vim.json.encode(lock or LOCK) .. "\n")
@@ -283,7 +298,8 @@ return {
       if h2 then
         inside = h2 == "Plugins"
       end
-      under = inside and p[2]:match("^### (.+)$") or under
+      local h3 = inside and p[2]:match("^### (.+)$")
+      under = h3 and unqualified(h3, "Plugins") or under
       local name = inside and p[2]:match("^#### %[(.-)%]%(")
       if name then
         name = name:gsub("\\(.)", "%1")
@@ -360,6 +376,33 @@ return {
       end
     end
     t.eq(found, {}, "words from the list, in ROT13, that the post contains")
+  end,
+
+  ["no two headings in the post share an id"] = function(t)
+    local seen, shared = {}, {}
+    for _, p in ipairs(prose(post(t))) do
+      local heading = p[2]:match("^##+ (.+)$")
+      if heading then
+        local key = id(heading)
+        if seen[key] then
+          shared[#shared + 1] = ("%d and %d: %s"):format(seen[key], p[1], key)
+        end
+        seen[key] = seen[key] or p[1]
+      end
+    end
+    t.eq(shared, {}, "lines whose headings the website would give the same id")
+  end,
+
+  ["a heading that repeats an earlier one's id is named for its section"] = function(t)
+    local docs_file = FILES["lua/ach/docs.lua"]:gsub('"Util"', '"Demo"')
+    local lines = lines_of(generate(t, fixture(t, nil, { ["lua/ach/docs.lua"] = docs_file })))
+    local plugins = find(lines, "## Plugins")
+    local languages = find(lines, "## Languages")
+    t.ok(plugins and languages, "both sections are in the post")
+    t.ok(find(lines, "### Demo", plugins) ~= nil, "the category keeps its name, being first")
+    local demo = find(lines, "### demo (Languages)", languages)
+    t.ok(demo ~= nil, "the language that repeats it is named for its section")
+    t.ok(find(lines, "### demo", languages) == nil, "and is not left with the bare name")
   end,
 
   ["the front matter has the five keys every post uses"] = function(t)

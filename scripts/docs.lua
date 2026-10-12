@@ -683,6 +683,44 @@ local function page(root, name)
   return lines
 end
 
+-- The id the website gives a heading: its visible text, lower case, with each
+-- run of other characters made one hyphen, as slugify() in the website's
+-- src/lib/utils.ts does.
+function M.id(heading)
+  local text = heading:gsub("%[(.-)%]%b()", "%1"):gsub("`", ""):gsub("\\(.)", "%1")
+  return (text:lower():gsub("[^a-z0-9]+", "-"):gsub("^%-", ""):gsub("%-$", ""))
+end
+
+-- The website links a heading by its id, so two headings with one id leave
+-- the second unreachable. A heading whose id an earlier one already has is
+-- named for its ## section: the second Git becomes "Git (Plugins)".
+function M.unique_headings(lines)
+  local seen, section, fence = {}, nil, nil
+  for i, line in ipairs(lines) do
+    local run = line:match("^%s*(`+)")
+    if fence then
+      if run and #run >= #fence and line:match("^%s*`+%s*$") then
+        fence = nil
+      end
+    elseif run and #run >= 3 then
+      fence = run
+    else
+      local hashes, text = line:match("^(##+) (.+)$")
+      if hashes == "##" then
+        section = text
+      end
+      if text and seen[M.id(text)] and section then
+        text = ("%s (%s)"):format(text, section)
+        lines[i] = hashes .. " " .. text
+      end
+      if text then
+        seen[M.id(text)] = true
+      end
+    end
+  end
+  return lines
+end
+
 function M.render(root, date)
   local docs = require("ach.docs")
   local out = M.front_matter(docs.post, date)
@@ -700,7 +738,7 @@ function M.render(root, date)
   add("Configuration", page(root, "configuration.md"))
   add("Plugins", M.plugins_section(root, docs))
   add("Languages", M.languages_section(root, docs))
-  return table.concat(out, "\n") .. "\n"
+  return table.concat(M.unique_headings(out), "\n") .. "\n"
 end
 
 function M.main(args)
