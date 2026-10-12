@@ -65,7 +65,7 @@ return {
     local path = samples(t).write(t.tmpdir(), "python")
     local opened = {}
     local dry = install.dry
-    install.dry = true -- under --full the installer is live and records nothing
+    install.dry = true -- a live installer records nothing, so this test pins it dry
     install.reset()
     local ok, err = pcall(function()
       -- A scratch buffer given a file type, as a picker's preview is.

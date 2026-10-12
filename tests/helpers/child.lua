@@ -2,6 +2,11 @@
 -- body reported. The body is Lua source that runs after VeryLazy and calls
 -- report(value) once, with any value vim.json can encode. The child runs
 -- dry, so it never downloads, whatever mode the suite itself is in.
+--
+-- The body runs from +luafile, before Neovim has finished starting, unless
+-- opts.entered is set. Then it waits for VimEnter, as everything a person
+-- types does. The difference matters to language servers: vim.lsp.enable
+-- attaches a buffer that is already open only once Neovim has entered.
 local M = {}
 
 function M.run(t, body, opts)
@@ -10,18 +15,23 @@ function M.run(t, body, opts)
   local out = dir .. "/report.json"
   local script = dir .. "/child.lua"
   local source = table.concat({
-    "vim.api.nvim_exec_autocmds('UIEnter', { modeline = false })",
-    "vim.wait(10000, function() return vim.g.did_very_lazy == true end, 20)",
     ("local out = %q"):format(out),
     "local function report(value)",
     "  vim.fn.writefile({ vim.json.encode(value) }, out)",
     "  vim.cmd('qall!')",
     "end",
-    "local ok, err = pcall(function()",
+    "local function run()",
+    "  vim.api.nvim_exec_autocmds('UIEnter', { modeline = false })",
+    "  vim.wait(10000, function() return vim.g.did_very_lazy == true end, 20)",
+    "  local ok, err = pcall(function()",
     body,
-    "end)",
-    "vim.fn.writefile({ vim.json.encode({ child_error = ok and 'the body never called report()' or tostring(err) }) }, out)",
-    "vim.cmd('qall!')",
+    "  end)",
+    "  vim.fn.writefile({ vim.json.encode({ child_error = ok and 'the body never called report()' or tostring(err) }) }, out)",
+    "  vim.cmd('qall!')",
+    "end",
+    opts.entered
+        and "vim.api.nvim_create_autocmd('VimEnter', { once = true, callback = function() vim.schedule(run) end })"
+      or "run()",
   }, "\n")
   vim.fn.writefile(vim.split(source, "\n"), script)
 
