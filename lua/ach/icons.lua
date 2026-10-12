@@ -1401,6 +1401,7 @@ M.keys = {
   ["Next Parameter End"] = { "kinds.Parameter", "cyan" },
   ["Prev Parameter Start"] = { "kinds.Parameter", "cyan" },
   ["Prev Parameter End"] = { "kinds.Parameter", "cyan" },
+  ["Mason"] = { "mason.mason", "green" },
   -- Keys added by later tasks go above this line.
 }
 
