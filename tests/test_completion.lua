@@ -1,6 +1,4 @@
-local function mapped(lhs, mode)
-  return next(vim.fn.maparg(lhs, mode or "n", false, true)) ~= nil
-end
+local function mapped(lhs, mode) return next(vim.fn.maparg(lhs, mode or "n", false, true)) ~= nil end
 
 local function blink_config()
   require("lazy").load({ plugins = { "blink.cmp" } })

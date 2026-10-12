@@ -91,8 +91,7 @@ end
 -- swaps between the banner and the words.
 function M.sections(self)
   local width = vim.api.nvim_win_get_width(self.win)
-  local head = width >= M.min_banner_columns and banner.chunks(banner.lines())
-    or { { "ACH NEOVIM", hl = "AchBanner" } }
+  local head = width >= M.min_banner_columns and banner.chunks(banner.lines()) or { { "ACH NEOVIM", hl = "AchBanner" } }
   local buttons = M.buttons()
   buttons.padding = 1
   return {

@@ -34,13 +34,9 @@ function t.ok(value, what)
   end
 end
 
-function t.human(why)
-  error({ human = why }, 0)
-end
+function t.human(why) error({ human = why }, 0) end
 
-function t.skip(why)
-  error({ skip = why }, 0)
-end
+function t.skip(why) error({ skip = why }, 0) end
 
 function t.tmpdir()
   local dir = vim.fn.tempname()
@@ -60,9 +56,7 @@ local function run_test(label, fn)
   if only ~= "" and not label:find(only, 1, true) then
     return
   end
-  local ok, err = xpcall(fn, function(e)
-    return type(e) == "table" and e or debug.traceback(tostring(e), 2)
-  end, t)
+  local ok, err = xpcall(fn, function(e) return type(e) == "table" and e or debug.traceback(tostring(e), 2) end, t)
   if ok then
     report("pass", label)
   elseif type(err) == "table" and err.skip then
@@ -102,8 +96,9 @@ if only ~= "" and counts.pass + counts.fail + counts.human + counts.skip == 0 th
   report("fail", "--only " .. only, "no test matches")
 end
 
-out:write(("\n%d passed, %d failed, %d need a person, %d skipped\n"):format(
-  counts.pass, counts.fail, counts.human, counts.skip))
+out:write(
+  ("\n%d passed, %d failed, %d need a person, %d skipped\n"):format(counts.pass, counts.fail, counts.human, counts.skip)
+)
 out:flush()
 if counts.fail > 0 then
   vim.cmd("cquit 1")

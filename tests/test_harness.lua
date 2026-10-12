@@ -7,8 +7,12 @@ return {
   ["resolves the root through a symbolic link"] = function(t)
     local link = t.tmpdir() .. "/nvim"
     assert(vim.uv.fs_symlink(t.root, link))
-    local r = vim.system({ vim.v.progpath, "--headless", "-u", link .. "/init.lua",
-      "+lua io.stdout:write(vim.g.ach_root)", "+qall!" }, { text = true }):wait()
+    local r = vim
+      .system(
+        { vim.v.progpath, "--headless", "-u", link .. "/init.lua", "+lua io.stdout:write(vim.g.ach_root)", "+qall!" },
+        { text = true }
+      )
+      :wait()
     vim.uv.fs_unlink(link)
     t.eq(r.stdout, t.root, "root seen through " .. link)
   end,

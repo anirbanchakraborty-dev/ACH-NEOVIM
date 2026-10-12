@@ -6,9 +6,7 @@
 -- key's through the rules which-key tries before its own.
 local I = require("ach.icons")
 
-local function root()
-  return require("ach.util").root()
-end
+local function root() return require("ach.util").root() end
 
 return {
   {
@@ -29,9 +27,7 @@ return {
             "<leader>b",
             group = "buffer",
             icon = I.group("buffer"),
-            expand = function()
-              return require("which-key.extras").expand.buf()
-            end,
+            expand = function() return require("which-key.extras").expand.buf() end,
           },
           { "<leader>c", group = "code", icon = I.group("code") },
           { "<leader>d", group = "debug", icon = I.group("debug") },
@@ -47,9 +43,7 @@ return {
             group = "windows",
             icon = I.group("windows"),
             proxy = "<c-w>",
-            expand = function()
-              return require("which-key.extras").expand.win()
-            end,
+            expand = function() return require("which-key.extras").expand.win() end,
           },
           { "<leader>x", group = "diagnostics/quickfix", icon = I.group("diagnostics/quickfix") },
           { "[", group = "prev", icon = I.group("prev") },
@@ -62,16 +56,12 @@ return {
     keys = {
       {
         "<leader>?",
-        function()
-          require("which-key").show({ global = false })
-        end,
+        function() require("which-key").show({ global = false }) end,
         desc = "Buffer Keymaps (which-key)",
       },
       {
         "<c-w><space>",
-        function()
-          require("which-key").show({ keys = "<c-w>", loop = true })
-        end,
+        function() require("which-key").show({ keys = "<c-w>", loop = true }) end,
         desc = "Window Hydra Mode (which-key)",
       },
     },

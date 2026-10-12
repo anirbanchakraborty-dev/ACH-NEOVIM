@@ -141,12 +141,15 @@ module Sample {
 package Sample;
 endpackage
 ]] },
-  firrtl = { open = "sample.fir", text = [[
+  firrtl = {
+    open = "sample.fir",
+    text = [[
 FIRRTL version 3.3.0
 circuit Sample :
   module Sample :
     input a : UInt<1>
-]] },
+]],
+  },
   -- tclint: an expression with substitutions that is not braced.
   tcl = { open = "sample.tcl", text = [[
 set a 1
@@ -156,11 +159,14 @@ set c [expr $a + $b]
 
   -- Build systems ------------------------------------------------------------
   -- cmake-format: the spaces inside add_executable. cmakelint: "Project" in mixed case.
-  cmake = { open = "CMakeLists.txt", text = [[
+  cmake = {
+    open = "CMakeLists.txt",
+    text = [[
 cmake_minimum_required(VERSION 3.20)
 Project(sample)
 add_executable( sample   main.c )
-]] },
+]],
+  },
   make = { open = "Makefile", text = "all:\n\techo hello\n" },
   meson = { open = "meson.build", text = [[
 project('sample', 'c')
@@ -186,12 +192,15 @@ import os
 x = {  'a':1 }
 print(os.name, x)
 ]] },
-  java = { open = "Sample.java", text = [[
+  java = {
+    open = "Sample.java",
+    text = [[
 public class Sample {
     public static void main(String[] args) {
     }
 }
-]] },
+]],
+  },
   -- ktlint: the trailing semicolon, both as a lint warning and as the format fix.
   kotlin = { open = "sample.kt", text = [[
 fun main() {
@@ -199,11 +208,14 @@ fun main() {
     println(x)
 }
 ]] },
-  scala = { open = "Sample.scala", text = [[
+  scala = {
+    open = "Sample.scala",
+    text = [[
 object Sample {
   def main(args: Array[String]): Unit = println("hello")
 }
-]] },
+]],
+  },
   groovy = { open = "sample.groovy", text = [[
 println "hello"
 ]] },
@@ -218,7 +230,9 @@ class Sample{static void Main(){}}
 
   -- Functional ------------------------------------------------------------------
   -- fourmolu: the spacing around "=" in main. hlint: a redundant if.
-  haskell = { open = "Main.hs", text = [[
+  haskell = {
+    open = "Main.hs",
+    text = [[
 module Main where
 
 f :: Bool -> Bool
@@ -226,7 +240,8 @@ f x = if x then True else False
 
 main :: IO ()
 main  =  print (f True)
-]] },
+]],
+  },
   -- ocamlformat, which formats only inside a project with .ocamlformat: the spacing around "=".
   ocaml = {
     open = "sample.ml",
@@ -289,12 +304,15 @@ export default x
 a{color:red}
 ]] },
   -- prettier: the single quotes and the missing semicolon.
-  vue = { open = "Sample.vue", text = [[
+  vue = {
+    open = "Sample.vue",
+    text = [[
 <template><p>{{ msg }}</p></template>
 <script setup>
 const msg = 'hello'
 </script>
-]] },
+]],
+  },
   svelte = { open = "Sample.svelte", text = [[
 <script>
   let name = "world";
@@ -344,12 +362,15 @@ datasource db {
   url      = "file:dev.db"
 }
 ]] },
-  solidity = { open = "Sample.sol", text = [[
+  solidity = {
+    open = "Sample.sol",
+    text = [[
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 contract Sample {}
-]] },
+]],
+  },
 
   -- Data, config and infrastructure -----------------------------------------------
   -- prettier: the object on one line with no spaces.
@@ -410,12 +431,15 @@ metadata:
 ]],
     extra = { ["chart/Chart.yaml"] = "apiVersion: v2\nname: sample\nversion: 0.1.0\n" },
   },
-  ansible = { open = "playbooks/site.yml", text = [[
+  ansible = {
+    open = "playbooks/site.yml",
+    text = [[
 - hosts: all
   tasks:
     - name: Ping
       ansible.builtin.ping:
-]] },
+]],
+  },
   rego = { open = "sample.rego", text = [[
 package sample
 
@@ -439,12 +463,15 @@ void main() {}
   hlsl = { open = "sample.hlsl", text = [[
 float4 main() : SV_Target { return 0; }
 ]] },
-  wgsl = { open = "sample.wgsl", text = [[
+  wgsl = {
+    open = "sample.wgsl",
+    text = [[
 @fragment
 fn main() -> @location(0) vec4<f32> {
   return vec4<f32>(1.0);
 }
-]] },
+]],
+  },
 
   -- Prose ------------------------------------------------------------------------
   -- prettier: the "*" bullet, which it makes "-". markdownlint: "#No space",

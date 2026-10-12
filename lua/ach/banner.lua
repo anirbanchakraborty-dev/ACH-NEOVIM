@@ -32,9 +32,7 @@ end
 function M.render(word, indent)
   local g = M.grid(word)
   local cols = #g[1]
-  local function filled(r, c)
-    return r >= 1 and r <= 7 and c >= 1 and c <= cols and g[r]:sub(c, c) == "X"
-  end
+  local function filled(r, c) return r >= 1 and r <= 7 and c >= 1 and c <= cols and g[r]:sub(c, c) == "X" end
   local out = {}
   for r = 1, 8 do
     local cells = {}

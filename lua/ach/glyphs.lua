@@ -9,9 +9,7 @@ local M = {}
 -- The plain file icon, nf-fa-file, shown when a file type's own icon is forbidden.
 M.fallback = "\u{F15B}"
 
-function M.forbidden(cp)
-  return forbidden[cp] ~= nil
-end
+function M.forbidden(cp) return forbidden[cp] ~= nil end
 
 -- True for a codepoint the font draws: a Nerd Font glyph, plain Latin text, or
 -- the punctuation, block and symbol ranges every monospace font carries.
@@ -37,8 +35,6 @@ function M.offending(s)
   return out
 end
 
-function M.safe_icon(icon)
-  return #M.offending(icon) == 0 and icon or M.fallback
-end
+function M.safe_icon(icon) return #M.offending(icon) == 0 and icon or M.fallback end
 
 return M

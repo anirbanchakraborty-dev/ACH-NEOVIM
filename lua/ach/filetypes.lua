@@ -28,9 +28,7 @@ M.parsers = {
 -- A YAML file under templates/ is a Helm template only inside a chart, which
 -- is a folder holding Chart.yaml. Returning nil lets Neovim carry on and call
 -- it plain YAML.
-local function helm(path)
-  return vim.fs.root(path, "Chart.yaml") and "helm" or nil
-end
+local function helm(path) return vim.fs.root(path, "Chart.yaml") and "helm" or nil end
 
 -- Patterns run before Neovim's extension rules, so these win over plain YAML.
 M.patterns = {

@@ -32,9 +32,7 @@ local function draw(columns)
   return lines, groups
 end
 
-local function has(lines, text)
-  return table.concat(lines, "\n"):find(text, 1, true) ~= nil
-end
+local function has(lines, text) return table.concat(lines, "\n"):find(text, 1, true) ~= nil end
 
 return {
   ["draws every part at full width"] = function(t)

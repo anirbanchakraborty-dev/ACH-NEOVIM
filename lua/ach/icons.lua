@@ -11,10 +11,36 @@ M.colors = { "azure", "blue", "cyan", "green", "grey", "orange", "purple", "red"
 -- The named glyph tables, in the order this file defines them. A reference
 -- such as "git.branch" names one glyph in one of them.
 M.vocabulary = {
-  "actions", "files", "buffers", "nav", "windows", "tabs", "edit", "code", "search",
-  "lists", "diagnostics", "git", "gitsigns", "fold", "spell", "textobj", "session",
-  "multicursor", "terminal", "ui", "claude", "lazy", "mason", "todo", "dap",
-  "hardware", "lang", "kinds", "dashboard", "status",
+  "actions",
+  "files",
+  "buffers",
+  "nav",
+  "windows",
+  "tabs",
+  "edit",
+  "code",
+  "search",
+  "lists",
+  "diagnostics",
+  "git",
+  "gitsigns",
+  "fold",
+  "spell",
+  "textobj",
+  "session",
+  "multicursor",
+  "terminal",
+  "ui",
+  "claude",
+  "lazy",
+  "mason",
+  "todo",
+  "dap",
+  "hardware",
+  "lang",
+  "kinds",
+  "dashboard",
+  "status",
 }
 
 -- Verbs: what a key does.
@@ -1196,7 +1222,10 @@ M.keys = {
   ["vim.lsp.codelens.run()"] = { "code.codelens", "purple" },
   ["vim.snippet.jump if active, otherwise <Tab>"] = { "code.snippet", "purple" },
   ["vim.snippet.jump if active, otherwise <S-Tab>"] = { "code.snippet", "purple" },
-  ["Opens filepath or URI under cursor with the system handler (file explorer, web browser, …)"] = { "actions.open_external", "blue" },
+  ["Opens filepath or URI under cursor with the system handler (file explorer, web browser, …)"] = {
+    "actions.open_external",
+    "blue",
+  },
   -- which-key's built-in descriptions: operators
   ["Change"] = { "edit.change", "yellow" },
   ["Delete"] = { "edit.delete", "red" },
@@ -1353,8 +1382,8 @@ M.keys = {
   ["Around last textobject"] = { "textobj.around", "cyan" },
   ["Inside next textobject"] = { "textobj.inside", "cyan" },
   ["Inside last textobject"] = { "textobj.inside", "cyan" },
-  ["Move to left \"around\""] = { "textobj.around", "cyan" },
-  ["Move to right \"around\""] = { "textobj.around", "cyan" },
+  ['Move to left "around"'] = { "textobj.around", "cyan" },
+  ['Move to right "around"'] = { "textobj.around", "cyan" },
   ["inner scope"] = { "textobj.scope", "cyan" },
   ["full scope"] = { "textobj.scope", "cyan" },
   ["jump to top edge of scope"] = { "textobj.scope_top", "cyan" },
@@ -1561,19 +1590,13 @@ function M.get(ref)
   return t and t[name] or nil
 end
 
-local function resolve(entry)
-  return entry and { icon = M.get(entry[1]), color = entry[2] } or nil
-end
+local function resolve(entry) return entry and { icon = M.get(entry[1]), color = entry[2] } or nil end
 
 -- The icon and colour for a key description, or nil when M.keys has none.
-function M.key(desc)
-  return resolve(M.keys[desc])
-end
+function M.key(desc) return resolve(M.keys[desc]) end
 
 -- The icon and colour for a which-key group name, or nil when M.groups has none.
-function M.group(name)
-  return resolve(M.groups[name])
-end
+function M.group(name) return resolve(M.groups[name]) end
 
 -- which-key's icons.rules: one exact rule per M.keys description, then the
 -- keyword rules. which-key tries these before its own.

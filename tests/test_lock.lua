@@ -1,8 +1,6 @@
 local hook = require("ach.testhook")
 
-local function read_lock(root)
-  return vim.json.decode(table.concat(vim.fn.readfile(root .. "/lazy-lock.json"), "\n"))
-end
+local function read_lock(root) return vim.json.decode(table.concat(vim.fn.readfile(root .. "/lazy-lock.json"), "\n")) end
 
 return {
   ["every locked plugin is installed at its locked commit"] = function(t)

@@ -3,9 +3,7 @@
 -- is registered for each, and every file type in the table has an icon of its
 -- own rather than mini.icons' default.
 
-local function samples(t)
-  return dofile(t.root .. "/tests/fixtures/samples.lua")
-end
+local function samples(t) return dofile(t.root .. "/tests/fixtures/samples.lua") end
 
 -- Opens a file in a new buffer, returns the file type Neovim gave it, then
 -- wipes the buffer so the next sample starts clean.
@@ -74,10 +72,18 @@ return {
     vim.fn.mkdir(dir .. "/chart/templates", "p")
     vim.fn.writefile({ "apiVersion: v2", "name: sample", "version: 0.1.0" }, dir .. "/chart/Chart.yaml")
     t.eq(vim.filetype.match({ filename = dir .. "/chart/templates/service.yaml" }), "helm", "a template inside a chart")
-    t.eq(vim.filetype.match({ filename = dir .. "/site/templates/page.yaml" }), "yaml", "a templates folder with no Chart.yaml")
+    t.eq(
+      vim.filetype.match({ filename = dir .. "/site/templates/page.yaml" }),
+      "yaml",
+      "a templates folder with no Chart.yaml"
+    )
     t.eq(vim.filetype.match({ filename = dir .. "/infra/playbooks/site.yml" }), "yaml.ansible", "a playbook")
     t.eq(vim.filetype.match({ filename = dir .. "/infra/roles/web/tasks/main.yml" }), "yaml.ansible", "a role's tasks")
-    t.eq(vim.filetype.match({ filename = dir .. "/app/docker-compose.yml" }), "yaml.docker-compose", "a docker-compose file")
+    t.eq(
+      vim.filetype.match({ filename = dir .. "/app/docker-compose.yml" }),
+      "yaml.docker-compose",
+      "a docker-compose file"
+    )
     t.eq(vim.filetype.match({ filename = dir .. "/app/compose.yaml" }), "yaml.docker-compose", "a compose file")
     t.eq(vim.filetype.match({ filename = dir .. "/app/settings.yaml" }), "yaml", "any other YAML file")
   end,

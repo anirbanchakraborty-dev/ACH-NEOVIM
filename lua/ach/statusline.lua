@@ -37,14 +37,10 @@ M.prose = {
   typst = true,
 }
 
-local function hl(name)
-  return "%#AchSl_" .. name .. "#"
-end
+local function hl(name) return "%#AchSl_" .. name .. "#" end
 
 -- Text from a file or a plugin goes through this, so a % in it prints as %.
-local function esc(s)
-  return (tostring(s):gsub("%%", "%%%%"))
-end
+local function esc(s) return (tostring(s):gsub("%%", "%%%%")) end
 
 local icon_groups = {}
 
@@ -199,9 +195,7 @@ function M.file()
   return s
 end
 
-function M.has_diagnostics()
-  return #vim.diagnostic.get(0) > 0
-end
+function M.has_diagnostics() return #vim.diagnostic.get(0) > 0 end
 
 -- The selection's size: characters within a line, lines across several, and
 -- lines by columns for a block.
@@ -275,9 +269,7 @@ function M.tools()
   return table.concat(parts, " ")
 end
 
-function M.has_code_tools()
-  return #vim.lsp.get_clients({ bufnr = 0 }) > 0 or M.tools() ~= ""
-end
+function M.has_code_tools() return #vim.lsp.get_clients({ bufnr = 0 }) > 0 or M.tools() ~= "" end
 
 function M.words()
   if not M.prose[vim.bo.filetype] then
@@ -324,9 +316,7 @@ end
 -- One cell of the bar's own navy, shown only when the tile beside it is.
 local function gap(cond)
   return {
-    function()
-      return " "
-    end,
+    function() return " " end,
     padding = 0,
     color = { bg = base },
     cond = cond,
@@ -334,9 +324,7 @@ local function gap(cond)
 end
 
 local function shown(fn)
-  return function()
-    return fn() ~= ""
-  end
+  return function() return fn() ~= "" end
 end
 
 function M.options()
@@ -403,9 +391,7 @@ function M.setup(opts)
   vim.api.nvim_create_autocmd({ "RecordingEnter", "RecordingLeave" }, {
     group = group,
     callback = function()
-      vim.schedule(function()
-        require("lualine").refresh({ place = { "statusline" } })
-      end)
+      vim.schedule(function() require("lualine").refresh({ place = { "statusline" } }) end)
     end,
   })
   require("lualine").setup(opts)

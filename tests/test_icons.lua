@@ -4,9 +4,7 @@ local glyphs = require("ach.glyphs")
 -- Every reference the database holds, with the colour beside it and where it sits.
 local function references()
   local out = {}
-  local function add(where, ref, colour)
-    out[#out + 1] = { where = where, ref = ref, colour = colour }
-  end
+  local function add(where, ref, colour) out[#out + 1] = { where = where, ref = ref, colour = colour } end
   for desc, e in pairs(I.keys) do
     add("keys[" .. desc .. "]", e[1], e[2])
   end

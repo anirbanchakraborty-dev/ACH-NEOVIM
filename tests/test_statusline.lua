@@ -1,6 +1,4 @@
-local function hex(s)
-  return tonumber(s:sub(2), 16)
-end
+local function hex(s) return tonumber(s:sub(2), 16) end
 
 local function sample(t, name, lines)
   local dir = t.tmpdir()

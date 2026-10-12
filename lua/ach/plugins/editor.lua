@@ -3,9 +3,7 @@
 -- todo-comments, persistence and explorer specs.
 local I = require("ach.icons")
 
-local function root()
-  return require("ach.util").root()
-end
+local function root() return require("ach.util").root() end
 
 -- [q and ]q walk trouble's list while it is open and the quickfix list otherwise.
 -- At either end of the quickfix list Neovim raises E553; that is news, not a fault.
@@ -20,9 +18,7 @@ local function step(dir)
   end
 end
 
-local function mc()
-  return require("multicursor-nvim")
-end
+local function mc() return require("multicursor-nvim") end
 
 return {
   -- Jump to any spot on screen by typing two or three of its letters.
@@ -44,9 +40,7 @@ return {
       {
         "<c-space>",
         mode = { "n", "o", "x" },
-        function()
-          require("flash").treesitter({ actions = { ["<c-space>"] = "next", ["<BS>"] = "prev" } })
-        end,
+        function() require("flash").treesitter({ actions = { ["<c-space>"] = "next", ["<BS>"] = "prev" } }) end,
         desc = "Grow Selection by Syntax",
       },
     },

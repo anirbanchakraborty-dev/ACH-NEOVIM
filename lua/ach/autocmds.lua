@@ -3,16 +3,12 @@
 -- Adapted from LazyVim (Apache-2.0), lua/lazyvim/config/autocmds.lua.
 local M = {}
 
-function M.group(name)
-  return vim.api.nvim_create_augroup("ach_" .. name, { clear = true })
-end
+function M.group(name) return vim.api.nvim_create_augroup("ach_" .. name, { clear = true }) end
 
 -- Briefly highlight what was just yanked.
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = M.group("highlight_yank"),
-  callback = function()
-    vim.hl.on_yank()
-  end,
+  callback = function() vim.hl.on_yank() end,
 })
 
 -- Keep splits equal when the terminal window is resized.

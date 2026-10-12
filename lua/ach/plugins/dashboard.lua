@@ -11,9 +11,7 @@ return {
       dashboard = {
         enabled = true,
         sections = {
-          function(self)
-            return require("ach.dashboard").sections(self)
-          end,
+          function(self) return require("ach.dashboard").sections(self) end,
         },
       },
     },

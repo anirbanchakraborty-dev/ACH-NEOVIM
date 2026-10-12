@@ -5,9 +5,7 @@
 local map = vim.keymap.set
 local I = require("ach.icons")
 
-local function root()
-  return require("ach.util").root()
-end
+local function root() return require("ach.util").root() end
 
 -- Move by screen line through a wrapped line, unless a count is given.
 map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })

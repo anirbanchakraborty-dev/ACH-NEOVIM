@@ -12,9 +12,7 @@ local function plugin_keys()
       out[#out + 1] = k
     end
   end
-  table.sort(out, function(a, b)
-    return a.plugin .. a.id < b.plugin .. b.id
-  end)
+  table.sort(out, function(a, b) return a.plugin .. a.id < b.plugin .. b.id end)
   return out
 end
 
@@ -32,14 +30,10 @@ local function groups(spec, out)
   return out
 end
 
-local function mapped(lhs, mode)
-  return next(vim.fn.maparg(lhs, mode or "n", false, true)) ~= nil
-end
+local function mapped(lhs, mode) return next(vim.fn.maparg(lhs, mode or "n", false, true)) ~= nil end
 
 -- which-key hides a key with this description, so it never shows an icon.
-local function shown(desc)
-  return desc and desc ~= "" and desc ~= "which_key_ignore"
-end
+local function shown(desc) return desc and desc ~= "" and desc ~= "which_key_ignore" end
 
 -- The first of the icon database's which-key rules that finds the description.
 local function database_icon(rules, desc)
@@ -127,10 +121,31 @@ return {
 
   ["the keys the spec names exist"] = function(t)
     local want = {
-      "<leader><space>", "<leader>ff", "<leader>fr", "<leader>fn", "<leader>fp", "<leader>fc",
-      "<leader>bb", "<leader>bd", "<leader>bo", "<leader>sh", "<leader>sk", "<leader>sg",
-      "<leader>uf", "<leader>uF", "<leader>uw", "<leader>us", "<leader>ul", "<leader>uh", "<leader>uu",
-      "<leader>xl", "<leader>xq", "<leader>qq", "<leader>?", "<leader>ft", "<leader>cd",
+      "<leader><space>",
+      "<leader>ff",
+      "<leader>fr",
+      "<leader>fn",
+      "<leader>fp",
+      "<leader>fc",
+      "<leader>bb",
+      "<leader>bd",
+      "<leader>bo",
+      "<leader>sh",
+      "<leader>sk",
+      "<leader>sg",
+      "<leader>uf",
+      "<leader>uF",
+      "<leader>uw",
+      "<leader>us",
+      "<leader>ul",
+      "<leader>uh",
+      "<leader>uu",
+      "<leader>xl",
+      "<leader>xq",
+      "<leader>qq",
+      "<leader>?",
+      "<leader>ft",
+      "<leader>cd",
     }
     local missing = {}
     for _, lhs in ipairs(want) do

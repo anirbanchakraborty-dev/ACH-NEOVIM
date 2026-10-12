@@ -18,9 +18,7 @@ return {
             ft = "help",
             size = { height = 20 },
             -- A help file opened for editing is an ordinary file, not a docked page.
-            filter = function(buf)
-              return vim.bo[buf].buftype == "help"
-            end,
+            filter = function(buf) return vim.bo[buf].buftype == "help" end,
           },
         },
         right = {
@@ -28,18 +26,10 @@ return {
         },
         -- Inside a docked pane, Ctrl and the arrows resize the pane.
         keys = {
-          ["<c-Right>"] = function(win)
-            win:resize("width", 2)
-          end,
-          ["<c-Left>"] = function(win)
-            win:resize("width", -2)
-          end,
-          ["<c-Up>"] = function(win)
-            win:resize("height", 2)
-          end,
-          ["<c-Down>"] = function(win)
-            win:resize("height", -2)
-          end,
+          ["<c-Right>"] = function(win) win:resize("width", 2) end,
+          ["<c-Left>"] = function(win) win:resize("width", -2) end,
+          ["<c-Up>"] = function(win) win:resize("height", 2) end,
+          ["<c-Down>"] = function(win) win:resize("height", -2) end,
         },
       }
       for _, pos in ipairs({ "top", "bottom", "left", "right" }) do
@@ -48,7 +38,10 @@ return {
           ft = "trouble",
           filter = function(_, win)
             local w = vim.w[win].trouble
-            return w and w.position == pos and w.type == "split" and w.relative == "editor"
+            return w
+              and w.position == pos
+              and w.type == "split"
+              and w.relative == "editor"
               and not vim.w[win].trouble_preview
           end,
         })
@@ -74,9 +67,7 @@ return {
   {
     "nvim-mini/mini.hipatterns",
     event = { "BufReadPre", "BufNewFile" },
-    opts = function()
-      return { highlighters = { hex_color = require("mini.hipatterns").gen_highlighter.hex_color() } }
-    end,
+    opts = function() return { highlighters = { hex_color = require("mini.hipatterns").gen_highlighter.hex_color() } } end,
   },
 
   -- Indent guides, the current scope, highlights on other uses of the word under the

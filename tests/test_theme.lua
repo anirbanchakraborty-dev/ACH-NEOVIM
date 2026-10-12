@@ -1,19 +1,11 @@
-local function hl(name)
-  return vim.api.nvim_get_hl(0, { name = name, link = false })
-end
+local function hl(name) return vim.api.nvim_get_hl(0, { name = name, link = false }) end
 
-local function hex(n)
-  return n and ("#%06X"):format(n) or "unset"
-end
+local function hex(n) return n and ("#%06X"):format(n) or "unset" end
 
-local function round(x)
-  return math.floor(x * 100 + 0.5) / 100
-end
+local function round(x) return math.floor(x * 100 + 0.5) / 100 end
 
 return {
-  ["uses tokyonight night"] = function(t)
-    t.eq(vim.g.colors_name, "tokyonight-night")
-  end,
+  ["uses tokyonight night"] = function(t) t.eq(vim.g.colors_name, "tokyonight-night") end,
 
   ["sets the colours in the spec's tables"] = function(t)
     local p = require("ach.palette")
@@ -56,9 +48,7 @@ return {
   ["meets the spec's contrast figures, recomputed from the live colours"] = function(t)
     local ratio = require("ach.contrast").ratio
     local p = require("ach.palette")
-    local function c(fg_group, bg_group)
-      return round(ratio(hex(hl(fg_group).fg), hex(hl(bg_group).bg)))
-    end
+    local function c(fg_group, bg_group) return round(ratio(hex(hl(fg_group).fg), hex(hl(bg_group).bg))) end
     t.eq(c("Comment", "Normal"), 5.00, "comments on the background")
     t.eq(c("Comment", "CursorLine"), 3.42, "comments on the cursor line")
     t.eq(c("LspInlayHint", "Normal"), 4.07, "inlay hints")

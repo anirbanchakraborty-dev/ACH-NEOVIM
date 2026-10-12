@@ -32,9 +32,7 @@ end
 -- it loads, so anything raised after that point is read from its history.
 function M.warnings()
   local out = vim.deepcopy(M.notifications)
-  local ok, history = pcall(function()
-    return Snacks.notifier.get_history()
-  end)
+  local ok, history = pcall(function() return Snacks.notifier.get_history() end)
   if ok and type(history) == "table" then
     for _, n in ipairs(history) do
       if n.level == "warn" or n.level == "error" then

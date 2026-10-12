@@ -2,9 +2,7 @@ local Config = require("lazy.core.config")
 local Plugin = require("lazy.core.plugin")
 local Keys = require("lazy.core.handler.keys")
 
-local function mapped(lhs, mode)
-  return next(vim.fn.maparg(lhs, mode or "n", false, true)) ~= nil
-end
+local function mapped(lhs, mode) return next(vim.fn.maparg(lhs, mode or "n", false, true)) ~= nil end
 
 -- The function a plugin's spec binds to a normal-mode key. Calling lazy's stub
 -- instead would replay the keys later, after the test has finished looking.
@@ -34,9 +32,7 @@ local function three_item_list(t)
   return file
 end
 
-local function qf_index()
-  return vim.fn.getqflist({ idx = 0 }).idx
-end
+local function qf_index() return vim.fn.getqflist({ idx = 0 }).idx end
 
 local function wipe(file)
   vim.fn.setqflist({}, "r")
@@ -46,11 +42,35 @@ end
 return {
   ["the keys the spec names exist"] = function(t)
     local want = {
-      { "<leader>e" }, { "<leader>fe" }, { "<leader>fo" }, { "<leader>sr" }, { "<leader>xx" }, { "<leader>xX" },
-      { "<leader>cs" }, { "<leader>xL" }, { "<leader>xQ" }, { "[q" }, { "]q" }, { "]t" }, { "[t" },
-      { "<leader>st" }, { "<leader>xt" }, { "<leader>qs" }, { "<leader>ql" }, { "<leader>qS" }, { "<leader>qd" },
-      { "<leader>mn" }, { "<leader>mA" }, { "<A-Down>" }, { "<leader>ue" }, { "s" }, { "s", "x" }, { "s", "o" },
-      { "S" }, { "<c-space>" }, { "<c-s>", "c" },
+      { "<leader>e" },
+      { "<leader>fe" },
+      { "<leader>fo" },
+      { "<leader>sr" },
+      { "<leader>xx" },
+      { "<leader>xX" },
+      { "<leader>cs" },
+      { "<leader>xL" },
+      { "<leader>xQ" },
+      { "[q" },
+      { "]q" },
+      { "]t" },
+      { "[t" },
+      { "<leader>st" },
+      { "<leader>xt" },
+      { "<leader>qs" },
+      { "<leader>ql" },
+      { "<leader>qS" },
+      { "<leader>qd" },
+      { "<leader>mn" },
+      { "<leader>mA" },
+      { "<A-Down>" },
+      { "<leader>ue" },
+      { "s" },
+      { "s", "x" },
+      { "s", "o" },
+      { "S" },
+      { "<c-space>" },
+      { "<c-s>", "c" },
     }
     local missing = {}
     for _, k in ipairs(want) do
@@ -121,9 +141,7 @@ return {
     local dir = t.tmpdir()
     vim.fn.writefile({}, dir .. "/a.txt")
     vim.cmd("Oil " .. vim.fn.fnameescape(dir))
-    local opened = vim.wait(3000, function()
-      return vim.bo.filetype == "oil"
-    end, 50)
+    local opened = vim.wait(3000, function() return vim.bo.filetype == "oil" end, 50)
     local ft, name = vim.bo.filetype, vim.api.nvim_buf_get_name(0)
     vim.cmd("silent! bwipeout!")
     t.ok(opened, "filetype is " .. ft .. " in " .. name)
