@@ -52,10 +52,22 @@ local function report(kind, label, detail)
   out:write(word .. " " .. label .. (detail and (": " .. detail) or "") .. "\n")
 end
 
+-- A plugin can open a pane beside a file, as lean.nvim's infoview does beside a
+-- Lean file, and the pane outlives the file. Each test starts in one window that
+-- is not pinned to its buffer, so no test edits inside a pane an earlier one left.
+local function one_window()
+  if #vim.api.nvim_tabpage_list_wins(0) == 1 and not vim.wo.winfixbuf then
+    return
+  end
+  vim.cmd("silent! botright new")
+  vim.cmd("silent! only!")
+end
+
 local function run_test(label, fn)
   if only ~= "" and not label:find(only, 1, true) then
     return
   end
+  one_window()
   local ok, err = xpcall(fn, function(e) return type(e) == "table" and e or debug.traceback(tostring(e), 2) end, t)
   if ok then
     report("pass", label)
