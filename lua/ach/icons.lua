@@ -1430,6 +1430,21 @@ M.keys = {
   ["LSP Workspace Symbols"] = { "code.symbols", "purple" },
   ["vim.lsp.buf.hover()"] = { "code.hover", "purple" },
   ["Format Injected Langs"] = { "code.format", "purple" },
+  ["Lean Infoview"] = { "windows.far_right", "blue" },
+  ["Go to Infoview"] = { "windows.go_right", "blue" },
+  ["Infoview Options"] = { "actions.tune", "blue" },
+  ["Add Pin"] = { "actions.pin", "yellow" },
+  ["Clear Pins"] = { "actions.unpin", "yellow" },
+  ["Pause Pins"] = { "actions.pause", "yellow" },
+  ["Set Diff Pin"] = { "git.diff", "purple" },
+  ["Clear Diff Pins"] = { "actions.unpin", "purple" },
+  ["Auto Diff"] = { "files.compare", "purple" },
+  ["Auto Diff, Clearing Pins"] = { "files.compare", "purple" },
+  ["Enable Widgets"] = { "dap.widgets", "cyan" },
+  ["Disable Widgets"] = { "kinds.Component", "grey" },
+  ["Accept Suggestion"] = { "code.action", "green" },
+  ["How to Type This Symbol"] = { "search.keymaps", "cyan" },
+  ["Restart Lean for This File"] = { "actions.restart", "red" },
   -- Keys added by later tasks go above this line.
 }
 
@@ -1454,6 +1469,7 @@ M.groups = {
   ["next"] = { "nav.next", "azure" },
   ["goto"] = { "nav.goto", "azure" },
   ["fold"] = { "fold.fold", "blue" },
+  ["diff pins"] = { "git.diff", "purple" },
   -- Groups added by later tasks go above this line.
 }
 

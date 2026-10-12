@@ -458,10 +458,16 @@ function M.ensure_tools(buf, ft)
 end
 
 -- Called once a buffer's packages are installed, or have failed: enables the
--- file type's servers whose programs are now on the path. The
--- managed-languages task adds the languages whose own plugin starts the
--- server.
-function M.ready(buf, ft, entry) require("ach.lsp").enable_for(ft) end
+-- file type's servers whose programs are now on the path, then hands a
+-- managed language to its own plugin. enable_for runs first even for those,
+-- because its first call sets the shared capabilities that rustaceanvim,
+-- haskell-tools and lean.nvim merge into their own configuration.
+function M.ready(buf, ft, entry)
+  require("ach.lsp").enable_for(ft)
+  if entry.managed then
+    require("ach.managed").start(buf, entry)
+  end
+end
 
 -- The hook ------------------------------------------------------------------------
 
