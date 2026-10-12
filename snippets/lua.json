@@ -1,0 +1,7 @@
+{
+  "Module": {
+    "prefix": "mod",
+    "body": ["local M = {}", "", "$0", "", "return M"],
+    "description": "A Lua module that returns its table"
+  }
+}

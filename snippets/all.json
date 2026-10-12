@@ -1,0 +1,7 @@
+{
+  "Today": {
+    "prefix": "today",
+    "body": "$CURRENT_YEAR-$CURRENT_MONTH-$CURRENT_DATE",
+    "description": "Today's date, as 2026-10-10"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "Equation": {
+    "prefix": "eq",
+    "body": ["\\begin{equation}", "\t$0", "\\end{equation}"],
+    "description": "A numbered equation"
+  },
+  "Align": {
+    "prefix": "align",
+    "body": ["\\begin{align}", "\t$0", "\\end{align}"],
+    "description": "Aligned equations"
+  },
+  "Theorem": {
+    "prefix": "thm",
+    "body": ["\\begin{theorem}", "\t$0", "\\end{theorem}"],
+    "description": "A theorem"
+  },
+  "Example": {
+    "prefix": "ex",
+    "body": ["\\begin{example}", "\t$0", "\\end{example}"],
+    "description": "A worked example"
+  },
+  "Fraction": {
+    "prefix": "frac",
+    "body": "\\frac{$1}{$2}$0",
+    "description": "A fraction"
+  },
+  "Inline math": {
+    "prefix": "mk",
+    "body": "\\$$1\\$$0",
+    "description": "Inline math between dollar signs"
+  }
+}

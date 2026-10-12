@@ -1,0 +1,11 @@
+{
+  "name": "ach-snippets",
+  "description": "ACH-NEOVIM's own snippets, read beside friendly-snippets",
+  "contributes": {
+    "snippets": [
+      { "language": ["all"], "path": "./all.json" },
+      { "language": ["tex", "plaintex"], "path": "./tex.json" },
+      { "language": ["lua"], "path": "./lua.json" }
+    ]
+  }
+}

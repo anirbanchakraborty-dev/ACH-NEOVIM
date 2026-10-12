@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Download blink.cmp's compiled fuzzy matcher for the release in lazy-lock.json.
+#   scripts/fetch-matcher
+# blink.cmp fetches it by itself in the background the first time it loads. This
+# waits for that download, up to two minutes, so a new machine has the matcher
+# before the first keystroke and the test suite has it before it runs.
+# Exit 0 when the compiled matcher is in use, 1 when blink fell back to its Lua
+# matcher, 2 when Neovim is missing.
+set -euo pipefail
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
+cd "$root"
+
+if ! command -v nvim >/dev/null 2>&1; then
+    echo "Neovim is not installed. Install it with: brew install neovim" >&2
+    exit 2
+fi
+
+kind=$(nvim --headless -u init.lua \
+    "+lua require('lazy').load({ plugins = { 'blink.cmp' } })" \
+    "+lua vim.wait(120000, function() return require('blink.cmp.fuzzy').implementation_type == 'rust' end, 200)" \
+    "+lua io.stdout:write(require('blink.cmp.fuzzy').implementation_type)" \
+    +qa 2>/dev/null)
+echo "blink.cmp matcher: $kind"
+[ "$kind" = "rust" ]
