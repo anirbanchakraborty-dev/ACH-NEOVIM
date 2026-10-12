@@ -63,6 +63,8 @@ function M.attach(buf)
   if not vim.api.nvim_buf_is_valid(buf) then
     return
   end
+  -- Its queries and indentation have to be there before tree-sitter starts.
+  require("lazy").load({ plugins = { "nvim-treesitter" } })
   local lang = vim.treesitter.language.get_lang(vim.bo[buf].filetype)
   if not lang then
     return

@@ -5,10 +5,12 @@
 return {
   {
     "neovim/nvim-lspconfig",
-    -- Not lazy: its lsp/ folder must be on the runtime path before the first
-    -- server is enabled, which happens during startup when a file is named on
-    -- the command line. Loading it runs one small plugin file.
-    lazy = false,
+    -- Loaded as the first file is read, so the diagnostics' look and the
+    -- servers' settings are in place before anything reports on it, and with
+    -- no file after the first screen. Its lsp/ folder must be on the runtime
+    -- path before the first server is enabled, so lua/ach/lsp.lua loads it
+    -- then too, for a file type set on a buffer with no file.
+    event = { "BufReadPre", "BufNewFile", "VeryLazy" },
     config = function() require("ach.lsp").setup() end,
   },
 

@@ -189,9 +189,12 @@ local enabled, configured = {}, false
 -- per session. A server that is missing now is tried again on the next file
 -- of its language, which is when the installer has had another go. The
 -- capabilities are set before the first server starts; they load blink.cmp,
--- which would otherwise wait for the first InsertEnter.
+-- which would otherwise wait for the first InsertEnter. nvim-lspconfig is
+-- loaded first if nothing has loaded it yet, since its lsp/ folder holds each
+-- server's command.
 function M.enable_for(ft)
   if not configured then
+    require("lazy").load({ plugins = { "nvim-lspconfig" } })
     vim.lsp.config("*", { capabilities = M.capabilities() })
     configured = true
   end

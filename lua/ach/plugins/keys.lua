@@ -17,7 +17,6 @@ return {
     opts_extend = { "spec" },
     opts = {
       preset = "helix",
-      icons = { rules = I.which_key_rules() },
       spec = {
         {
           mode = { "n", "x" },
@@ -53,6 +52,12 @@ return {
         },
       },
     },
+    -- The icon rules are built when which-key loads, after the first screen,
+    -- rather than when this file is read during the start.
+    config = function(_, opts)
+      opts.icons = vim.tbl_extend("force", opts.icons or {}, { rules = I.which_key_rules() })
+      require("which-key").setup(opts)
+    end,
     keys = {
       {
         "<leader>?",

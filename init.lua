@@ -6,6 +6,11 @@ if vim.fn.has("nvim-0.12") == 0 then
   return
 end
 
+-- Neovim's byte-code cache for Lua modules. lazy.nvim turns it on as well, but
+-- only once it starts, and everything loaded before then would be read and
+-- compiled afresh on every start.
+vim.loader.enable()
+
 local here = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h")
 local root = vim.uv.fs_realpath(here) or here
 vim.g.ach_root = root

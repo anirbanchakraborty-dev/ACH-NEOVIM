@@ -7,7 +7,14 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     branch = "main",
-    lazy = false, -- the main branch does not support lazy loading
+    -- The main branch says it does not support lazy loading, meaning its
+    -- commands and parser folder must be there before a file needs them.
+    -- LazyVim loads it lazily all the same, and so does this: at the start
+    -- when a file is named, otherwise after the first screen, or sooner when
+    -- lua/ach/treesitter.lua starts it on a buffer or one of its commands runs.
+    lazy = vim.fn.argc(-1) == 0,
+    event = "VeryLazy",
+    cmd = { "TSUpdate", "TSInstall", "TSInstallFromGrammar", "TSUninstall", "TSLog" },
     build = ":TSUpdate",
     init = function()
       -- nvim-treesitter rereads its parser list on this event, so the table's

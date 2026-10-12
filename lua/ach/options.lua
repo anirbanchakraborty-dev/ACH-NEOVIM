@@ -56,7 +56,10 @@ o.shortmess:append({ W = true, I = true, c = true, C = true })
 o.fillchars = { fold = " ", foldsep = " ", diff = "╱", eob = " " }
 o.foldlevel = 99
 o.foldmethod = "expr"
-o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+-- Tree-sitter folds only a file's buffer that has a type. Asking it about any
+-- other buffer, the dashboard or a picker's list, loads the whole tree-sitter
+-- library for nothing, and on the first screen that is most of a start.
+o.foldexpr = "&buftype ==# '' && &filetype !=# '' ? v:lua.vim.treesitter.foldexpr() : 0"
 o.foldtext = ""
 
 -- The system clipboard, except over SSH, where it would need OSC 52.

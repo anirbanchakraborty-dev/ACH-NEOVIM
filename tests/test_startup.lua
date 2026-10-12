@@ -41,6 +41,38 @@ local function valid(t, S, data)
   t.ok(type(data.date) == "string" and data.date:match("^%d%d%d%d%-%d%d%-%d%d$") ~= nil, "the date, year first")
 end
 
+-- Starts this configuration the way a timed start does, with args after it,
+-- and once startup has finished evaluates expr, a Lua expression, inside it.
+-- Returns the value, which comes back through JSON.
+local function probe(t, args, expr)
+  local run = startup(t).ach(t.root)
+  local argv = vim.list_extend(vim.deepcopy(run.argv), args)
+  local code = "lua vim.schedule(function() io.stdout:write(vim.json.encode(%s)) vim.cmd('qa!') end)"
+  vim.list_extend(argv, { "-c", code:format(expr) })
+  local result = vim.system(argv, { env = run.env, text = true, timeout = 30000 }):wait()
+  local ok, value = pcall(vim.json.decode, result.stdout or "")
+  t.ok(ok and type(value) == "table", "the probe printed no JSON: " .. vim.trim((result.stdout or "") .. " " .. (result.stderr or "")))
+  return value
+end
+
+-- What a start with no file has no use for: Neovim's file type table, its
+-- language-server and tree-sitter libraries, and what this configuration sets
+-- up for a file. All of it arrives with the first file, or just after the first
+-- screen when there is none.
+local FILE_ONLY = {
+  "vim.filetype",
+  "vim.lsp",
+  "vim.treesitter",
+  "nvim-treesitter",
+  "lspconfig",
+  "ach.lang",
+  "ach.filetypes",
+  "ach.runtimes",
+  "ach.grammar",
+  "ach.managed",
+  "ach.install",
+}
+
 return {
   ["a timing log gives the time of NVIM STARTED, after the first screen update"] = function(t)
     local S = startup(t)
@@ -143,5 +175,96 @@ return {
     t.ok(vim.tbl_contains(lines, HELP), "names --baseline:\n" .. (result.stdout or ""))
     local last = "Exit 0 when everything passes, 1 on a failure, 2 when a person must act."
     t.eq(lines[#lines], last, "the help ends at the exit codes")
+  end,
+
+  ["init.lua turns Neovim's module cache on before it loads any of this configuration"] = function(t)
+    local cache, first
+    for i, line in ipairs(vim.fn.readfile(t.root .. "/init.lua")) do
+      cache = cache or (line:match("^vim%.loader%.enable%(%)") and i)
+      first = first or (line:match("require%(") and i)
+    end
+    t.ok(cache, "init.lua calls vim.loader.enable()")
+    t.ok(first and cache < first, "before its first require, on line " .. tostring(first))
+  end,
+
+  ["a start with no file loads nothing that only a file needs"] = function(t)
+    local list = "{'" .. table.concat(FILE_ONLY, "','") .. "'}"
+    local seen = probe(t, {}, ([[{
+      started = package.loaded['ach.lazy'] ~= nil,
+      loaded = table.concat(vim.tbl_filter(function(m) return package.loaded[m] ~= nil end, %s), ' '),
+    }]]):gsub("\n%s*", " "):format(list))
+    t.ok(seen.started, "the probe ran inside this configuration")
+    t.eq(seen.loaded, "", "loaded at start")
+  end,
+
+  ["a file type set before any file is read still gets tree-sitter"] = function(t)
+    local seen = probe(t, { "-c", "set filetype=c" }, "{ on = vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil }")
+    t.ok(seen.on, "tree-sitter highlights the C buffer")
+  end,
+
+  ["a file whose parser was installed gets tree-sitter's highlighting and indentation"] = function(t)
+    local site = vim.fn.stdpath("data") .. "/site/parser/python.so"
+    if not vim.uv.fs_stat(site) then
+      t.skip("the Python parser is not installed: open a .py file once to install it")
+    end
+    local file = t.tmpdir() .. "/f.py"
+    vim.fn.writefile({ "def f():", "        return 1" }, file)
+    local seen = probe(t, { file }, ([[(function()
+      local buf = vim.api.nvim_get_current_buf()
+      vim.wait(5000, function() return vim.treesitter.highlighter.active[buf] ~= nil end)
+      local ok = pcall(vim.cmd, 'silent normal! gg=G')
+      return { on = vim.treesitter.highlighter.active[buf] ~= nil, expr = vim.bo.indentexpr, ok = ok, line = vim.fn.getline(2) }
+    end)()]]):gsub("\n%s*", " "))
+    t.ok(seen.on, "tree-sitter highlights the Python file")
+    t.ok(seen.expr:find("nvim-treesitter", 1, true), "nvim-treesitter indents it, not " .. seen.expr)
+    t.ok(seen.ok, "re-indenting the file raised no error")
+    t.eq(seen.line, "    return 1", "the body is indented one level under the def")
+  end,
+
+  ["a file named on the command line gets this configuration's file types"] = function(t)
+    local file = t.tmpdir() .. "/top.xdc"
+    vim.fn.writefile({ "set_property PACKAGE_PIN W5 [get_ports clk]" }, file)
+    local seen = probe(t, { file }, "{ ft = vim.bo.filetype, handled = vim.b.ach_handled == true }")
+    t.eq(seen.ft, require("ach.filetypes").extensions.xdc, "the table's file type")
+    t.ok(seen.handled, "and the installer saw the file")
+  end,
+
+  ["the first server enabled has nvim-lspconfig's configurations"] = function(t)
+    local seen = probe(t, {}, "(function() require('ach.lsp').enable_for('text') return { cmd = (vim.lsp.config.lua_ls or {}).cmd ~= nil } end)()")
+    t.ok(seen.cmd, "lua_ls has the command nvim-lspconfig gives it")
+  end,
+
+  ["which-key's icon rules are built when which-key loads, not when its spec is read"] = function(t)
+    local spec = dofile(t.root .. "/lua/ach/plugins/keys.lua")[1]
+    t.eq(spec[1], "folke/which-key.nvim", "the first spec is which-key's")
+    t.eq((spec.opts.icons or {}).rules, nil, "no rules in the spec")
+    local rules = require("which-key.config").options.icons.rules
+    t.eq(#rules, #require("ach.icons").which_key_rules(), "which-key has every rule once loaded")
+  end,
+
+  ["tree-sitter folds a file buffer that has a file type, and nothing else"] = function(t)
+    local real, calls = vim.treesitter.foldexpr, 0
+    vim.treesitter.foldexpr = function()
+      calls = calls + 1
+      return ">1"
+    end
+    local ignore, bufs = vim.o.eventignore, {}
+    vim.o.eventignore = "FileType"
+    local function fold(listed, scratch, ft)
+      local buf = vim.api.nvim_create_buf(listed, scratch)
+      bufs[#bufs + 1] = buf
+      vim.bo[buf].filetype = ft
+      return vim.api.nvim_buf_call(buf, function() return vim.fn.eval(vim.go.foldexpr) end)
+    end
+    local ok, got = pcall(function()
+      return { file = fold(true, false, "c"), empty = fold(true, false, ""), scratch = fold(false, true, "c") }
+    end)
+    vim.treesitter.foldexpr, vim.o.eventignore = real, ignore
+    for _, buf in ipairs(bufs) do
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end
+    t.ok(ok, tostring(got))
+    t.eq(got, { file = ">1", empty = 0, scratch = 0 }, "the fold levels")
+    t.eq(calls, 1, "tree-sitter asked once, for the file")
   end,
 }
