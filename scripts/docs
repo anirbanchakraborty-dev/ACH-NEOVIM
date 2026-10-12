@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Writes the documentation post, one MDX file for the website, from this
+# repository's own source. It never starts the configuration.
+#   scripts/docs --out <file> [--date YYYY-MM-DD]
+# A relative <file> is taken from the repository root. Exit 0 when the post is
+# written, 1 on any error, 2 when Neovim is not installed.
+set -euo pipefail
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
+if ! command -v nvim >/dev/null 2>&1; then
+    echo "Neovim is not installed. Install it with: brew install neovim" >&2
+    exit 2
+fi
+cd "$root"
+exec nvim --clean --headless -l scripts/docs.lua "$@"

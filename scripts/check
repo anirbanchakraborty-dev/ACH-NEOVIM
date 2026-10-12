@@ -4,6 +4,7 @@
 #   scripts/check --full       also installs every language's tools and tests them
 #   scripts/check --only TEXT  run only tests whose "file :: name" label contains TEXT
 #   scripts/check --baseline   time this configuration against stock LazyVim and write tests/baseline.json
+#   scripts/check --keymaps    record every key this configuration sets in docs/site/keymaps.json
 # Exit 0 when everything passes, 1 on a failure, 2 when a person must act.
 set -euo pipefail
 
@@ -11,11 +12,13 @@ root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
 full=0
 only=""
 baseline=0
+keymaps=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --full) full=1 ;;
         --only) shift; only=${1:-} ;;
         --baseline) baseline=1 ;;
+        --keymaps) keymaps=1 ;;
         -h | --help) sed -n '2,/^# Exit/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "unknown option: $1" >&2; exit 1 ;;
     esac
@@ -45,6 +48,15 @@ export ACH_DRY_INSTALL=1
 if [ "$baseline" = 1 ]; then
     status=0
     nvim -l "$root/tests/helpers/startup.lua" "$root" "$scratch/bench" || status=$?
+    exit "$status"
+fi
+
+# --keymaps runs no tests either. It reads every key the configuration sets in
+# a child Neovim and writes docs/site/keymaps.json, which scripts/docs turns
+# into the documentation post's Keymaps section.
+if [ "$keymaps" = 1 ]; then
+    status=0
+    nvim -l "$root/tests/helpers/keymaps.lua" "$root" "$root/docs/site/keymaps.json" || status=$?
     exit "$status"
 fi
 
