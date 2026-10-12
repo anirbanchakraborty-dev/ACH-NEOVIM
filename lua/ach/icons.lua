@@ -1429,6 +1429,7 @@ M.keys = {
   ["LSP Symbols"] = { "code.symbols", "purple" },
   ["LSP Workspace Symbols"] = { "code.symbols", "purple" },
   ["vim.lsp.buf.hover()"] = { "code.hover", "purple" },
+  ["Format Injected Langs"] = { "code.format", "purple" },
   -- Keys added by later tasks go above this line.
 }
 
