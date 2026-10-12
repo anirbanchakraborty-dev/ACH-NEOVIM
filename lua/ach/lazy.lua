@@ -22,6 +22,8 @@ require("lazy").setup({
   install = { missing = not testing, colorscheme = { "tokyonight-night" } },
   checker = { enabled = not testing, notify = false, frequency = 86400 },
   change_detection = { notify = false },
+  -- Every icon in lazy.nvim's window comes from the icon database.
+  ui = { icons = require("ach.icons").lazy_ui() },
   rocks = { enabled = false },
   performance = {
     rtp = {
