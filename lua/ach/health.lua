@@ -393,6 +393,29 @@ local function mason()
   end
 end
 
+-- What the integrations need: the Neovim release VimTeX asks for, which is
+-- later than the rest of the configuration needs, and each program in
+-- ach.need, installed or with the line that installs it.
+local function integrations()
+  local need = require("ach.need")
+  if vim.fn.has("nvim-0.12.4") == 1 then
+    vim.health.ok("Neovim is 0.12.4 or later, as VimTeX needs")
+  else
+    vim.health.error(
+      ("Neovim %s is older than 0.12.4, which VimTeX needs"):format(tostring(vim.version())),
+      { "brew upgrade neovim" }
+    )
+  end
+  for _, p in ipairs(need.programs) do
+    local name = p.label or p.name
+    if need.found(p.name) then
+      vim.health.ok(("%s is installed, for %s"):format(name, p.purpose))
+    else
+      vim.health.warn(("%s is not installed, so %s will not work"):format(name, p.purpose), { p.brew })
+    end
+  end
+end
+
 M.sections = {
   { "Neovim", neovim },
   { "Build tools", build },
@@ -402,6 +425,7 @@ M.sections = {
   { "Metals", metals },
   { "Debugging", debugging },
   { "Mason", mason },
+  { "Integrations", integrations },
 }
 
 -- Called by :checkhealth ach. A section that fails is reported as an error

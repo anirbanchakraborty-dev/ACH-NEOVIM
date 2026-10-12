@@ -427,6 +427,7 @@ return {
       "Metals",
       "Debugging",
       "Mason",
+      "Integrations",
     }, "every section, in order")
     local neovim = section(out, "Neovim")
     t.eq(#neovim, 1, "one report")
