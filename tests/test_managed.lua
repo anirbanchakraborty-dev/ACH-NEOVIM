@@ -163,6 +163,7 @@ return {
             end,
           },
         },
+        { package.loaded, "jdtls.dap", { setup_dap = function() end } },
       }, function()
         M.start(one, entry("java"))
         M.start(two, entry("java"))

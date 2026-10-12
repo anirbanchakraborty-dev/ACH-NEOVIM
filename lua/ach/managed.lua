@@ -153,8 +153,11 @@ local starters = {
     end
   end,
 
+  -- The debugger is registered first, so it keeps hot code replace; see
+  -- ach.dap.java.
   ["nvim-jdtls"] = function(buf)
     if executable("jdtls") then
+      require("ach.dap").java()
       require("jdtls").start_or_attach(M.jdtls_config(buf), nil, { bufnr = buf })
     end
   end,
@@ -165,6 +168,7 @@ local starters = {
       local config = metals.bare_config()
       config.settings = { metalsBinaryPath = M.metals_program }
       config.capabilities = require("ach.lsp").capabilities()
+      config.on_attach = function() metals.setup_dap() end
       in_buffer(buf, function() metals.initialize_or_attach(config) end)
     elseif opts.install ~= false then
       install_metals()
@@ -220,7 +224,9 @@ function M.setup()
       default_settings = { ["rust-analyzer"] = { check = { command = "clippy" } } },
     },
   }
-  vim.g.haskell_tools = { hls = { auto_attach = false } }
+  -- haskell-tools' search for launch choices runs when debugging starts,
+  -- through ach.dap's provider, rather than as each file opens.
+  vim.g.haskell_tools = { hls = { auto_attach = false }, dap = { auto_discover = false } }
   vim.g.lean_config = { lsp = { enable = false } }
 
   local group = vim.api.nvim_create_augroup("ach_managed", { clear = true })
