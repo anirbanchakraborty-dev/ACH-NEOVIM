@@ -198,6 +198,22 @@ M.settings = {
     end,
   },
 
+  -- nvim-lspconfig works the cache folder out once, from whichever buffer is
+  -- current when its file loads, and outside a Gradle or Maven project leaves
+  -- the options empty. Neovim sends an empty table as a JSON array, which the
+  -- server refuses, so it never starts. Each start gets the project's root,
+  -- or a folder of Neovim's own cache for a file outside a project.
+  kotlin_language_server = {
+    before_init = function(params, config)
+      local storage = config.root_dir
+      if not storage then
+        storage = vim.fn.stdpath("cache") .. "/kotlin-language-server"
+        vim.fn.mkdir(storage, "p")
+      end
+      params.initializationOptions = { storagePath = storage }
+    end,
+  },
+
   -- Mason's julia-lsp takes the Julia environment to load as its one
   -- argument; nvim-lspconfig's command runs julia directly instead.
   julials = {

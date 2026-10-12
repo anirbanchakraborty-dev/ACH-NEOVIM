@@ -270,6 +270,25 @@ return {
     t.eq(bare.init_options.typescript.tsdk, mason, "Mason's copy, outside a project with TypeScript")
   end,
 
+  ["Kotlin's server is sent a folder for its cache, in a project or outside one"] = function(t)
+    local config = vim.deepcopy(vim.lsp.config.kotlin_language_server)
+    t.eq(type(config.before_init), "function", "kotlin_language_server's before_init")
+    local project = t.tmpdir()
+    config.root_dir = project
+    local params = { initializationOptions = {} }
+    config.before_init(params, config)
+    t.eq(params.initializationOptions.storagePath, project, "a project's own root")
+    local lone = vim.deepcopy(vim.lsp.config.kotlin_language_server)
+    lone.root_dir = nil
+    params = { initializationOptions = {} }
+    lone.before_init(params, lone)
+    local cache = vim.fn.stdpath("cache") .. "/kotlin-language-server"
+    t.eq(params.initializationOptions.storagePath, cache, "the cache folder, for a file outside a project")
+    t.eq(vim.fn.isdirectory(cache), 1, "the cache folder exists")
+    -- An empty Lua table goes out as a JSON array, which the server refuses.
+    t.eq(vim.json.encode(params.initializationOptions):sub(1, 1), "{", "sent as a JSON object")
+  end,
+
   ["each server's own settings reach its configuration"] = function(t)
     local client = { server_capabilities = { hoverProvider = true } }
     vim.lsp.config.ruff.on_init(client)
