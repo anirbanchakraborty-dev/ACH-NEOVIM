@@ -51,6 +51,14 @@ function M.moves_for(buf)
   end
 end
 
+-- File types that keep Vim's regex highlighting beside tree-sitter's, and
+-- their own indentation. VimTeX reads the regex highlighting to tell a
+-- formula from text, for the i$ and a$ text objects, the ds$, cs$ and ts$
+-- keys, the symbols it draws in place of commands such as \alpha, and its
+-- insert-mode shortcuts. vim.treesitter.start turns regex highlighting off,
+-- and its help says to set 'syntax' afterwards to have both.
+M.with_regex = { tex = true }
+
 function M.attach(buf)
   if not vim.api.nvim_buf_is_valid(buf) then
     return
@@ -63,10 +71,16 @@ function M.attach(buf)
   if not (ok and added) then
     return
   end
+  local regex = M.with_regex[vim.bo[buf].filetype]
   if has_query(lang, "highlights") then
     pcall(vim.treesitter.start, buf, lang)
+    if regex then
+      -- "ON" in capitals: Vim's syntax loader compares the value with ==,
+      -- which follows 'ignorecase', and only capitals match either way.
+      vim.bo[buf].syntax = "ON"
+    end
   end
-  if has_query(lang, "indents") then
+  if has_query(lang, "indents") and not regex then
     vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
   end
   if has_query(lang, "textobjects") then

@@ -24,6 +24,18 @@ M.programs = {
     brew = "brew install --cask claude-code",
     purpose = "the Claude Code panel on Space a",
   },
+  {
+    name = "latexmk",
+    label = "MacTeX",
+    brew = "brew install --cask mactex",
+    purpose = "building LaTeX documents on Space c b and Backslash l",
+  },
+  {
+    name = "displayline",
+    label = "Skim",
+    brew = "brew install --cask skim",
+    purpose = "showing LaTeX PDFs and jumping between them and the source",
+  },
   -- Programs added by later tasks go above this line.
 }
 

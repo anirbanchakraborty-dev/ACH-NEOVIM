@@ -16,7 +16,8 @@ end
 
 -- Each key is set on a buffer only when one of its servers supports the
 -- method in has, or one of the methods when has is a list. A key with no has
--- is set for any server.
+-- is set for any server. A key with not_ft is left off buffers of those file
+-- types, where the key already means something else.
 M.keys = {
   { "<leader>cl", picker("lsp_config"), desc = "Lsp Info" },
   { "gd", picker("lsp_definitions"), desc = "Goto Definition", has = "textDocument/definition" },
@@ -87,17 +88,20 @@ M.keys = {
     desc = "Rename File",
     has = { "workspace/didRenameFiles", "workspace/willRenameFiles" },
   },
+  -- In LaTeX, VimTeX's ]] and [[ move between sections, as they do in Vim.
   {
     "]]",
     function() Snacks.words.jump(vim.v.count1) end,
     desc = "Next Reference",
     has = "textDocument/documentHighlight",
+    not_ft = { "tex" },
   },
   {
     "[[",
     function() Snacks.words.jump(-vim.v.count1) end,
     desc = "Prev Reference",
     has = "textDocument/documentHighlight",
+    not_ft = { "tex" },
   },
   { "<leader>ss", picker("lsp_symbols"), desc = "LSP Symbols", has = "textDocument/documentSymbol" },
   { "<leader>sS", picker("lsp_workspace_symbols"), desc = "LSP Workspace Symbols", has = "workspace/symbol" },
@@ -119,8 +123,9 @@ end
 -- lenses where it draws them. Running it again for the same buffer is
 -- harmless, which is what lets a capability registered later add its key.
 function M.attach(buf, client)
+  local ft = vim.bo[buf].filetype
   for _, key in ipairs(M.keys) do
-    if supports(client, key.has, buf) then
+    if supports(client, key.has, buf) and not vim.tbl_contains(key.not_ft or {}, ft) then
       vim.keymap.set(key.mode or "n", key[1], key[2], { buf = buf, desc = key.desc })
     end
   end
