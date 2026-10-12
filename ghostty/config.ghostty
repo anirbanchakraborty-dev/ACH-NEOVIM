@@ -1,0 +1,41 @@
+# Ghostty's settings for ACH-NEOVIM. Ghostty reads this file through the link
+# ~/.config/ghostty/config.ghostty. tests/test_ghostty.lua checks every colour
+# here against lua/ach/palette.lua and against the terminal colours Neovim's
+# theme sets, so a colour changes there first.
+
+# JetBrainsMono Nerd Font at 15 points. The Nerd Font's icons draw the
+# editor's status bar, file tree and key menu.
+font-family = JetBrainsMono Nerd Font
+font-size = 15
+
+# The navy behind the editor, so no seam shows around it, and the text,
+# cursor and selection colours Neovim uses.
+background = #011628
+foreground = #CBE0F0
+cursor-color = #CBE0F0
+selection-background = #275378
+selection-foreground = #CBE0F0
+
+# The sixteen colours programs pick by number: black, red, green, yellow,
+# blue, magenta, cyan and white, then the bright version of each. They are
+# the ones tokyonight's night style gives Neovim's own terminal.
+palette = 0=#15161e
+palette = 1=#f7768e
+palette = 2=#9ece6a
+palette = 3=#e0af68
+palette = 4=#7aa2f7
+palette = 5=#bb9af7
+palette = 6=#7dcfff
+palette = 7=#a9b1d6
+palette = 8=#414868
+palette = 9=#ff899d
+palette = 10=#9fe044
+palette = 11=#faba4a
+palette = 12=#8db0ff
+palette = 13=#c7a9ff
+palette = 14=#a4daff
+palette = 15=#c0caf5
+
+# The left Option key is Alt, which terminal programs such as Neovim expect.
+# The right Option key still types special characters, such as Option-e e.
+macos-option-as-alt = left
