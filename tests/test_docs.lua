@@ -300,7 +300,7 @@ return {
       end
       local h3 = inside and p[2]:match("^### (.+)$")
       under = h3 and unqualified(h3, "Plugins") or under
-      local name = inside and p[2]:match("^#### %[(.-)%]%(")
+      local name = inside and p[2]:match("^#### (.+)$")
       if name then
         name = name:gsub("\\(.)", "%1")
         t.ok(known[under], name .. " sits under a known category, not " .. tostring(under))
@@ -403,6 +403,16 @@ return {
     t.eq(bad, {}, "lines of the post with a semicolon outside code")
   end,
 
+  ["no heading in the post holds a link, since the website makes each heading one"] = function(t)
+    local linked = {}
+    for _, p in ipairs(prose(post(t))) do
+      if p[2]:match("^##+ ") and p[2]:find("](", 1, true) then
+        linked[#linked + 1] = p[1] .. ": " .. p[2]
+      end
+    end
+    t.eq(linked, {}, "headings with a link inside, which a browser splits out of the heading's own link")
+  end,
+
   ["a heading that repeats an earlier one's id is named for its section"] = function(t)
     local docs_file = FILES["lua/ach/docs.lua"]:gsub('"Util"', '"Demo"')
     local lines = lines_of(generate(t, fixture(t, nil, { ["lua/ach/docs.lua"] = docs_file })))
@@ -447,9 +457,9 @@ return {
 
   ["a plugin with opts gets Options then Full Spec, and one without gets Full Spec alone"] = function(t)
     local lines = lines_of(generate(t, fixture(t)))
-    local alpha = find(lines, "#### [alpha.nvim](https://github.com/someone/alpha.nvim)")
-    local beta = find(lines, "#### [beta.nvim](https://github.com/someone/beta.nvim)")
-    local gamma = find(lines, "#### [gamma.nvim](https://github.com/someone/gamma.nvim)")
+    local alpha = find(lines, "#### alpha.nvim")
+    local beta = find(lines, "#### beta.nvim")
+    local gamma = find(lines, "#### gamma.nvim")
     t.ok(alpha and beta and gamma and alpha < beta and beta < gamma, "alpha, beta and gamma, in that order")
     local function labels(from, to)
       local out = {}
@@ -469,11 +479,22 @@ return {
     }, "alpha's Options tab, with the comment above opts")
   end,
 
+  ["a plugin's heading is its name, and the line after its description links its repository"] = function(t)
+    local lines = lines_of(generate(t, fixture(t)))
+    local alpha = find(lines, "#### alpha.nvim")
+    t.ok(alpha ~= nil, "alpha's heading is its name alone")
+    t.eq(
+      vim.list_slice(lines, alpha + 3, alpha + 4),
+      { "", "Repository: [someone/alpha.nvim](https://github.com/someone/alpha.nvim)" },
+      "the line after alpha's description"
+    )
+  end,
+
   ["a dependency shows the line that brings it in, and a language its table and tabs"] = function(t)
     local lines = lines_of(generate(t, fixture(t)))
-    local gamma = find(lines, "#### [gamma.nvim](https://github.com/someone/gamma.nvim)")
+    local gamma = find(lines, "#### gamma.nvim")
     t.ok(gamma ~= nil, "gamma is in the post")
-    t.eq(vim.list_slice(lines, gamma + 4, gamma + 11), {
+    t.eq(vim.list_slice(lines, gamma + 6, gamma + 13), {
       "lazy.nvim installs it as a dependency of `alpha.nvim`, in `lua/ach/plugins/fixture.lua`:",
       "",
       "<Tabs>",

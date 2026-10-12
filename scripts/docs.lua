@@ -523,8 +523,10 @@ function M.plugins_section(root, docs)
     end
     for _, name in ipairs(names) do
       local spec = specs[name]
-      local heading = ("#### [%s](https://github.com/%s)"):format(M.escape(name), spec.repo)
-      vim.list_extend(out, { "", heading, "", M.escape(docs.plugins[name].desc) })
+      -- The website wraps every heading in a link to itself, so the repository link sits below
+      -- the description rather than inside the heading, where a browser would split the two.
+      local repository = ("Repository: [%s](https://github.com/%s)"):format(M.escape(spec.repo), spec.repo)
+      vim.list_extend(out, { "", "#### " .. M.escape(name), "", M.escape(docs.plugins[name].desc), "", repository })
       for _, fragment in ipairs(spec.fragments) do
         local tabs = {}
         if fragment.opts then

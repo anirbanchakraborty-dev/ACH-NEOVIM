@@ -38,7 +38,7 @@ M.intro = {
       .. " here. Inside Neovim, `Space s k` searches every key, those included.",
   },
   plugins = {
-    "Every plugin in `lazy-lock.json`, grouped by what it does. Each name links to the plugin's repository. The"
+    "Every plugin in `lazy-lock.json`, grouped by what it does, each with a link to its repository. The"
       .. " Options tab shows `opts`, the settings lazy.nvim hands to the plugin, and the Full Spec tab shows the"
       .. " whole spec: where the plugin comes from, when it loads, its keys and its options. Either one can be"
       .. " copied into a file in `lua/ach/plugins/`.",
