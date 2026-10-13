@@ -25,7 +25,7 @@ This is the third of three plans, run in this order: foundation, languages, inte
 - Lua is formatted by `stylua.toml`: two-space indent, 120 columns, double quotes.
 - Markdown in this repository keeps one paragraph per line, with no hard wrap and no numbered headings or numbered lists.
 - The documentation post is MDX for the website, and uses Markdown and two components only: `<Tabs>` with `<Tab label="...">` inside it, and `<Callout type="note">`, `"tip"` or `"warning"`, each tag on a line of its own. Outside code, every `{`, `}`, `<`, `>` and `$` is escaped with a backslash, and so is a `|` inside a table cell. The four pages in `docs/site/` are copied into it as written, so they follow the same rule and start their headings at `###`.
-- Commits are made inside this repository, with `git commit --only <paths>` and a Conventional Commit subject that carries a scope, ending in the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. The one exception is the commit `scripts/update` makes, whose message the script writes from the two lock files, so it carries no `Co-Authored-By` line. Nothing is pushed without the owner's yes.
+- Commits are made inside this repository, with `git commit --only <paths>` and a Conventional Commit subject that carries a scope. The commit `scripts/update` makes is the one whose message the script writes, from the two lock files. Nothing is pushed without the owner's yes.
 
 ## Review Focus
 
@@ -437,7 +437,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/need.lua tests/test_need.lua
-git commit --only lua/ach/need.lua tests/test_need.lua lua/ach/health.lua tests/test_health.lua -m "feat(health): list the Homebrew programs the integrations call, and hold Neovim to VimTeX's 0.12.4" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/need.lua tests/test_need.lua lua/ach/health.lua tests/test_health.lua -m "feat(health): list the Homebrew programs the integrations call, and hold Neovim to VimTeX's 0.12.4"
 ```
 
 ---
@@ -1411,7 +1411,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/git.lua lua/ach/plugins/git.lua tests/test_git.lua
-git commit --only lua/ach/git.lua lua/ach/plugins/git.lua tests/test_git.lua lua/ach/need.lua lua/ach/icons.lua lazy-lock.json -m "feat(git): change bars and hunk keys, lazygit, Neogit, diffview and octo, each behind a repository check" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/git.lua lua/ach/plugins/git.lua tests/test_git.lua lua/ach/need.lua lua/ach/icons.lua lazy-lock.json -m "feat(git): change bars and hunk keys, lazygit, Neogit, diffview and octo, each behind a repository check"
 ```
 
 ---
@@ -1981,7 +1981,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/claude.lua lua/ach/plugins/claude.lua tests/test_claude.lua
-git commit --only lua/ach/claude.lua lua/ach/plugins/claude.lua tests/test_claude.lua lua/ach/plugins/ui.lua lua/ach/need.lua lua/ach/icons.lua lazy-lock.json -m "feat(claude): Claude Code in a docked panel on Space a, its server on 127.0.0.1 behind a token, and none when headless" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/claude.lua lua/ach/plugins/claude.lua tests/test_claude.lua lua/ach/plugins/ui.lua lua/ach/need.lua lua/ach/icons.lua lazy-lock.json -m "feat(claude): Claude Code in a docked panel on Space a, its server on 127.0.0.1 behind a token, and none when headless"
 ```
 
 ---
@@ -3115,7 +3115,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/latex.lua lua/ach/plugins/latex.lua tests/test_latex.lua
-git commit --only lua/ach/latex.lua lua/ach/plugins/latex.lua tests/test_latex.lua lua/ach/treesitter.lua lua/ach/lsp.lua lua/ach/need.lua lua/ach/icons.lua lazy-lock.json -m "feat(latex): VimTeX with Skim's forward and inverse search, builds into the cache, a project build hook on Space c b, and a description and icon for every VimTeX key" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/latex.lua lua/ach/plugins/latex.lua tests/test_latex.lua lua/ach/treesitter.lua lua/ach/lsp.lua lua/ach/need.lua lua/ach/icons.lua lazy-lock.json -m "feat(latex): VimTeX with Skim's forward and inverse search, builds into the cache, a project build hook on Space c b, and a description and icon for every VimTeX key"
 ```
 
 ---
@@ -3799,7 +3799,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/preview.lua lua/ach/plugins/markdown.lua tests/test_markdown.lua
-git commit --only lua/ach/preview.lua lua/ach/plugins/markdown.lua tests/test_markdown.lua lua/ach/need.lua lua/ach/icons.lua lazy-lock.json -m "feat(markdown): render-markdown in the editor, snacks pictures and formulas, and a browser preview on Space c p guarded against paths outside its folder and requests from other sites" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/preview.lua lua/ach/plugins/markdown.lua tests/test_markdown.lua lua/ach/need.lua lua/ach/icons.lua lazy-lock.json -m "feat(markdown): render-markdown in the editor, snacks pictures and formulas, and a browser preview on Space c p guarded against paths outside its folder and requests from other sites"
 ```
 
 ---
@@ -4681,7 +4681,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/x86.lua lua/ach/news.lua lua/ach/plugins/tools.lua tests/test_tools.lua
-git commit --only lua/ach/x86.lua lua/ach/news.lua lua/ach/plugins/tools.lua tests/test_tools.lua lua/ach/need.lua lua/ach/icons.lua -m "feat(tools): open Intel's manual in Skim at the instruction under the cursor on Space c x, and newsboat in a floating terminal on Space N" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/x86.lua lua/ach/news.lua lua/ach/plugins/tools.lua tests/test_tools.lua lua/ach/need.lua lua/ach/icons.lua -m "feat(tools): open Intel's manual in Skim at the instruction under the cursor on Space c x, and newsboat in a floating terminal on Space N"
 ```
 
 ---
@@ -4956,7 +4956,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add ghostty/config.ghostty tests/test_ghostty.lua
-git commit --only ghostty/config.ghostty tests/test_ghostty.lua -m "feat(ghostty): set Ghostty's font, navy background, left Option as Alt and the sixteen colours Neovim's terminal uses" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only ghostty/config.ghostty tests/test_ghostty.lua -m "feat(ghostty): set Ghostty's font, navy background, left Option as Alt and the sixteen colours Neovim's terminal uses"
 ```
 
 ---
@@ -5489,7 +5489,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add tests/helpers/startup.lua tests/test_startup.lua tests/baseline.json
-git commit --only scripts/check tests/helpers/startup.lua tests/test_startup.lua tests/baseline.json -m "test(startup): hold startup time to a recorded baseline and to stock LazyVim" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only scripts/check tests/helpers/startup.lua tests/test_startup.lua tests/baseline.json -m "test(startup): hold startup time to a recorded baseline and to stock LazyVim"
 ```
 
 ---
@@ -5545,7 +5545,7 @@ Mason packages:
 scripts/check --full passed with these versions.
 ```
 
-Each commit is cut to its first seven characters, the length git itself shows. A plugin or package that appears or disappears is named as added or removed. The message carries no `Co-Authored-By` line, because the script wrote it from the lock files and no model did. That is the one exception to this plan's rule on commit messages. Nothing is pushed.
+Each commit is cut to its first seven characters, the length git itself shows. A plugin or package that appears or disappears is named as added or removed. Nothing is pushed.
 
 `scripts/update --list` is the first step of the spec's procedure, reading what would move before moving it. It runs lazy.nvim's check, which fetches each plugin's repository and prints the one-line log of every commit an update would take, then refreshes Mason's registry and compares each installed package with its newest release. It ends with a summary: each plugin that would move, with the GitHub page showing every change between its two commits, and each Mason package with its two versions. It installs nothing and changes no file in the repository. Whoever maintains the configuration reads those pages, and LazyVim's change log at `https://github.com/LazyVim/LazyVim/blob/main/CHANGELOG.md`, before running `scripts/update`, since LazyVim usually adapts to a breaking plugin change within days and its fix shows what changed.
 
@@ -6511,7 +6511,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/update.lua scripts/update tests/test_update.lua
-git commit --only lua/ach/update.lua scripts/update tests/test_update.lua README.md -m "feat(update): update plugins and Mason packages, and keep them only when the full check passes" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/update.lua scripts/update tests/test_update.lua README.md -m "feat(update): update plugins and Mason packages, and keep them only when the full check passes"
 ```
 
 ---
@@ -6946,7 +6946,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/upgrade.lua tests/test_upgrade.lua
-git commit --only lua/ach/upgrade.lua tests/test_upgrade.lua lua/ach/init.lua README.md -m "feat(upgrade): run the fast check once after Homebrew moves Neovim" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/upgrade.lua tests/test_upgrade.lua lua/ach/init.lua README.md -m "feat(upgrade): run the fast check once after Homebrew moves Neovim"
 ```
 
 The first start in Ghostty after this commit shows the check at work: one notice that it is running, and about a minute later one that it passed. That start records the program, and the next start says nothing.
@@ -7609,7 +7609,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add docs/key-card.md tests/test_key_card.lua
-git commit --only docs/key-card.md tests/test_key_card.lua -m "docs(keys): add the one-page key card, checked against the keys Neovim has" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only docs/key-card.md tests/test_key_card.lua -m "docs(keys): add the one-page key card, checked against the keys Neovim has"
 ```
 
 ---
@@ -9833,7 +9833,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/docs.lua scripts/docs scripts/docs.lua tests/helpers/keymaps.lua tests/test_docs.lua docs/site/getting-started.md docs/site/installation.md docs/site/news.md docs/site/configuration.md docs/site/keymaps.json
-git commit --only lua/ach/docs.lua scripts/docs scripts/docs.lua tests/helpers/keymaps.lua tests/test_docs.lua docs/site/getting-started.md docs/site/installation.md docs/site/news.md docs/site/configuration.md docs/site/keymaps.json scripts/check -m "docs(post): generate the documentation post from the source" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/docs.lua scripts/docs scripts/docs.lua tests/helpers/keymaps.lua tests/test_docs.lua docs/site/getting-started.md docs/site/installation.md docs/site/news.md docs/site/configuration.md docs/site/keymaps.json scripts/check -m "docs(post): generate the documentation post from the source"
 ```
 
 ---

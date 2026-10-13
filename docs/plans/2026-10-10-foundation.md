@@ -25,7 +25,7 @@ This is the first of three plans, run in this order: foundation, languages, inte
 - This repository names no folder of the owner's private repository. Anything specific to it arrives through the hook functions this plan defines, called from that repository's own `.nvim.lua`.
 - Lua is formatted by `stylua.toml`: two-space indent, 120 columns, double quotes.
 - Markdown in this repository keeps one paragraph per line, with no hard wrap and no numbered headings or numbered lists.
-- Commits are made inside this repository, with `git commit --only <paths>` and a Conventional Commit subject that carries a scope, such as `feat(theme): …`, ending in the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Nothing is pushed without the owner's yes.
+- Commits are made inside this repository, with `git commit --only <paths>` and a Conventional Commit subject that carries a scope, such as `feat(theme): …`. Nothing is pushed without the owner's yes.
 
 ## Review Focus
 
@@ -488,7 +488,7 @@ Expected: PASS for all six `test_harness` tests, then `6 passed, 0 failed, 0 nee
 
 ```bash
 git add README.md LICENSE .gitignore stylua.toml init.lua lua/ach/init.lua lua/ach/testhook.lua scripts/check tests/run.lua tests/test_harness.lua docs/specs docs/plans
-git commit --only README.md LICENSE .gitignore stylua.toml init.lua lua/ach/init.lua lua/ach/testhook.lua scripts/check tests/run.lua tests/test_harness.lua docs/specs docs/plans -m "feat(harness): add the entry point and the headless test runner" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only README.md LICENSE .gitignore stylua.toml init.lua lua/ach/init.lua lua/ach/testhook.lua scripts/check tests/run.lua tests/test_harness.lua docs/specs docs/plans -m "feat(harness): add the entry point and the headless test runner"
 ```
 
 Run `git add` on those paths first, since `--only` commits paths git already tracks or has been told about.
@@ -835,7 +835,7 @@ Expected: every `test_harness`, `test_startup` and `test_lock` test passes, exit
 
 ```bash
 git add lua/ach/options.lua lua/ach/autocmds.lua lua/ach/lazy.lua lua/ach/keymaps.lua lua/ach/plugins/core.lua lazy-lock.json tests/test_startup.lua tests/test_lock.lua
-git commit --only lua/ach/init.lua lua/ach/options.lua lua/ach/autocmds.lua lua/ach/lazy.lua lua/ach/keymaps.lua lua/ach/plugins/core.lua lazy-lock.json tests/test_startup.lua tests/test_lock.lua -m "feat(core): add options and the lazy.nvim bootstrap with a repository lock file" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/init.lua lua/ach/options.lua lua/ach/autocmds.lua lua/ach/lazy.lua lua/ach/keymaps.lua lua/ach/plugins/core.lua lazy-lock.json tests/test_startup.lua tests/test_lock.lua -m "feat(core): add options and the lazy.nvim bootstrap with a repository lock file"
 ```
 
 ---
@@ -1066,7 +1066,7 @@ Expected: all four `test_theme` tests pass, and every earlier test still passes.
 
 ```bash
 git add lua/ach/palette.lua lua/ach/contrast.lua lua/ach/plugins/colorscheme.lua tests/test_theme.lua
-git commit --only lua/ach/palette.lua lua/ach/contrast.lua lua/ach/plugins/colorscheme.lua tests/test_theme.lua lazy-lock.json -m "feat(theme): add the navy palette over tokyonight night, with contrast checks" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/palette.lua lua/ach/contrast.lua lua/ach/plugins/colorscheme.lua tests/test_theme.lua lazy-lock.json -m "feat(theme): add the navy palette over tokyonight night, with contrast checks"
 ```
 
 ---
@@ -1356,7 +1356,7 @@ Expected: all seven `test_glyphs` tests pass, along with every earlier test. Exi
 
 ```bash
 git add scripts/gen-glyphs scripts/gen_glyphs.lua lua/ach/glyphs.lua lua/ach/glyphs_forbidden.lua lua/ach/glyphs_known.lua tests/test_glyphs.lua
-git commit --only scripts/gen-glyphs scripts/gen_glyphs.lua lua/ach/glyphs.lua lua/ach/glyphs_forbidden.lua lua/ach/glyphs_known.lua tests/test_glyphs.lua -m "feat(statusline): add the forbidden and known glyph sets generated from Nerd Fonts 3.5.1" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only scripts/gen-glyphs scripts/gen_glyphs.lua lua/ach/glyphs.lua lua/ach/glyphs_forbidden.lua lua/ach/glyphs_known.lua tests/test_glyphs.lua -m "feat(statusline): add the forbidden and known glyph sets generated from Nerd Fonts 3.5.1"
 ```
 
 ---
@@ -3261,7 +3261,7 @@ Expected: all ten `test_icons` tests pass, along with every earlier test. Exit 0
 
 ```bash
 git add lua/ach/icons.lua tests/test_icons.lua
-git commit --only lua/ach/icons.lua lua/ach/lazy.lua tests/test_icons.lua -m "feat(icons): add the icon database for keys, groups, toggles and file types" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/icons.lua lua/ach/lazy.lua tests/test_icons.lua -m "feat(icons): add the icon database for keys, groups, toggles and file types"
 ```
 
 ---
@@ -3995,7 +3995,7 @@ Expected: all thirteen `test_statusline` tests pass, along with every earlier te
 
 ```bash
 git add lua/ach/util.lua lua/ach/statusline.lua lua/ach/plugins/statusline.lua tests/test_statusline.lua
-git commit --only lua/ach/util.lua lua/ach/statusline.lua lua/ach/plugins/statusline.lua tests/test_statusline.lua lazy-lock.json -m "feat(statusline): add the tiled status bar with coloured icons and no angled glyphs" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/util.lua lua/ach/statusline.lua lua/ach/plugins/statusline.lua tests/test_statusline.lua lazy-lock.json -m "feat(statusline): add the tiled status bar with coloured icons and no angled glyphs"
 ```
 
 ---
@@ -4527,7 +4527,7 @@ Expected: the blue ACH NEOVIM banner with its grey-blue shadow, the caption, sev
 
 ```bash
 git add assets/banner.txt lua/ach/banner.lua lua/ach/dashboard.lua lua/ach/plugins/dashboard.lua tests/test_banner.lua tests/test_dashboard.lua
-git commit --only assets/banner.txt lua/ach/banner.lua lua/ach/dashboard.lua lua/ach/plugins/dashboard.lua tests/test_banner.lua tests/test_dashboard.lua lazy-lock.json -m "feat(dashboard): add the ACH NEOVIM banner and start screen" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only assets/banner.txt lua/ach/banner.lua lua/ach/dashboard.lua lua/ach/plugins/dashboard.lua tests/test_banner.lua tests/test_dashboard.lua lazy-lock.json -m "feat(dashboard): add the ACH NEOVIM banner and start screen"
 ```
 
 ---
@@ -5143,7 +5143,7 @@ Expected: which-key opens at the bottom with the groups listed above, each with 
 
 ```bash
 git add lua/ach/plugins/keys.lua tests/test_keys.lua
-git commit --only lua/ach/keymaps.lua lua/ach/plugins/keys.lua lua/ach/icons.lua tests/test_keys.lua lazy-lock.json -m "feat(keys): add the core keys, the which-key menus and the picker keys" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/keymaps.lua lua/ach/plugins/keys.lua lua/ach/icons.lua tests/test_keys.lua lazy-lock.json -m "feat(keys): add the core keys, the which-key menus and the picker keys"
 ```
 
 ---
@@ -5656,7 +5656,7 @@ Expected: the line numbers sit in snacks' column, indent guides show, and nested
 
 ```bash
 git add lua/ach/plugins/editor.lua lua/ach/plugins/ui.lua tests/test_editor.lua
-git commit --only lua/ach/plugins/editor.lua lua/ach/plugins/ui.lua lua/ach/icons.lua tests/test_editor.lua lazy-lock.json -m "feat(editor): add jumping, search and replace, the problem list, sessions and docked panes" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/plugins/editor.lua lua/ach/plugins/ui.lua lua/ach/icons.lua tests/test_editor.lua lazy-lock.json -m "feat(editor): add jumping, search and replace, the problem list, sessions and docked panes"
 ```
 
 ---
@@ -5989,5 +5989,5 @@ Expected: in insert mode, typing `eq` shows our equation snippet in the menu wit
 
 ```bash
 git add lua/ach/plugins/coding.lua snippets/package.json snippets/all.json snippets/tex.json snippets/lua.json scripts/fetch-matcher tests/test_completion.lua
-git commit --only lua/ach/plugins/coding.lua snippets/package.json snippets/all.json snippets/tex.json snippets/lua.json scripts/fetch-matcher tests/test_completion.lua lazy-lock.json -m "feat(completion): add blink.cmp with the repository's snippets and the matcher fetch" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/plugins/coding.lua snippets/package.json snippets/all.json snippets/tex.json snippets/lua.json scripts/fetch-matcher tests/test_completion.lua lazy-lock.json -m "feat(completion): add blink.cmp with the repository's snippets and the matcher fetch"
 ```

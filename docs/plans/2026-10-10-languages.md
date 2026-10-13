@@ -27,7 +27,7 @@ This is the second of three plans, run in this order: foundation, languages, int
 - The spell file lives at `stdpath("data") .. "/spell/en.utf-8.add"`. Neovim's default would put it in the first folder of the runtime path, which is this repository through the `~/.config/nvim` link.
 - Lua is formatted by `stylua.toml`: two-space indent, 120 columns, double quotes.
 - Markdown in this repository keeps one paragraph per line, with no hard wrap and no numbered headings or numbered lists.
-- Commits are made inside this repository, with `git commit --only <paths>` and a Conventional Commit subject that carries a scope, ending in the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Nothing is pushed without the owner's yes.
+- Commits are made inside this repository, with `git commit --only <paths>` and a Conventional Commit subject that carries a scope. Nothing is pushed without the owner's yes.
 
 ## Review Focus
 
@@ -943,7 +943,7 @@ Expected: all 18 `test_lang` tests pass, along with every earlier test. Exit 0.
 
 ```bash
 git add lua/ach/languages.lua lua/ach/lang.lua tests/test_lang.lua scripts/on-demand scripts/on_demand.lua
-git commit --only lua/ach/languages.lua lua/ach/lang.lua tests/test_lang.lua scripts/on-demand scripts/on_demand.lua -m "feat(lang): add the language table, the engine that reads it and the on-demand formula list" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/languages.lua lua/ach/lang.lua tests/test_lang.lua scripts/on-demand scripts/on_demand.lua -m "feat(lang): add the language table, the engine that reads it and the on-demand formula list"
 ```
 
 ---
@@ -1690,7 +1690,7 @@ Expected: all 6 `test_filetypes` tests pass, along with every earlier test. Exit
 
 ```bash
 git add lua/ach/filetypes.lua tests/fixtures/samples.lua tests/test_filetypes.lua
-git commit --only lua/ach/filetypes.lua lua/ach/init.lua tests/fixtures/samples.lua tests/test_filetypes.lua -m "feat(lang): recognise every language's files and add a sample for each" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/filetypes.lua lua/ach/init.lua tests/fixtures/samples.lua tests/test_filetypes.lua -m "feat(lang): recognise every language's files and add a sample for each"
 ```
 
 ---
@@ -2410,7 +2410,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/plugins/treesitter.lua lua/ach/treesitter.lua lua/ach/install.lua tests/helpers/child.lua tests/test_treesitter.lua
-git commit --only lua/ach/plugins/treesitter.lua lua/ach/treesitter.lua lua/ach/install.lua lua/ach/init.lua lua/ach/icons.lua tests/helpers/child.lua tests/test_treesitter.lua scripts/check lazy-lock.json -m "feat(treesitter): install each language's parsers on first open and add the moves" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/plugins/treesitter.lua lua/ach/treesitter.lua lua/ach/install.lua lua/ach/init.lua lua/ach/icons.lua tests/helpers/child.lua tests/test_treesitter.lua scripts/check lazy-lock.json -m "feat(treesitter): install each language's parsers on first open and add the moves"
 ```
 
 ---
@@ -4001,7 +4001,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/masonlock.lua lua/ach/runtimes.lua lua/ach/plugins/mason.lua mason-lock.json tests/test_mason.lua
-git commit --only lua/ach/masonlock.lua lua/ach/runtimes.lua lua/ach/plugins/mason.lua lua/ach/install.lua lua/ach/init.lua lua/ach/icons.lua mason-lock.json tests/test_mason.lua lazy-lock.json -m "feat(mason): install each language's tools on first open, ask before installing its compiler, and pin versions" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/masonlock.lua lua/ach/runtimes.lua lua/ach/plugins/mason.lua lua/ach/install.lua lua/ach/init.lua lua/ach/icons.lua mason-lock.json tests/test_mason.lua lazy-lock.json -m "feat(mason): install each language's tools on first open, ask before installing its compiler, and pin versions"
 ```
 
 ---
@@ -4977,7 +4977,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/servers.lua lua/ach/lsp.lua lua/ach/plugins/lsp.lua tests/test_lsp.lua
-git commit --only lua/ach/servers.lua lua/ach/lsp.lua lua/ach/plugins/lsp.lua lua/ach/install.lua lua/ach/icons.lua tests/test_lsp.lua lazy-lock.json -m "feat(lsp): start each language's servers once installed, with keys their capabilities allow" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/servers.lua lua/ach/lsp.lua lua/ach/plugins/lsp.lua lua/ach/install.lua lua/ach/icons.lua tests/test_lsp.lua lazy-lock.json -m "feat(lsp): start each language's servers once installed, with keys their capabilities allow"
 ```
 
 ---
@@ -5645,7 +5645,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/format.lua lua/ach/plugins/format.lua tests/test_format.lua
-git commit --only lua/ach/format.lua lua/ach/plugins/format.lua lua/ach/icons.lua tests/test_format.lua lazy-lock.json -m "feat(format): format on save, in the background for slow formatters, and prose only on request" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/format.lua lua/ach/plugins/format.lua lua/ach/icons.lua tests/test_format.lua lazy-lock.json -m "feat(format): format on save, in the background for slow formatters, and prose only on request"
 ```
 
 ---
@@ -6243,7 +6243,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/lint.lua lua/ach/plugins/lint.lua tests/test_lint.lua
-git commit --only lua/ach/lint.lua lua/ach/plugins/lint.lua tests/test_lint.lua lazy-lock.json -m "feat(lint): lint each file on open, save and leaving insert mode, once its linters are installed" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/lint.lua lua/ach/plugins/lint.lua tests/test_lint.lua lazy-lock.json -m "feat(lint): lint each file on open, save and leaving insert mode, once its linters are installed"
 ```
 
 ---
@@ -6623,7 +6623,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/grammar.lua tests/test_grammar.lua
-git commit --only lua/ach/grammar.lua lua/ach/init.lua tests/test_grammar.lua -m "feat(grammar): check spelling in prose and code comments, and narrow Harper to the table's file types" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/grammar.lua lua/ach/init.lua tests/test_grammar.lua -m "feat(grammar): check spelling in prose and code comments, and narrow Harper to the table's file types"
 ```
 
 ---
@@ -7615,7 +7615,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/managed.lua lua/ach/plugins/managed.lua tests/test_managed.lua
-git commit --only lua/ach/managed.lua lua/ach/plugins/managed.lua lua/ach/install.lua lua/ach/init.lua lua/ach/icons.lua tests/test_managed.lua lazy-lock.json -m "feat(managed): start Rust, Haskell, Java, Scala and Lean through their own plugins once their servers are installed" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/managed.lua lua/ach/plugins/managed.lua lua/ach/install.lua lua/ach/init.lua lua/ach/icons.lua tests/test_managed.lua lazy-lock.json -m "feat(managed): start Rust, Haskell, Java, Scala and Lean through their own plugins once their servers are installed"
 ```
 
 ---
@@ -8998,7 +8998,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/dap.lua lua/ach/plugins/dap.lua tests/test_dap.lua
-git commit --only lua/ach/dap.lua lua/ach/plugins/dap.lua lua/ach/managed.lua lua/ach/icons.lua tests/test_dap.lua tests/test_managed.lua lazy-lock.json -m "feat(dap): debug every language that has an adapter, through nvim-dap and its interface" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/dap.lua lua/ach/plugins/dap.lua lua/ach/managed.lua lua/ach/icons.lua tests/test_dap.lua tests/test_managed.lua lazy-lock.json -m "feat(dap): debug every language that has an adapter, through nvim-dap and its interface"
 ```
 
 ---
@@ -9969,7 +9969,7 @@ Expected: no output, exit 0.
 
 ```bash
 git add lua/ach/health.lua tests/test_health.lua
-git commit --only lua/ach/health.lua tests/test_health.lua -m "feat(health): name every missing tool with the command that installs it" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/health.lua tests/test_health.lua -m "feat(health): name every missing tool with the command that installs it"
 ```
 
 ---
@@ -10806,7 +10806,7 @@ Expected: a `checked <language>, <n> of <total>` line after each language, one p
 
 ```bash
 git add tests/helpers/languages_doc.lua tests/helpers/probe.lua tests/test_languages_doc.lua tests/test_full_languages.lua docs/languages.md
-git commit --only tests/helpers/languages_doc.lua tests/helpers/probe.lua tests/test_languages_doc.lua tests/test_full_languages.lua docs/languages.md mason-lock.json -m "test(full): install every language, check each layer on its sample and record it in docs/languages.md" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only tests/helpers/languages_doc.lua tests/helpers/probe.lua tests/test_languages_doc.lua tests/test_full_languages.lua docs/languages.md mason-lock.json -m "test(full): install every language, check each layer on its sample and record it in docs/languages.md"
 ```
 
 This commit is the record as measured, `not working` cells included. From here on, the full mode compares against it.
@@ -10839,7 +10839,7 @@ Expected: no output, exit 0.
 Skip this step when the two settling steps changed nothing. Otherwise commit the files they changed, with `docs/languages.md` and `mason-lock.json` as the second run left them, and a body naming each tool dropped or sample fixed and why:
 
 ```bash
-git commit --only lua/ach/languages.lua tests/fixtures/samples.lua docs/languages.md mason-lock.json -m "fix(lang): drop the tools the full run shows not working, and fix the samples that tested nothing" -m "<one line per tool dropped or sample fixed, with the reason>" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit --only lua/ach/languages.lua tests/fixtures/samples.lua docs/languages.md mason-lock.json -m "fix(lang): drop the tools the full run shows not working, and fix the samples that tested nothing" -m "<one line per tool dropped or sample fixed, with the reason>"
 ```
 
 Add to the `--only` list any test file the settling step changed. When the only change is Bluespec's grammar, the subject is `fix(lang): drop tree-sitter-bsv, which fails its check` and the files are `lua/ach/languages.lua` and `docs/languages.md`.
