@@ -12,6 +12,33 @@ M.post = {
   summary = "How I set up Neovim on my Mac: installing it, every key, every plugin with its code, and every language,"
     .. " written from the configuration's own source.",
   tags = { "neovim", "lua", "editor", "macos" },
+  -- The repository and its licence, shown as the website's two buttons at the
+  -- top of the post.
+  repo = { url = "https://github.com/anirbanchakraborty-dev/ACH-NEOVIM", name = "ACH-NEOVIM", license = "MIT" },
+  -- Screenshots in docs/images, shown below the buttons in this order. The
+  -- website serves each from public/figures/ach-neovim, and README.md shows
+  -- each with its alt text.
+  screenshots = {
+    {
+      file = "dashboard.webp",
+      alt = "The start screen in Ghostty: ACH NEOVIM in large block letters above a menu of eight actions with their keys,"
+        .. " five recent files, one project, and a tip saying where plugins and language tools live.",
+      caption = "The start screen Neovim opens to when it is given no file.",
+    },
+    {
+      file = "editor.webp",
+      alt = "lua/ach/statusline.lua open at line 40 with relative line numbers, the file explorer listing lua/ach on the left,"
+        .. " the Space menu of keys and groups on the right, and the status bar along the bottom showing the mode, branch,"
+        .. " file, diagnostics and language servers.",
+      caption = "Editing a file, with the explorer open on the left, the Space menu raised, and the status bar below.",
+    },
+    {
+      file = "picker.webp",
+      alt = "The Files picker searching for plugins, with 20 of 137 files matching and a preview of"
+        .. " lua/ach/plugins/ui.lua beside the list.",
+      caption = "Finding a file, with a preview of the highlighted match beside the list.",
+    },
+  },
 }
 
 -- Markdown lines, copied into the post as they are. They hold no < > { },
@@ -33,7 +60,7 @@ M.intro = {
       .. " i is insert mode, for typing. c is the command line, after `:`. t is a terminal window.",
     "",
     "Inside Neovim each key also shows an icon. This page leaves the icons out, because they come from the"
-      .. " JetBrains Mono Nerd Font and this website does not load that font, so each would draw as an empty box."
+      .. " MesloLGS Nerd Font Mono and this website does not load that font, so each would draw as an empty box."
       .. " Keys a plugin sets only inside its own window, and text objects such as `i (` in `d i (`, are not listed"
       .. " here. Inside Neovim, `Space s k` searches every key, those included.",
   },

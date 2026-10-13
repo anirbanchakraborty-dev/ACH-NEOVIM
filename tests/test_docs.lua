@@ -16,6 +16,8 @@ local TAGS = {
   '^<Callout type="tip">$',
   '^<Callout type="warning">$',
   "^</Callout>$",
+  '^<RepoLink url="https://[^"]*" name="[^"]*" license="[^"]*" licenseUrl="https://[^"]*" />$',
+  '^<Figure src="/figures/ach%-neovim/[%w%-]+%.webp" alt="[^"]*" caption="[^"]*" id="fig:[%w%-]+" width="%d+" height="%d+" />$',
 }
 
 -- Words the post must never contain. They are stored in ROT13, which shifts
@@ -172,6 +174,16 @@ local function generate(t, dir, args)
 end
 
 local function lines_of(text) return vim.split(text, "\n", { plain = true }) end
+
+-- The width and height an extended WebP file gives in its header. Bytes 25 to
+-- 27 hold the width less one and bytes 28 to 30 the height less one, each
+-- read with its lowest byte first.
+local function webp_size(path)
+  local b = slurp(path)
+  assert(b:sub(1, 4) == "RIFF" and b:sub(9, 16) == "WEBPVP8X", path .. " is not an extended WebP file")
+  local function u24(i) return b:byte(i) + b:byte(i + 1) * 256 + b:byte(i + 2) * 65536 end
+  return u24(25) + 1, u24(28) + 1
+end
 
 -- The post for this repository, written once and kept for every test.
 local real
@@ -438,6 +450,70 @@ return {
     t.eq(lines[6], "draft: false", "the post is not a draft")
   end,
 
+  ["the post opens with the repository's buttons, straight after the front matter"] = function(t)
+    local lines = post(t)
+    local close = 2
+    while lines[close] and lines[close] ~= "---" do
+      close = close + 1
+    end
+    local repo = "https://github.com/anirbanchakraborty-dev/ACH-NEOVIM"
+    t.eq(lines[close + 1], "", "a blank line after the front matter")
+    t.eq(lines[close + 2], ('<RepoLink url="%s" name="ACH-NEOVIM" license="MIT" licenseUrl="%s/blob/main/LICENSE" />'):format(repo, repo),
+      "the repository and licence buttons")
+    t.ok(slurp(t.root .. "/LICENSE"):match("^MIT License") ~= nil, "LICENSE is the MIT licence the button names")
+  end,
+
+  ["the screenshots follow the buttons, each at the size its file has"] = function(t)
+    local lines = post(t)
+    local at = find(lines, "---", 2) + 2
+    local shots = dofile(t.root .. "/lua/ach/docs.lua").post.screenshots or {}
+    t.ok(#shots >= 3, "lua/ach/docs.lua lists the screenshots")
+    for _, shot in ipairs(shots) do
+      local path = t.root .. "/docs/images/" .. shot.file
+      t.eq(vim.fn.filereadable(path), 1, shot.file .. " is in docs/images")
+      local width, height = webp_size(path)
+      local want = ('<Figure src="/figures/ach-neovim/%s" alt="%s" caption="%s" id="fig:%s" width="%d" height="%d" />'):format(
+        shot.file, shot.alt, shot.caption, shot.file:gsub("%.webp$", ""), width, height)
+      at = at + 2
+      t.eq({ lines[at - 1], lines[at] }, { "", want }, shot.file .. "'s figure, after a blank line")
+    end
+    t.eq({ lines[at + 1], lines[at + 2] }, { "", '<Callout type="note">' }, "the note follows the last screenshot")
+  end,
+
+  ["a WebP file's size comes from its header, in each of its three forms"] = function(t)
+    local D = dofile(t.root .. "/scripts/docs.lua")
+    local function le(v, n)
+      local out = {}
+      for _ = 1, n do
+        out[#out + 1] = string.char(v % 256)
+        v = math.floor(v / 256)
+      end
+      return table.concat(out)
+    end
+    local head = "RIFF" .. le(100, 4) .. "WEBP"
+    local forms = {
+      extended = head .. "VP8X" .. le(10, 4) .. le(0, 4) .. le(1279, 3) .. le(719, 3),
+      lossless = head .. "VP8L" .. le(50, 4) .. "\47" .. le(1279 + 719 * 16384, 4) .. ("\0"):rep(10),
+      lossy = head .. "VP8 " .. le(50, 4) .. le(0, 3) .. "\157\1\42" .. le(1280, 2) .. le(720, 2),
+    }
+    for name, bytes in pairs(forms) do
+      local path = t.tmpdir() .. "/" .. name .. ".webp"
+      write(path, bytes)
+      t.eq({ D.webp_size(path) }, { 1280, 720 }, "the " .. name .. " form's size")
+    end
+    local png = t.tmpdir() .. "/not.webp"
+    write(png, "\137PNG\r\n\26\n" .. ("\0"):rep(30))
+    t.ok(not pcall(D.webp_size, png), "a file that is not WebP is refused")
+  end,
+
+  ["the README shows the same screenshots"] = function(t)
+    local readme = slurp(t.root .. "/README.md")
+    for _, shot in ipairs(dofile(t.root .. "/lua/ach/docs.lua").post.screenshots or {}) do
+      local line = ("![%s](docs/images/%s)"):format(shot.alt, shot.file)
+      t.ok(readme:find(line, 1, true) ~= nil, "README.md has " .. line)
+    end
+  end,
+
   ["a description and a key come out escaped, each key under its card section"] = function(t)
     local lines = lines_of(generate(t, fixture(t)))
     t.ok(find(lines, "Turns \\{a\\} into \\<b\\> | c.") ~= nil, "alpha's description, escaped")
@@ -555,6 +631,18 @@ return {
     local r = docs(dir, { "--out", out })
     t.eq(r.code, 1, "scripts/docs exits 1")
     t.ok((r.stderr or ""):find("delta.nvim", 1, true) ~= nil, "the error names delta.nvim: " .. (r.stderr or ""))
+    t.eq(vim.fn.filereadable(out), 0, "no post is written")
+  end,
+
+  ["a screenshot with no file in docs/images stops the post"] = function(t)
+    local docs_lua = FILES["lua/ach/docs.lua"]:gsub(
+      'tags = { "demo" } }',
+      'tags = { "demo" }, screenshots = { { file = "missing.webp", alt = "A view.", caption = "The view." } } }')
+    local dir = fixture(t, nil, { ["lua/ach/docs.lua"] = docs_lua })
+    local out = t.tmpdir() .. "/post.mdx"
+    local r = docs(dir, { "--out", out })
+    t.eq(r.code, 1, "scripts/docs exits 1")
+    t.ok((r.stderr or ""):find("missing.webp", 1, true) ~= nil, "the error names missing.webp: " .. (r.stderr or ""))
     t.eq(vim.fn.filereadable(out), 0, "no post is written")
   end,
 }

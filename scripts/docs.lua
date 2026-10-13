@@ -728,9 +728,63 @@ function M.unique_headings(lines)
   return lines
 end
 
+-- The website's RepoLink component: a button to the repository and one to
+-- its licence.
+function M.repo_link(repo)
+  return ('<RepoLink url=%s name=%s license=%s licenseUrl=%s />'):format(
+    quote(repo.url), quote(repo.name), quote(repo.license), quote(repo.url .. "/blob/main/LICENSE"))
+end
+
+-- The width and height a WebP file's header gives. A file is RIFF....WEBP and
+-- then a chunk: VP8X, the extended form, holds the canvas size less one in
+-- three bytes each from byte 25; VP8L, the lossless form, packs it into 14 bits
+-- each from byte 22; VP8, the lossy form, has it in 14 bits each from byte 27.
+function M.webp_size(path)
+  local b = read(path)
+  local function le(i, n)
+    local v = 0
+    for k = n - 1, 0, -1 do
+      v = v * 256 + b:byte(i + k)
+    end
+    return v
+  end
+  if b:sub(1, 4) ~= "RIFF" or b:sub(9, 12) ~= "WEBP" or #b < 30 then
+    error(path .. " is not a WebP file", 0)
+  end
+  local chunk = b:sub(13, 16)
+  if chunk == "VP8X" then
+    return le(25, 3) + 1, le(28, 3) + 1
+  elseif chunk == "VP8L" then
+    local bits = le(22, 4)
+    return bits % 16384 + 1, math.floor(bits / 16384) % 16384 + 1
+  elseif chunk == "VP8 " then
+    return le(27, 2) % 16384, le(29, 2) % 16384
+  end
+  error(path .. " is a WebP file of a kind this script does not read: " .. chunk, 0)
+end
+
+-- The website's Figure component for one screenshot in docs/images, at the
+-- size the file has, so the page reserves the right space before it loads.
+function M.figure(root, shot)
+  local path = root .. "/docs/images/" .. shot.file
+  if vim.fn.filereadable(path) == 0 then
+    error(("lua/ach/docs.lua lists the screenshot %s, which is not in docs/images"):format(shot.file), 0)
+  end
+  local width, height = M.webp_size(path)
+  return ('<Figure src=%s alt=%s caption=%s id=%s width="%d" height="%d" />'):format(
+    quote("/figures/ach-neovim/" .. shot.file), quote(shot.alt), quote(shot.caption),
+    quote("fig:" .. shot.file:gsub("%.webp$", "")), width, height)
+end
+
 function M.render(root, date)
   local docs = require("ach.docs")
   local out = M.front_matter(docs.post, date)
+  if docs.post.repo then
+    vim.list_extend(out, { "", M.repo_link(docs.post.repo) })
+  end
+  for _, shot in ipairs(docs.post.screenshots or {}) do
+    vim.list_extend(out, { "", M.figure(root, shot) })
+  end
   vim.list_extend(out, { "", '<Callout type="note">', "" })
   vim.list_extend(out, docs.intro.note)
   vim.list_extend(out, { "", "</Callout>" })
