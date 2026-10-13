@@ -52,7 +52,7 @@ Nothing writes into the repository while the editor runs, apart from the lock fi
 
 Ghostty is the terminal window the editor runs in. Its settings live in the same repository, at `ghostty/config.ghostty`, with a link to it from `~/.config/ghostty/config.ghostty`, the name Ghostty 1.2 and later read first. They set:
 
-- the font, JetBrains Mono Nerd Font
+- the font, MesloLGS Nerd Font Mono at 14 points
 - the window background, to the theme's navy, so no seam shows around the editor
 - the left Option key to act as Alt, with the right one still typing accented letters
 - the sixteen terminal colours, the same ones the theme gives Neovim's own terminal.

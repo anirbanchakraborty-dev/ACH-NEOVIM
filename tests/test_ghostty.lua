@@ -120,10 +120,10 @@ return {
     t.eq(strays, {}, "colours from nowhere")
   end,
 
-  ["the font is JetBrainsMono Nerd Font at 15 points, and the left Option key is Alt"] = function(t)
+  ["the font is MesloLGS Nerd Font Mono at 14 points, and the left Option key is Alt"] = function(t)
     local conf = read(t)
-    t.eq(conf["font-family"], { "JetBrainsMono Nerd Font" }, "font-family")
-    t.eq(conf["font-size"], { "15" }, "font-size, 15 points")
+    t.eq(conf["font-family"], { "MesloLGS Nerd Font Mono" }, "font-family")
+    t.eq(conf["font-size"], { "14" }, "font-size, 14 points")
     t.eq(conf["macos-option-as-alt"], { "left" }, "macos-option-as-alt")
   end,
 
@@ -146,7 +146,7 @@ return {
     end
     local r = vim.system({ bin, "+list-fonts", "--family=" .. family }, { text = true }):wait(30000)
     if not (r.stdout or ""):find(family, 1, true) then
-      t.human(family .. " is not installed. Install it with: brew install --cask font-jetbrains-mono-nerd-font")
+      t.human(family .. " is not installed. Install it with: brew install --cask font-meslo-lg-nerd-font")
     end
   end,
 }

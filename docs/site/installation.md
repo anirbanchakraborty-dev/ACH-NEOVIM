@@ -6,7 +6,7 @@ Installing takes one Homebrew session, one clone and one first start. Every comm
 
 ```bash
 brew install neovim git ripgrep fd lazygit tree-sitter-cli imagemagick
-brew install --cask ghostty font-jetbrains-mono-nerd-font
+brew install --cask ghostty font-meslo-lg-nerd-font
 xcode-select --install
 ```
 
@@ -14,7 +14,7 @@ ACH-NEOVIM needs Neovim 0.12.4 or later, and `nvim --version` prints the version
 
 <Callout type="tip">
 
-Install Ghostty and the JetBrains Mono Nerd Font before anything else. Every icon in the editor comes from that font, and without it each one shows as an empty box.
+Install Ghostty and the Meslo Nerd Font before anything else. Every icon in the editor comes from that font, and without it each one shows as an empty box.
 
 </Callout>
 
@@ -41,7 +41,7 @@ Do not skip the backup. ACH-NEOVIM keeps its plugins, its language tools, its hi
 git clone https://github.com/anirbanchakraborty-dev/ACH-NEOVIM ~/.config/nvim
 ```
 
-**Link Ghostty's settings.** The repository carries Ghostty's settings in `ghostty/config.ghostty`: the font at 15 points, the navy background, the left Option key working as Alt, and the sixteen colours Neovim's own terminal uses. Link the file to where Ghostty reads it:
+**Link Ghostty's settings.** The repository carries Ghostty's settings in `ghostty/config.ghostty`: the font at 14 points, the navy background, the left Option key working as Alt, and the sixteen colours Neovim's own terminal uses. Link the file to where Ghostty reads it:
 
 ```bash
 mkdir -p ~/.config/ghostty

@@ -199,7 +199,7 @@ Ghostty, the terminal Neovim runs in, keeps its own keys, and none of them reach
 | `Command-Shift-[` and `Command-Shift-]` | Moves to the previous or the next tab |
 | `Command-1` to `Command-8` | Moves to that tab; `Command-9` moves to the last |
 | `Command-W` | Closes the current split, or the tab when it holds one pane, asking first while a program such as Neovim is running in it |
-| `Command-=` and `Command-minus` | Makes the text bigger or smaller; `Command-0` returns it to 15 points |
+| `Command-=` and `Command-minus` | Makes the text bigger or smaller; `Command-0` returns it to 14 points |
 | `Command-,` | Opens Ghostty's settings file for editing |
 | `Command-Shift-,` | Reads the settings file again, so a change shows without restarting |
 

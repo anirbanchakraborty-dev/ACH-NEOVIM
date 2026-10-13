@@ -12,7 +12,7 @@ Here is what ACH-NEOVIM does beyond editing text, area by area. Each area's keys
 
 **News.** `Space N` opens newsboat, a feed reader, in a window floating over the editor.
 
-**Ghostty.** The repository carries Ghostty's settings: JetBrains Mono at 15 points, the same navy background as the editor, the left Option key working as Alt, and the sixteen colours Neovim's own terminal uses.
+**Ghostty.** The repository carries Ghostty's settings: MesloLGS Nerd Font Mono at 14 points, the same navy background as the editor, the left Option key working as Alt, and the sixteen colours Neovim's own terminal uses.
 
 **Startup.** It starts within 10% of stock LazyVim's time, the two timed side by side over thirty starts each, and the test suite fails any change that makes it take more than one and a half times as long to start as it did when first timed.
 
