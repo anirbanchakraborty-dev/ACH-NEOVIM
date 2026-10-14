@@ -161,12 +161,18 @@ return {
     end
   end,
 
-  ["Harper checks only the table's file types, with three rules off"] = function(t)
+  ["Harper checks only the table's file types, with ten rules off"] = function(t)
     local config = vim.lsp.config.harper_ls
     t.eq(config.cmd[1], "harper-ls", "nvim-lspconfig's command")
     t.eq(config.filetypes, require("ach.lang").harper_filetypes(), "the table's file types")
-    t.eq(config.settings, {
-      ["harper-ls"] = { linters = { SpellCheck = false, LongSentences = false, Spaces = false } },
-    })
+    local off = {}
+    for _, name in ipairs({
+      "SpellCheck", "LongSentences", "Spaces", "AnA", "MassNouns",
+      "OrthographicConsistency", "ExpandMemoryShorthands", "CompoundNouns",
+      "SentenceCapitalization", "UseTitleCase",
+    }) do
+      off[name] = false
+    end
+    t.eq(config.settings, { ["harper-ls"] = { linters = off } })
   end,
 }

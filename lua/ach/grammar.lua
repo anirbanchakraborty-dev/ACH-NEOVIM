@@ -75,14 +75,32 @@ end
 -- because Neovim already underlines misspelt words and keeps the one
 -- dictionary; LongSentences because a long sentence is a choice in this
 -- author's prose; Spaces because comments here align columns with spaces.
+--
+-- The rest are off because they misread technical prose. On the sixty-six
+-- chapters of a computer architecture book they made 2,303 reports between
+-- them, and five were real errors. AnA picks a or an by spelling rather than
+-- sound, so it rejects "an x86" and "an SOP", though it did catch "a SRAM".
+-- MassNouns rejects "dependences" and "a doubling". OrthographicConsistency
+-- wants "PS" for picoseconds and "Na" for nanoamperes. ExpandMemoryShorthands
+-- spells out "KiB". CompoundNouns asks for "frontend", where "front end" is
+-- standard too. SentenceCapitalization reads a callout label such as
+-- [!example], or the "where" after an equation, as a sentence. UseTitleCase
+-- asks for title case in every heading, where the case of a heading is each
+-- document's choice.
+M.harper_off = {
+  "SpellCheck", "LongSentences", "Spaces",
+  "AnA", "MassNouns", "OrthographicConsistency", "ExpandMemoryShorthands",
+  "CompoundNouns", "SentenceCapitalization", "UseTitleCase",
+}
+
 function M.harper()
+  local linters = {}
+  for _, name in ipairs(M.harper_off) do
+    linters[name] = false
+  end
   return {
     filetypes = require("ach.lang").harper_filetypes(),
-    settings = {
-      ["harper-ls"] = {
-        linters = { SpellCheck = false, LongSentences = false, Spaces = false },
-      },
-    },
+    settings = { ["harper-ls"] = { linters = linters } },
   }
 end
 
