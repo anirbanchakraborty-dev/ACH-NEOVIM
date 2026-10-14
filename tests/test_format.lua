@@ -1,6 +1,7 @@
 -- Formatting. Every formatter the table names is one conform knows, and
 -- reaches it; prettier, shfmt and sqlfluff get this configuration's
--- arguments; prose formats on save only when switched on; either switch stops
+-- arguments, and markdownlint-cli2 runs from the project's configuration;
+-- prose formats on save only when switched on; either switch stops
 -- a save from formatting; a save runs the file type's formatter, and one not
 -- installed yet lets the save through as typed and silent; a formatter that
 -- runs out of time, or is known to be slow, runs after the write instead; the
@@ -175,6 +176,18 @@ return {
       vim.fn.mkdir(own .. "/queries", "p")
       t.eq(config.cwd(config, { dirname = own .. "/queries" }), own, "the folder it runs in, below a .sqlfluff")
       t.eq(config.cwd(config, { dirname = other }), nil, "the folder it runs in, outside a configured project")
+    end)
+  end,
+
+  ["markdownlint-cli2 fixes from the folder of the project's configuration"] = function(t)
+    tidy(function()
+      local config = require("conform").get_formatter_config("markdownlint-cli2")
+      local loose = t.tmpdir()
+      t.eq(config.cwd(config, { dirname = loose }), loose, "a loose file's own folder")
+      local project = t.tmpdir()
+      vim.fn.writefile({ "MD013: false" }, project .. "/.markdownlint.yaml")
+      vim.fn.mkdir(project .. "/notes/drafts", "p")
+      t.eq(config.cwd(config, { dirname = project .. "/notes/drafts" }), project, "below a .markdownlint.yaml")
     end)
   end,
 

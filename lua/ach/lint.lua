@@ -1,5 +1,5 @@
 -- Linting. nvim-lint runs the linters; this module decides which can run and
--- when, and what three of them need beyond their upstream definitions.
+-- when, and what four of them need beyond their upstream definitions.
 local M = {}
 
 -- When linting runs. Leaving insert mode runs only the linters that are sent
@@ -27,9 +27,16 @@ M.commands = {
   tflint = { "tflint" },
 }
 
--- Changes to three upstream definitions. Each takes a copy of the definition
+-- Changes to four upstream definitions. Each takes a copy of the definition
 -- and the buffer about to be linted, and returns the linter to run.
 M.adapt = {
+  -- markdownlint-cli2 is sent the buffer's text, and reads configuration only
+  -- from the folder it runs in, so it runs from the project's.
+  ["markdownlint-cli2"] = function(def, buf)
+    def.cwd = require("ach.format").markdownlint_root(vim.fs.dirname(vim.api.nvim_buf_get_name(buf)))
+    return def
+  end,
+
   -- Without a dialect sqlfluff checks nothing, and it reads a project's
   -- configuration from the folder it runs in.
   sqlfluff = function(def, buf)

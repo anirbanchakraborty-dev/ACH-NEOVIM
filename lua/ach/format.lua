@@ -72,6 +72,28 @@ function M.sqlfluff_dialect(buf, dir)
   return M.dialects[vim.bo[buf].filetype] or "ansi"
 end
 
+local markdownlint_files = {
+  ".markdownlint-cli2.jsonc",
+  ".markdownlint-cli2.yaml",
+  ".markdownlint-cli2.cjs",
+  ".markdownlint-cli2.mjs",
+  ".markdownlint.jsonc",
+  ".markdownlint.json",
+  ".markdownlint.yaml",
+  ".markdownlint.yml",
+  ".markdownlint.cjs",
+  ".markdownlint.mjs",
+}
+
+-- The folder holding the markdownlint configuration nearest to dir, at dir or
+-- above it, or dir when there is none. markdownlint-cli2 reads configuration
+-- from the folder it runs in and the folders below it, never from one above,
+-- so run from a file's own folder it misses the project's.
+function M.markdownlint_root(dir)
+  local found = vim.fs.find(markdownlint_files, { path = dir, upward = true })[1]
+  return found and vim.fs.dirname(found) or dir
+end
+
 -- Changes merged over conform's own definitions of these formatters.
 M.formatters = {
   -- prefer-file: prettier drops both flags when the project has a
@@ -108,6 +130,9 @@ M.formatters = {
       end
       return { "format", "-" }
     end,
+  },
+  ["markdownlint-cli2"] = {
+    cwd = function(_, ctx) return M.markdownlint_root(ctx.dirname) end,
   },
   -- A code block that fails to format does not stop the others.
   injected = { options = { ignore_errors = true } },

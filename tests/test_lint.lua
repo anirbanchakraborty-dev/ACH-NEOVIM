@@ -2,9 +2,10 @@
 -- program listed for it; only installed linters run, and only on files; one
 -- not installed yet stays silent; linters sent the buffer's text run when
 -- insert mode ends, and those that read the file wait for a save; events
--- lint after a short pause; and sqlfluff, tflint and golangci-lint get this
--- configuration's changes. The buffer tests use a file type of their own,
--- achtest, whose linters run cat, so no real linter needs to be installed.
+-- lint after a short pause; and markdownlint-cli2, sqlfluff, tflint and
+-- golangci-lint get this configuration's changes. The buffer tests use a file
+-- type of their own, achtest, whose linters run cat, so no real linter needs
+-- to be installed; the one that runs markdownlint-cli2 is skipped without it.
 local opened = {}
 
 -- Replaces fields for the length of body and puts every one back, even when
@@ -245,6 +246,58 @@ return {
       t.eq(def.cwd, project, "where it is linted")
       t.eq(upstream.args, { "lint", "--format=json", "-" }, "upstream's own arguments, unchanged")
     end)
+  end,
+
+  ["markdownlint-cli2 lints from the folder of the project's configuration"] = function(t)
+    local L = require("ach.lint")
+    local upstream = require("lint.linters.markdownlint-cli2")
+    tidy(function()
+      local loose = t.tmpdir()
+      local def = L.adapt["markdownlint-cli2"](vim.deepcopy(upstream), named(loose .. "/notes.md"))
+      t.eq(def.cwd, loose, "where a loose file is linted")
+      local project = t.tmpdir()
+      vim.fn.writefile({ "{}" }, project .. "/.markdownlint-cli2.jsonc")
+      vim.fn.mkdir(project .. "/book/chapters", "p")
+      def = L.adapt["markdownlint-cli2"](vim.deepcopy(upstream), named(project .. "/book/chapters/one.md"))
+      t.eq(def.cwd, project, "where a file below a .markdownlint-cli2.jsonc is linted")
+      t.eq(def.args, { "-" }, "its arguments, unchanged")
+      t.eq(upstream.cwd, nil, "upstream's own definition, unchanged")
+    end)
+  end,
+
+  ["markdownlint-cli2 follows the project's configuration wherever Neovim was started"] = function(t)
+    if vim.fn.executable("markdownlint-cli2") ~= 1 then
+      t.skip("markdownlint-cli2 is not installed")
+    end
+    local L = require("ach.lint")
+    local project = t.tmpdir()
+    vim.fn.writefile({ '{ "config": { "MD013": false } }' }, project .. "/.markdownlint-cli2.jsonc")
+    vim.fn.mkdir(project .. "/book", "p")
+    local path = project .. "/book/one.md"
+    vim.fn.writefile({ "# One", "", ("word "):rep(40) }, path)
+    local started = vim.fn.getcwd()
+    vim.cmd.cd(vim.fn.fnameescape(project .. "/book"))
+    local ok, err = pcall(tidy, function()
+      vim.cmd.edit(vim.fn.fnameescape(path))
+      local buf = vim.api.nvim_get_current_buf()
+      opened[#opened + 1] = buf
+      L.run(buf, true)
+      local rules = {}
+      local linted = vim.wait(10000, function()
+        rules = {}
+        for _, message in ipairs(messages(buf, "markdownlint-cli2")) do
+          rules[#rules + 1] = message:match("MD%d+")
+        end
+        return #rules > 0
+      end)
+      t.ok(linted, "markdownlint-cli2 reported")
+      table.sort(rules)
+      t.eq(rules, { "MD009" }, "the rules reported, with MD013 off as the project's configuration says")
+    end)
+    vim.cmd.cd(vim.fn.fnameescape(started))
+    if not ok then
+      error(err, 0)
+    end
   end,
 
   ["tflint lints the file's own module"] = function(t)
