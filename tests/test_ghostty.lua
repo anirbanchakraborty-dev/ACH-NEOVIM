@@ -120,10 +120,10 @@ return {
     t.eq(strays, {}, "colours from nowhere")
   end,
 
-  ["the font is MesloLGS Nerd Font Mono at 14 points, and the left Option key is Alt"] = function(t)
+  ["the font is MesloLGS Nerd Font Mono at 16 points, and the left Option key is Alt"] = function(t)
     local conf = read(t)
     t.eq(conf["font-family"], { "MesloLGS Nerd Font Mono" }, "font-family")
-    t.eq(conf["font-size"], { "14" }, "font-size, 14 points")
+    t.eq(conf["font-size"], { "16" }, "font-size, 16 points")
     t.eq(conf["macos-option-as-alt"], { "left" }, "macos-option-as-alt")
   end,
 

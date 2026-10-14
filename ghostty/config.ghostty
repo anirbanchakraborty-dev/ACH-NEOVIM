@@ -3,10 +3,10 @@
 # here against lua/ach/palette.lua and against the terminal colours Neovim's
 # theme sets, so a colour changes there first.
 
-# MesloLGS Nerd Font Mono at 14 points. The Nerd Font's icons draw the
+# MesloLGS Nerd Font Mono at 16 points. The Nerd Font's icons draw the
 # editor's status bar, file tree and key menu.
 font-family = MesloLGS Nerd Font Mono
-font-size = 14
+font-size = 16
 
 # The navy behind the editor, so no seam shows around it, and the text,
 # cursor and selection colours Neovim uses.

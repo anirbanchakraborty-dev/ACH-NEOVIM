@@ -41,7 +41,7 @@ Do not skip the backup. ACH-NEOVIM keeps its plugins, its language tools, its hi
 git clone https://github.com/anirbanchakraborty-dev/ACH-NEOVIM ~/.config/nvim
 ```
 
-**Link Ghostty's settings.** The repository carries Ghostty's settings in `ghostty/config.ghostty`: the font at 14 points, the navy background, the left Option key working as Alt, and the sixteen colours Neovim's own terminal uses. Link the file to where Ghostty reads it:
+**Link Ghostty's settings.** The repository carries Ghostty's settings in `ghostty/config.ghostty`: the font at 16 points, the navy background, the left Option key working as Alt, and the sixteen colours Neovim's own terminal uses. Link the file to where Ghostty reads it:
 
 ```bash
 mkdir -p ~/.config/ghostty
