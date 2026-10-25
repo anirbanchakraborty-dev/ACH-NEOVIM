@@ -533,6 +533,12 @@ Hello.
   typst = { open = "sample.typ", text = [[
 #let x  =  1
 ]] },
+  lilypond = { open = "sample.ly", text = [[
+\version "2.24.0"
+\relative c' {
+  c4 d e f
+}
+]] },
   -- Harper: the repeated "the".
   text = { open = "sample.txt", text = [[
 This is the the sample.

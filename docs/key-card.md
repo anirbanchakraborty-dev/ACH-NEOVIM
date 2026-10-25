@@ -114,6 +114,8 @@ These work once a language server is running for the file, which happens on its 
 
 In a LaTeX file, `Space ?` also lists VimTeX's own keys, which all begin with Backslash then l.
 
+In a LilyPond file, Swara's keys begin with Backslash. `Backslash o` opens the PDF in Skim, `Backslash v` shows the score inside the editor, `Backslash p` plays it, `Backslash s` stops playing, `Backslash m` opens it in MuseScore, and `Backslash b` builds the PDF and the MIDI file.
+
 ## Git
 
 | Key | Description | What it does |

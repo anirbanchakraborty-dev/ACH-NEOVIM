@@ -246,6 +246,12 @@ M.plugins = {
     category = "Language Plugins",
     desc = "Starts the Lean server and shows the proof state beside the file.",
   },
+  ["swara"] = {
+    category = "Language Plugins",
+    desc = "Reads LilyPond scores: highlighting, a check each time typing stops, the PDF in Skim on `Backslash o`"
+      .. " and playback through FluidSynth on `Backslash p`. It downloads its own program the first time a score"
+      .. " opens.",
+  },
   ["gitsigns.nvim"] = {
     category = "Git",
     desc = "Change bars in the margin, and keys to move between changes and stage them. `] h` moves to the next.",

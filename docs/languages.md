@@ -48,6 +48,7 @@ Measured on 2026-10-12 with Neovim 0.12.6.
 | kconfig | kconfig | none | none | none | none |
 | kotlin | kotlin | kotlin_language_server | ktlint | ktlint | harper_ls |
 | lean | none | waiting: leanls | none | none | none |
+| lilypond | none | none | none | none | none |
 | linker | linkerscript | none | none | none | none |
 | llvm | llvm | none | none | none | none |
 | lua | lua | lua_ls | stylua | none | harper_ls |

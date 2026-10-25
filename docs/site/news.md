@@ -8,6 +8,8 @@ Here is what ACH-NEOVIM does beyond editing text, area by area. Each area's keys
 
 **Markdown.** Headings, lists and tables are drawn in place while I write, formulas and pictures are drawn as images inside the editor, and `Space c p` opens a preview in the browser that keeps up with the file as it changes. The preview's server listens only on this Mac and serves nothing outside the folder it was started for.
 
+**LilyPond.** Swara colours a score, checks it each time I stop typing, and tidies it when I save. `Backslash o` opens the PDF in Skim and `Backslash v` shows the score inside the editor. `Backslash p` plays it through FluidSynth and `Backslash s` stops it, `Backslash m` opens it in MuseScore, and `Backslash b` builds the PDF and the MIDI file. Swara downloads its own program the first time a score opens, and LilyPond itself, about 400 MB, is offered once, like the other compilers.
+
 **Intel's manual.** `Space c x` opens Intel's x86 manual in Skim at the page for the instruction under the cursor, and on any other word lists every instruction to pick one. The manual is Intel's to publish, so it is not in the repository.
 
 **News.** `Space N` opens newsboat, a feed reader, in a window floating over the editor.

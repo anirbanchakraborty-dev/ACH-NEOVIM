@@ -526,6 +526,12 @@ M.languages = {
     harper = true,
     manual = true,
   },
+  -- Swara brings LilyPond's grammar and server and starts both itself, from
+  -- lua/ach/plugins/lilypond.lua. LilyPond is what engraves the score.
+  lilypond = {
+    ft = { "lilypond" },
+    system = { lilypond = { name = "LilyPond", brew = { "lilypond" }, size = "about 400 MB" } },
+  },
   text = { ft = { "text" }, harper = true, manual = true },
 }
 

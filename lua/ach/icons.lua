@@ -1512,6 +1512,13 @@ M.keys = {
   ["Add File to Claude"] = { "claude.add_file", "orange" },
   ["Accept Diff"] = { "claude.accept", "green" },
   ["Deny Diff"] = { "claude.deny", "red" },
+  -- LilyPond: Swara's keys after Backslash
+  ["Swara: open the PDF"] = { "files.pdf", "red" },
+  ["Swara: preview the score in the editor"] = { "ui.preview", "cyan" },
+  ["Swara: play the score"] = { "actions.run", "green" },
+  ["Swara: stop playing"] = { "actions.stop", "red" },
+  ["Swara: open the score in MuseScore"] = { "files.music", "blue" },
+  ["Swara: build the PDF and MIDI"] = { "actions.build", "green" },
   -- LaTeX
   ["Build Document"] = { "actions.build", "green" },
   ["Compile Continuously"] = { "actions.build", "green" },

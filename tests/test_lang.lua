@@ -461,6 +461,7 @@ return {
     local lang = require("ach.lang")
     t.eq(lang.system_for_ft("swift"), { ["sourcekit-lsp"] = "xcode-select --install" }, "swift")
     t.eq(lang.system_for_ft("mlir"), { ["mlir-lsp-server"] = "brew install llvm" }, "mlir")
+    t.eq(lang.system_for_ft("lilypond"), { lilypond = "brew install lilypond" }, "Swara needs LilyPond itself")
     t.eq(lang.system_for_ft("markdown"), {}, "Harper comes from Mason, so Markdown needs nothing from outside it")
     t.eq(lang.system_for_ft("json"), {}, "json")
   end,
@@ -488,6 +489,7 @@ return {
       "gleam",
       "go",
       "julia",
+      "lilypond",
       "llvm",
       "nixfmt",
       "nushell",
