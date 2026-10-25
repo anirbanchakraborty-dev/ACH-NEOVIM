@@ -38,6 +38,12 @@ mkdir -p "$scratch/state" "$scratch/claude"
 # never touches real history, sessions or ~/.claude/ide.
 export ACH_TEST=1 ACH_FULL=$full ACH_ONLY=$only
 export XDG_STATE_HOME="$scratch/state" CLAUDE_CONFIG_DIR="$scratch/claude"
+# lazy.nvim puts the configuration folder first on the runtime path, ahead of
+# the checkout `nvim -u` names, so the configuration folder is this checkout.
+# Without it a second checkout would test ~/.config/nvim's modules and specs.
+mkdir -p "$scratch/config"
+ln -s "$root" "$scratch/config/nvim"
+export XDG_CONFIG_HOME="$scratch/config"
 # The installer stays dry here in both modes, so no test opens a file into a
 # real install. Under --full the language test turns it on in its own child
 # editors, which are where every language is installed.

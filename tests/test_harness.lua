@@ -17,6 +17,16 @@ return {
     t.eq(r.stdout, t.root, "root seen through " .. link)
   end,
 
+  -- lazy.nvim puts the configuration folder first on the runtime path, so a
+  -- checkout other than the one ~/.config/nvim points at would otherwise run
+  -- that folder's modules and plugin specs.
+  ["runs the checkout scripts/check sits in, not the configuration folder"] = function(t)
+    local name = "lua/ach/plugins/core.lua"
+    t.eq(vim.uv.fs_realpath(vim.api.nvim_get_runtime_file(name, false)[1]), t.root .. "/" .. name, "the first " .. name)
+    local source = debug.getinfo(require("ach.lang").formulae, "S").source:sub(2)
+    t.eq(vim.uv.fs_realpath(source), t.root .. "/lua/ach/lang.lua", "where ach.lang was loaded from")
+  end,
+
   ["exits 2 with the install command when Neovim is missing"] = function(t)
     local r = vim.system({ t.root .. "/scripts/check" }, { env = { PATH = "/usr/bin:/bin" }, text = true }):wait()
     t.eq(r.code, 2, "exit code")
